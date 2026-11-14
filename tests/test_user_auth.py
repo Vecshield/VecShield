@@ -158,7 +158,7 @@ def test_username_and_roles_validation(client):
 def test_session_before_login(client):
     body = client.get("/auth/session").json()
     assert body == {"login_enabled": True, "authenticated": False, "user": None,
-                    "password_policy": {"min_length": 12}}
+                    "password_policy": {"min_length": 12}, "mfa_policy": "off"}
     assert client.get("/stores").status_code == 401
 
 
@@ -168,7 +168,8 @@ def test_bootstrap_login_forces_password_change(client, audit):
     user = r.json()["user"]
     assert user == {"username": "admin", "roles": ["admin"],
                     "effective_roles": ["admin", "compliance", "operator", "viewer"],
-                    "must_change_password": True, "source": "session"}
+                    "must_change_password": True, "source": "session",
+                    "mfa_enabled": False, "mfa_enrollment_required": False}
     # Every protected endpoint is closed until the password changes.
     for path in ("/stores", "/version", "/auth/users"):
         r = client.get(path)
@@ -348,7 +349,8 @@ def test_admin_creates_user_and_roles_are_enforced(store, audit):
     listing = admin.get("/auth/users").json()["users"]
     assert {u["username"] for u in listing} == {"admin", "alice"}
     assert set(listing[0]) == {"username", "roles", "disabled", "must_change_password",
-                               "created_at", "created_by", "last_login_at"}
+                               "created_at", "created_by", "last_login_at",
+                               "mfa_enabled"}
 
     viewer = TestClient(_app(store, audit))
     assert _login(viewer, "alice", ALICE_PW).status_code == 200

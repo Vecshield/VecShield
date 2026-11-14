@@ -24,6 +24,11 @@ admin token therefore keeps full access (backward compatible), while a JWT can
 carry a narrower role (e.g. a compliance officer who may run DSAR/erasure but
 not manage stores).
 
+Multi-factor: a local account's second factor is checked at sign-in (ADR
+0004) and the session records whether the account has one, so the API can
+require it by policy. A JWT proves MFA through its RFC 8176 ``amr`` claim,
+which :class:`JWTAuthenticator` can be told to require.
+
 Note on algorithms: only symmetric HS256 is implemented here because the target
 environment has no asymmetric-crypto dependency. RS256/JWKS validation (the
 common OIDC default) is a documented future extension that would plug in behind
@@ -103,6 +108,9 @@ class Principal:
     must_change_password: bool = False
     #: The roles as granted, before expansion; empty means "same as roles".
     granted_roles: frozenset[str] = frozenset()
+    #: Local-account sessions only: whether the account has a second factor.
+    #: ``None`` for credentials MFA policy does not apply to (tokens, JWTs).
+    mfa_enabled: Optional[bool] = None
 
     def has_role(self, role: str) -> bool:
         return role in self.roles
@@ -249,8 +257,21 @@ class StaticTokenAuthenticator:
         return None
 
 
+#: Console MFA policies: nobody, local admins, or every local account must
+#: sign in with a second factor (``VECSHIELD_MFA_REQUIRED``).
+MFA_POLICIES = ("off", "admin", "all")
+
+#: RFC 8176 ``amr`` values that show the IdP checked more than a password.
+MFA_AMR_VALUES = frozenset({"mfa", "otp", "hwk", "swk"})
+
+
 class JWTAuthenticator:
-    """Validates HS256 JWT bearer tokens issued by an OIDC provider."""
+    """Validates HS256 JWT bearer tokens issued by an OIDC provider.
+
+    With ``require_mfa``, a token must carry an ``amr`` claim with at least one
+    of :data:`MFA_AMR_VALUES`, so only callers the IdP put through
+    multi-factor authentication are accepted.
+    """
 
     def __init__(
         self,
@@ -263,9 +284,11 @@ class JWTAuthenticator:
         leeway: float = 60.0,
         default_roles: Iterable[str] = (VIEWER,),
         max_lifetime_s: Optional[float] = None,
+        require_mfa: bool = False,
     ):
         if not secret:
             raise ValueError("JWTAuthenticator requires a non-empty secret")
+        self._require_mfa = require_mfa
         self._max_lifetime_s = max_lifetime_s
         self._secret = secret
         self._audience = audience
@@ -292,6 +315,13 @@ class JWTAuthenticator:
             # could not tell two of them apart.
             raise AuthError(f"JWT has no {self._subject_claim!r} claim")
         subject = str(raw_subject).strip()
+        if self._require_mfa:
+            amr = claims.get("amr")
+            methods = ({str(m).lower() for m in amr} if isinstance(amr, list)
+                       else {amr.lower()} if isinstance(amr, str) else set())
+            if not methods & MFA_AMR_VALUES:
+                raise AuthError("JWT does not show multi-factor authentication "
+                                "(amr claim)")
         roles = normalize_roles(claims.get(self._roles_claim)) or set(self._default_roles)
         return Principal(subject, expand_roles(roles), source="jwt",
                          granted_roles=frozenset(roles))
@@ -321,6 +351,9 @@ class SessionUser(Protocol):
     @property
     def must_change_password(self) -> bool: ...
 
+    @property
+    def mfa_enabled(self) -> bool: ...
+
 
 class SessionResolver(Protocol):
     def resolve_session(self, token: Optional[str]) -> Optional[SessionUser]:
@@ -347,4 +380,5 @@ class SessionAuthenticator:
         granted = frozenset(user.roles)
         return Principal(user.username, expand_roles(granted), source="session",
                          must_change_password=bool(user.must_change_password),
-                         granted_roles=granted)
+                         granted_roles=granted,
+                         mfa_enabled=bool(user.mfa_enabled))

@@ -177,6 +177,22 @@ DEFAULT_SCHEMA_TOP_VALUES = min(
 class LoginRequest(BaseModel):
     username: str = Field(default="", max_length=256)
     password: str = Field(default="", max_length=1024)
+    #: The authenticator-app code (or a recovery code) for accounts with
+    #: two-step sign-in. Sent on the second attempt, after ``mfa_required``.
+    otp: Optional[str] = Field(default=None, max_length=64)
+
+
+class MfaSetupRequest(BaseModel):
+    current_password: str = Field(default="", max_length=1024)
+
+
+class MfaCodeRequest(BaseModel):
+    code: str = Field(default="", max_length=64)
+
+
+class MfaDisableRequest(BaseModel):
+    current_password: str = Field(default="", max_length=1024)
+    code: str = Field(default="", max_length=64)
 
 
 class PasswordChangeRequest(BaseModel):
@@ -899,6 +915,8 @@ def create_app(
     user_store: Optional["UserStore"] = None,
     state_dir: Optional[str] = None,
     vulnfeed_scheduler: bool = False,
+    mfa_required: Optional[str] = None,
+    jwt_require_mfa: Optional[bool] = None,
 ):
     from fastapi import Depends, FastAPI, HTTPException, Query
     from fastapi.middleware.cors import CORSMiddleware
@@ -1032,6 +1050,7 @@ def create_app(
         AuthError,
         CompositeAuthenticator,
         JWTAuthenticator,
+        MFA_POLICIES,
         Principal,
         StaticTokenAuthenticator,
         expand_roles,
@@ -1046,6 +1065,9 @@ def create_app(
     if jwt_issuer is None:
         jwt_issuer = os.environ.get("VECSHIELD_JWT_ISSUER") or None
     jwt_roles_claim = os.environ.get("VECSHIELD_JWT_ROLES_CLAIM") or jwt_roles_claim
+    if jwt_require_mfa is None:
+        jwt_require_mfa = os.environ.get("VECSHIELD_JWT_REQUIRE_MFA", "").strip().lower() \
+            in {"1", "true", "yes", "on"}
 
     if authenticator is not None:
         _authn = authenticator
@@ -1058,7 +1080,8 @@ def create_app(
             _backends.append(JWTAuthenticator(
                 jwt_secret, audience=jwt_audience, issuer=jwt_issuer,
                 roles_claim=jwt_roles_claim,
-                max_lifetime_s=float(_max_life) if _max_life else None))
+                max_lifetime_s=float(_max_life) if _max_life else None,
+                require_mfa=bool(jwt_require_mfa)))
         _authn = CompositeAuthenticator(_backends) if _backends else None
 
     #: Synthetic principal used when auth is disabled entirely.
@@ -1073,6 +1096,25 @@ def create_app(
 
     _login_enabled = user_store is not None
     _sessions = SessionAuthenticator(user_store) if user_store is not None else None
+
+    # Who must sign in to the console with a second factor (ADR 0004): nobody,
+    # admins, or everyone. Applies to local-account sessions; tokens are for
+    # automation, and an IdP proves MFA through the JWT amr claim instead.
+    if mfa_required is None:
+        mfa_required = os.environ.get("VECSHIELD_MFA_REQUIRED", "").strip().lower() or "off"
+    if mfa_required not in MFA_POLICIES:
+        raise ValueError(f"mfa_required must be one of {', '.join(MFA_POLICIES)}, "
+                         f"not {mfa_required!r}")
+    _mfa_policy = mfa_required
+    app.state.mfa_policy = _mfa_policy
+
+    def _mfa_enrollment_required(principal: "Principal") -> bool:
+        """A session whose account policy requires a second factor it lacks."""
+        if principal.source != "session" or principal.mfa_enabled is not False:
+            return False
+        return _mfa_policy == "all" or (_mfa_policy == "admin"
+                                        and ADMIN in principal.granted)
+
     _auth_enabled = _authn is not None or _login_enabled
     app.state.user_store = user_store
 
@@ -1101,8 +1143,10 @@ def create_app(
                 return principal, "cookie"
         return None, "none"
 
-    def _principal(request: Request, *, allow_password_change: bool = False) -> "Principal":
-        """Authenticate and apply the cookie rules (CSRF, forced password change)."""
+    def _principal(request: Request, *, allow_password_change: bool = False,
+                   allow_mfa_enrollment: bool = False) -> "Principal":
+        """Authenticate and apply the cookie rules (CSRF, forced password
+        change, then two-step sign-in set-up when policy requires it)."""
         principal, via = _authenticate(request)
         if principal is None:
             raise HTTPException(status_code=401, detail="invalid or missing token")
@@ -1112,6 +1156,10 @@ def create_app(
                 raise HTTPException(status_code=403, detail="missing CSRF header")
             if principal.must_change_password and not allow_password_change:
                 raise HTTPException(status_code=403, detail="password change required")
+            if (_mfa_enrollment_required(principal) and not allow_password_change
+                    and not allow_mfa_enrollment):
+                raise HTTPException(status_code=403,
+                                    detail="two-step sign-in set-up required")
         return principal
 
     def _require(*roles: str):
@@ -1340,10 +1388,14 @@ def create_app(
         AccountGuardError,
         AccountLockedError,
         InvalidCredentialsError,
+        InvalidSecondFactorError,
         InvalidUserError,
+        MfaRequiredError,
+        MfaStateError,
         PasswordPolicyError,
         UserExistsError,
         UserNotFoundError,
+        normalize_username,
         session_id_for_token,
     )
 
@@ -1359,13 +1411,15 @@ def create_app(
             "effective_roles": sorted(principal.roles),
             "must_change_password": bool(principal.must_change_password),
             "source": principal.source,
+            "mfa_enabled": principal.mfa_enabled,
+            "mfa_enrollment_required": _mfa_enrollment_required(principal),
         }
 
     def _session_principal(user) -> "Principal":
         granted = frozenset(user.roles)
         return Principal(user.username, expand_roles(granted), source="session",
                          must_change_password=user.must_change_password,
-                         granted_roles=granted)
+                         granted_roles=granted, mfa_enabled=user.mfa_enabled)
 
     def _cookie_secure(request: Request) -> bool:
         flag = os.environ.get("VECSHIELD_COOKIE_SECURE", "").strip().lower()
@@ -1397,13 +1451,27 @@ def create_app(
             "authenticated": principal is not None,
             "user": _user_payload(principal) if principal is not None else None,
             "password_policy": _password_policy(),
+            "mfa_policy": _mfa_policy,
         }, headers=_NO_STORE)
 
     @app.post("/auth/login")
     def auth_login(req: LoginRequest, request: Request) -> Any:
         store = _users()
         try:
-            user = store.authenticate(req.username, req.password)
+            user, second_factor = store.sign_in(req.username, req.password, req.otp)
+        except MfaRequiredError as e:
+            # The password was right; ask for the code. Nothing is recorded
+            # until the second attempt settles the sign-in either way.
+            return JSONResponse(status_code=401, headers=_NO_STORE,
+                                content={"detail": str(e), "mfa_required": True})
+        except InvalidSecondFactorError as e:
+            name = normalize_username(req.username)
+            details_2fa: dict = {"reason": "invalid_otp"}
+            if store.is_locked(name):
+                details_2fa["locked"] = True
+            log.append(name, "auth.login_failed", name, details_2fa)
+            return JSONResponse(status_code=401, headers=_NO_STORE,
+                                content={"detail": str(e), "mfa_required": True})
         except AccountLockedError as e:
             existing = store.get_user(req.username)
             log.append(existing.username if existing else "unknown", "auth.login_failed",
@@ -1424,8 +1492,13 @@ def create_app(
             raise HTTPException(status_code=401, detail="invalid username or password")
         session = store.create_session(user.username,
                                        user_agent=request.headers.get("user-agent"))
-        log.append(user.username, "auth.login", user.username,
-                   {"must_change_password": user.must_change_password})
+        login_details: dict = {"must_change_password": user.must_change_password}
+        if second_factor is not None:
+            login_details["second_factor"] = second_factor
+        log.append(user.username, "auth.login", user.username, login_details)
+        if second_factor == "recovery_code":
+            log.append(user.username, "auth.recovery_code_used", user.username,
+                       {"remaining": store.recovery_codes_remaining(user.username)})
         response = JSONResponse({"user": _user_payload(_session_principal(user))},
                                 headers=_NO_STORE)
         _set_session_cookie(response, request, session.token)
@@ -1475,8 +1548,9 @@ def create_app(
     # Self-service session review. Every route acts only on the caller's own
     # sessions; ids are opaque handles, never the stored token hash.
 
-    def _session_caller(request: Request) -> "Principal":
-        principal = _principal(request)
+    def _session_caller(request: Request, *,
+                        allow_mfa_enrollment: bool = False) -> "Principal":
+        principal = _principal(request, allow_mfa_enrollment=allow_mfa_enrollment)
         if principal.source != "session":
             raise HTTPException(
                 status_code=400,
@@ -1515,6 +1589,126 @@ def create_app(
         if current:
             _clear_session_cookie(response, request)
         return response
+
+    # Two-step sign-in (ADR 0004). Self-service routes act on the caller's own
+    # account and stay reachable while policy requires set-up; changing the
+    # factor needs the password (and, to remove or rotate, a current code).
+
+    def _mfa_status(username: str) -> dict:
+        store = _users()
+        user = store.get_user(username)
+        enabled = bool(user and user.mfa_enabled)
+        return {
+            "enabled": enabled,
+            "recovery_codes_remaining": (store.recovery_codes_remaining(username)
+                                         if enabled else 0),
+            "policy": _mfa_policy,
+        }
+
+    def _wrong_password(principal: "Principal") -> HTTPException:
+        log.append(principal.subject, "auth.login_failed", principal.subject,
+                   {"reason": "wrong_current_password"})
+        return HTTPException(status_code=401, detail="current password is incorrect")
+
+    def _wrong_code(principal: "Principal", e: Exception) -> HTTPException:
+        log.append(principal.subject, "auth.login_failed", principal.subject,
+                   {"reason": "invalid_otp"})
+        return HTTPException(status_code=401, detail=str(e))
+
+    def _locked(e: AccountLockedError) -> HTTPException:
+        return HTTPException(status_code=429, detail=str(e),
+                             headers={"Retry-After": str(int(e.retry_after_s) + 1)})
+
+    @app.get("/auth/mfa")
+    def auth_mfa_status(request: Request) -> Any:
+        principal = _session_caller(request, allow_mfa_enrollment=True)
+        return JSONResponse({**_mfa_status(principal.subject),
+                             "enrollment_required": _mfa_enrollment_required(principal)},
+                            headers=_NO_STORE)
+
+    @app.post("/auth/mfa/setup")
+    def auth_mfa_setup(req: MfaSetupRequest, request: Request) -> Any:
+        """Issue a new authenticator secret (QR code and key) to confirm."""
+        store = _users()
+        principal = _session_caller(request, allow_mfa_enrollment=True)
+        try:
+            provisioning = store.begin_mfa_enrollment(principal.subject,
+                                                      req.current_password)
+        except MfaStateError as e:
+            raise HTTPException(status_code=409, detail=str(e))
+        except AccountLockedError as e:
+            raise _locked(e)
+        except InvalidCredentialsError:
+            raise _wrong_password(principal)
+        except UserNotFoundError:
+            raise HTTPException(status_code=401, detail="invalid or missing token")
+        return JSONResponse(provisioning, headers=_NO_STORE)
+
+    @app.post("/auth/mfa/confirm")
+    def auth_mfa_confirm(req: MfaCodeRequest, request: Request) -> Any:
+        """Turn two-step sign-in on; returns the recovery codes, once."""
+        store = _users()
+        principal = _session_caller(request, allow_mfa_enrollment=True)
+        try:
+            codes = store.confirm_mfa_enrollment(
+                principal.subject, req.code,
+                keep_token=request.cookies.get(SESSION_COOKIE))
+        except MfaStateError as e:
+            raise HTTPException(status_code=409, detail=str(e))
+        except InvalidSecondFactorError as e:
+            raise HTTPException(status_code=400, detail=str(e))
+        except UserNotFoundError:
+            raise HTTPException(status_code=401, detail="invalid or missing token")
+        _log_done(principal.subject, "auth.mfa_enrolled", principal.subject,
+                  {"method": "totp", "other_sessions_revoked": True},
+                  completed="two-step sign-in was turned on")
+        user = store.get_user(principal.subject)
+        return JSONResponse({"recovery_codes": codes,
+                             "user": _user_payload(_session_principal(user))},
+                            headers=_NO_STORE)
+
+    @app.post("/auth/mfa/disable")
+    def auth_mfa_disable(req: MfaDisableRequest, request: Request) -> Any:
+        store = _users()
+        principal = _session_caller(request)
+        try:
+            method = store.disable_mfa(principal.subject, req.current_password, req.code)
+        except MfaStateError as e:
+            raise HTTPException(status_code=409, detail=str(e))
+        except AccountLockedError as e:
+            raise _locked(e)
+        except InvalidSecondFactorError as e:
+            raise _wrong_code(principal, e)
+        except InvalidCredentialsError:
+            raise _wrong_password(principal)
+        except UserNotFoundError:
+            raise HTTPException(status_code=401, detail="invalid or missing token")
+        _log_done(principal.subject, "auth.mfa_disabled", principal.subject,
+                  {"confirmed_with": method},
+                  completed="two-step sign-in was turned off")
+        user = store.get_user(principal.subject)
+        return JSONResponse({"user": _user_payload(_session_principal(user))},
+                            headers=_NO_STORE)
+
+    @app.post("/auth/mfa/recovery-codes")
+    def auth_mfa_recovery_codes(req: MfaCodeRequest, request: Request) -> Any:
+        """Replace every recovery code; needs a current authenticator code."""
+        store = _users()
+        principal = _session_caller(request)
+        try:
+            codes = store.regenerate_recovery_codes(principal.subject, req.code)
+        except MfaStateError as e:
+            raise HTTPException(status_code=409, detail=str(e))
+        except AccountLockedError as e:
+            raise _locked(e)
+        except InvalidSecondFactorError as e:
+            raise _wrong_code(principal, e)
+        except UserNotFoundError:
+            raise HTTPException(status_code=401, detail="invalid or missing token")
+        _log_done(principal.subject, "auth.recovery_codes_regenerated", principal.subject,
+                  {"count": len(codes)},
+                  completed="new recovery codes were issued")
+        return JSONResponse({"recovery_codes": codes}, headers=_NO_STORE)
 
     _require_admin_principal = _require_principal(ADMIN)
 
@@ -1576,6 +1770,29 @@ def create_app(
         _log_done(principal.subject, "user.password_reset", user.username,
                   {"sessions_revoked": True, "actor_source": principal.source},
                   completed=f"the password of {user.username!r} was reset")
+        return {"user": user.public_dict()}
+
+    @app.post("/auth/users/{username}/mfa/reset")
+    def auth_reset_mfa(username: str,
+                       principal: "Principal" = Depends(_require_admin_principal)) -> dict:
+        """Remove a lost authenticator so the person can set up a new one."""
+        store = _users()
+        name = username.strip().lower()
+        if principal.source == "session" and principal.subject == name:
+            raise HTTPException(
+                status_code=409,
+                detail="turn off your own two-step sign-in from your account, "
+                       "which asks for your password and a code")
+        try:
+            was_enabled = store.admin_reset_mfa(name)
+        except UserNotFoundError as e:
+            raise HTTPException(status_code=404, detail=str(e))
+        _log_done(principal.subject, "auth.mfa_reset", name,
+                  {"was_enabled": was_enabled, "sessions_revoked": True,
+                   "actor_source": principal.source},
+                  completed=f"two-step sign-in for {name!r} was reset")
+        user = store.get_user(name)
+        assert user is not None
         return {"user": user.public_dict()}
 
     # ---------------- health + UI ----------------

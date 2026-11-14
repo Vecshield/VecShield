@@ -461,6 +461,13 @@ def audit_cmd(tenant_field, no_integrity, no_posture, cve_offline, tls_probe,
               help="Whether a person may approve a plan or exception they proposed. "
                    "Default: 'required' with authentication, 'admin_may_self_approve' "
                    "without (env VECSHIELD_SEPARATION_OF_DUTIES).")
+@click.option("--mfa-required", "mfa_required", default=None,
+              type=click.Choice(["off", "admin", "all"]),
+              envvar="VECSHIELD_MFA_REQUIRED",
+              help="Which local accounts must sign in to the console with an "
+                   "authenticator app: nobody (off, the default), accounts with the "
+                   "admin role, or all. Accounts without one are taken to set-up "
+                   "at sign-in (env VECSHIELD_MFA_REQUIRED).")
 @click.option("--no-login", "no_login", is_flag=True, default=False,
               help="Disable local accounts and console sign-in (also env "
                    "VECSHIELD_LOGIN=off). Bearer tokens/JWT still apply; with none "
@@ -468,7 +475,7 @@ def audit_cmd(tenant_field, no_integrity, no_posture, cve_offline, tls_probe,
 def serve_cmd(config_path, state_dir, host, port, token, admin_token, log_level, log_format,
               cors_origins, max_body_mb, rate_limit, rate_window,
               jwt_secret, jwt_audience, jwt_issuer, separation_of_duties,
-              no_login) -> None:
+              mfa_required, no_login) -> None:
     """Run the VecShield admin console + REST API.
 
     Stores and policies are managed through the dashboard (or admin API) and
@@ -588,6 +595,7 @@ def serve_cmd(config_path, state_dir, host, port, token, admin_token, log_level,
                                      if max_body_mb else None),
                      rate_limit=rate_limit, rate_window_s=rate_window,
                      separation_of_duties=separation_of_duties,
+                     mfa_required=mfa_required,
                      user_store=user_store,
                      state_dir=_feed_state_dir(config_path, state_dir),
                      vulnfeed_scheduler=True)
@@ -595,6 +603,15 @@ def serve_cmd(config_path, state_dir, host, port, token, admin_token, log_level,
     if policy.mode != "required":
         console.print(f"  [warn]separation of duties: {policy.mode} ({policy.source}) — "
                       f"self-approval: {policy.to_dict()['self_approval']}[/]")
+    if user_store is not None:
+        if app.state.mfa_policy == "off":
+            if not loopback:
+                console.print(
+                    "  [warn]two-step sign-in is not required for any account.[/] "
+                    "Set --mfa-required admin (or all) so console sign-in beyond "
+                    "localhost needs more than a password.")
+        else:
+            console.print(f"  two-step sign-in required: {app.state.mfa_policy}")
     _start_nlp(_escape)
     try:
         uvicorn.run(app, host=host, port=port)

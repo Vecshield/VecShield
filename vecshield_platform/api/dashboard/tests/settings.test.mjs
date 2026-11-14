@@ -62,7 +62,8 @@ async function boot(hash, responses = {}, {stored = {}, systemDark = false} = {}
     if (typeof value === "function") value = value(path, opts);
     if (typeof value?.status === "number") {
       return {ok: false, status: value.status, statusText: "Error",
-              headers: {get: () => "application/json"}, json: async () => ({detail: value.detail})};
+              headers: {get: () => "application/json"},
+              json: async () => ({detail: value.detail, ...(value.body || {})})};
     }
     return {ok: true, status: 200, headers: {get: () => "application/json"},
             json: async () => value, text: async () => JSON.stringify(value)};
@@ -169,6 +170,86 @@ for (const [name, session, pattern] of [
     dom.window.close();
   });
 }
+
+// ------------------------------------------------------- two-step sign-in ---
+
+test("two-step sign-in is off until set up, and Settings can set it up", async () => {
+  let status = {enabled: false, recovery_codes_remaining: 0, policy: "off", enrollment_required: false};
+  const {dom, window, doc, calls} = await boot("#/settings", {
+    "/auth/session": signedIn(KIM),
+    "/auth/mfa": () => status,
+    "POST /auth/mfa/setup": {secret: "ABCDEFGH", uri: "otpauth://totp/x", qr_svg: "data:image/svg+xml,x"},
+    "POST /auth/mfa/confirm": () => {
+      status = {...status, enabled: true, recovery_codes_remaining: 10};
+      return {recovery_codes: ["aaaaa-bbbbb-ccccc-ddddd"], user: {...KIM, mfa_enabled: true}};
+    },
+  });
+  const security = panelNamed(doc, "Security");
+  const slot = security.querySelector(".settings-mfa");
+  assert.match(text(slot), /Off\. Signing in needs only your password\./);
+  button(slot, "Set up two-step sign-in").click();
+  const current = slot.querySelector("input[type='password']");
+  assert.equal(doc.activeElement, current);
+  type(window, current, "my password here");
+  submit(window, slot.querySelector("form"));
+  await settle();
+  type(window, slot.querySelector("input[name='one-time-code']"), "123456");
+  submit(window, slot.querySelector("form"));
+  await settle();
+  assert.match(text(slot), /aaaaa-bbbbb-ccccc-ddddd/);
+  button(slot, "I have saved my recovery codes").click();
+  await settle();
+  assert.match(text(slot), /On\. .* 10 recovery codes left\./);
+  assert.match(text(security.querySelector(".settings-notice")), /Two-step sign-in is on/);
+  assert.ok(calls.some(c => c.path === "/auth/mfa/confirm"));
+  dom.window.close();
+});
+
+test("a required but missing second factor is called out", async () => {
+  const {dom, doc} = await boot("#/settings", {
+    "/auth/session": signedIn(KIM),
+    "/auth/mfa": {enabled: false, recovery_codes_remaining: 0, policy: "all"},
+  });
+  assert.match(text(doc.querySelector(".settings-mfa")), /this server requires it for your account/);
+  dom.window.close();
+});
+
+test("turning it off needs the password and a code; new codes need a code", async () => {
+  const {dom, window, doc, calls} = await boot("#/settings", {
+    "/auth/session": signedIn(KIM),
+    "/auth/mfa": {enabled: true, recovery_codes_remaining: 2, policy: "off"},
+    "POST /auth/mfa/recovery-codes": {recovery_codes: ["fffff-eeeee-ddddd-ccccc"]},
+    "POST /auth/mfa/disable": {status: 401, detail: "current password is incorrect"},
+  });
+  const slot = doc.querySelector(".settings-mfa");
+  assert.match(text(slot), /2 recovery codes left/);
+
+  button(slot, "New recovery codes").click();
+  assert.equal(slot.querySelector("input[type='password']"), null, "no password for new codes");
+  submit(window, slot.querySelector("form"));
+  assert.equal(text(slot.querySelector(".auth-error")), "Enter the code from your authenticator app.");
+  type(window, slot.querySelector("input[name='one-time-code']"), "123456");
+  submit(window, slot.querySelector("form"));
+  await settle();
+  assert.deepEqual(calls.find(c => c.path === "/auth/mfa/recovery-codes").body, {code: "123456"});
+  assert.match(text(slot), /fffff-eeeee-ddddd-ccccc/);
+  assert.match(text(slot), /The old ones no longer work/);
+  button(slot, "Done").click();
+  await settle();
+
+  button(slot, "Turn off").click();
+  const current = slot.querySelector("input[type='password']");
+  type(window, current, "not my password");
+  type(window, slot.querySelector("input[name='one-time-code']"), "123456");
+  submit(window, slot.querySelector("form"));
+  await settle();
+  assert.deepEqual(calls.find(c => c.path === "/auth/mfa/disable").body,
+                   {current_password: "not my password", code: "123456"});
+  assert.equal(text(slot.querySelector(".auth-error")), "Current password is incorrect.");
+  assert.equal(doc.activeElement, current, "the password is the field to fix");
+  assert.ok(doc.getElementById("content"), "a refused change does not end the session");
+  dom.window.close();
+});
 
 // --------------------------------------------------------------- sessions ---
 

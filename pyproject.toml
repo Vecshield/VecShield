@@ -31,6 +31,10 @@ dependencies = [
     "numpy>=1.24",
     "fastapi>=0.110",
     "uvicorn>=0.27",
+    # Console two-step sign-in (ADR 0004): RFC 6238 TOTP and the enrollment
+    # QR code. Both are pure Python with no dependencies of their own.
+    "pyotp>=2.9,<3",
+    "segno>=1.6,<2",
 ]
 
 [project.optional-dependencies]

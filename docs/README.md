@@ -76,6 +76,7 @@ result is not a compliance determination.**
 | [ADR 0001](adr/0001-exhaustive-tenant-isolation.md) | Exhaustive tenant-isolation probing. |
 | [ADR 0002](adr/0002-local-accounts-and-sessions.md) | Local accounts and sessions. |
 | [ADR 0003](adr/0003-secret-reference-allowlist.md) | Secret-reference allowlist. |
+| [ADR 0004](adr/0004-totp-mfa.md) | Two-step sign-in (TOTP) for local accounts. |
 | [Brand](brand/README.md) | The mark, the palette, and the rules the console's tests enforce. |
 
 ## Contributing

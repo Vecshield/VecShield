@@ -149,6 +149,31 @@ artifact-trust chain, and change-management requirements.
   HTTP, set `VECSHIELD_COOKIE_SECURE=1`. Changing a password signs the account
   out of its other sessions; an admin password reset or disabling an account
   signs it out everywhere.
+- **Two-step sign-in** (design: [ADR 0004](adr/0004-totp-mfa.md)). Any local
+  account can add an authenticator app under Settings → Security. Setting it
+  up needs the current password and a working code. It returns ten
+  single-use recovery codes, shown once. Turning it on signs the account out
+  of its other sessions. After that, sign-in asks for the code after the
+  password (`POST /auth/login` answers `401` with `"mfa_required": true`, and
+  the console sends the password again with `otp`). A wrong code counts
+  toward the lockout, and a code works only once. An admin can reset a lost
+  authenticator from Users (`POST /auth/users/{username}/mfa/reset`); this
+  also signs that account out everywhere. Admins cannot reset their own.
+  - `--mfa-required` / `VECSHIELD_MFA_REQUIRED`: `off` (default), `admin`
+    (accounts with the admin role) or `all`. An account the policy covers
+    that has no authenticator is taken to set-up at sign-in. Until it
+    finishes, every other API call made with its session answers `403
+    two-step sign-in set-up required`. The Helm chart sets `admin`
+    (`auth.mfaRequired`). `serve` warns when it binds beyond localhost with
+    local accounts and no requirement.
+  - `VECSHIELD_JWT_REQUIRE_MFA=1` (`auth.jwtRequireMfa` in Helm): accept a JWT
+    only if its `amr` claim shows the identity provider did MFA (`mfa`,
+    `otp`, `hwk` or `swk`). Static tokens are automation credentials and are
+    not affected by either setting.
+  - The authenticator secret is stored in `users.db`, which is owner-only like
+    the password hashes. Recovery codes are stored only as SHA-256. Anyone who
+    can read the file can generate codes, so protect and back it up like the
+    rest of the state directory.
 - **CSRF.** Requests authenticated by the cookie that change state (anything
   other than GET/HEAD/OPTIONS) must carry `X-VecShield-CSRF: 1`, which the
   console sends and a cross-site form cannot. Bearer-authenticated requests are
@@ -165,7 +190,11 @@ artifact-trust chain, and change-management requirements.
 - **Audit.** Sign-in, failed sign-in, sign-out, password change, account
   creation, account change and password reset are written to the audit log
   (`auth.login`, `auth.login_failed`, `auth.logout`, `auth.password_changed`,
-  `user.created`, `user.updated`, `user.password_reset`). Passwords are never
+  `user.created`, `user.updated`, `user.password_reset`). So are the
+  two-step sign-in events: `auth.mfa_enrolled`, `auth.mfa_disabled`,
+  `auth.mfa_reset`, `auth.recovery_codes_regenerated` and
+  `auth.recovery_code_used`. A wrong code is an `auth.login_failed` with
+  reason `invalid_otp`. Passwords, authenticator secrets and codes are never
   logged; a failed sign-in for a name that does not exist is recorded as
   `unknown`.
 
