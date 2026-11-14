@@ -11,6 +11,19 @@ Changes to the detection engine specifically are also tracked in
 
 ### Changed
 
+- `GET /admin/jobs` returns each job's `result` summarized to `{"id": ...}`,
+  the record the run saved. A full result can be a whole audit, and the Runs
+  list only links to it. `GET /admin/jobs/{id}` still returns the full result.
+- `GET /admin/jobs` accepts `limit` from 1 to 500 and `GET /runtime/alerts`
+  from 1 to 1000; `offset` must not be negative. Out-of-range values are a
+  `422` instead of an unbounded read.
+
+### Fixed
+
+- Finished background jobs no longer stay in server memory for the life of the
+  process. A job leaves memory once its final state is saved to history, and
+  is read from there. Without history, only the newest 200 finished jobs are
+  kept.
 - The console's static assets are served gzip-compressed to clients that
   accept it. `dashboard.js` and `dashboard.css` drop from about 1.07 MB to
   about 290 KB on a first load. Only the `/static` mount is compressed: API
