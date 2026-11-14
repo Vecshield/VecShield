@@ -24,6 +24,10 @@ Changes to the detection engine specifically are also tracked in
   process. A job leaves memory once its final state is saved to history, and
   is read from there. Without history, only the newest 200 finished jobs are
   kept.
+- The console's static assets are served gzip-compressed to clients that
+  accept it. `dashboard.js` and `dashboard.css` drop from about 1.07 MB to
+  about 290 KB on a first load. Only the `/static` mount is compressed: API
+  responses, Range requests, fonts and images are served as before.
 
 ## [0.1.0]
 
