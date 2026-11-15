@@ -738,8 +738,9 @@ function icon(name) {
 
 // The account endpoints answer their own 401s (a wrong password, a wrong
 // current password); only a 401 from anything else means the session ended.
-const AUTH_PATHS = /^\/auth\/(session|login|logout|password)(\?|$)/;
+const AUTH_PATHS = /^\/auth\/(session|login|logout|password|mfa(\/[a-z-]+)?)(\?|$)/;
 const PASSWORD_CHANGE_REQUIRED = "password change required";
+const MFA_SETUP_REQUIRED = "two-step sign-in set-up required";
 
 async function api(path, opts = {}) {
   // Every request says it came from the console: a cookie-authenticated
@@ -756,15 +757,19 @@ async function api(path, opts = {}) {
   }
   if (!response.ok) {
     let detail = response.statusText;
+    let body = null;
     try {
-      const data = await response.json();
-      detail = describeDetail(data.detail) || detail;
+      body = await response.json();
+      detail = describeDetail(body?.detail) || detail;
     } catch { /* a non-JSON error body leaves the status text */ }
     if (response.status === 401) setHealth("warn", "Authentication required");
     const err = new Error(detail);
     err.status = response.status;
     // What the server said, as distinct from the status text standing in for it.
     err.detail = detail !== response.statusText ? detail : "";
+    // The whole answer, for the few callers that need more than the message
+    // (sign-in reads mfa_required from it).
+    err.body = body;
     // With sign-in on, a 401 means the session ended: back to the sign-in
     // screen, keeping the hash so the reader returns to the same page. A 403
     // naming a pending password change sends them to choose one.
@@ -772,6 +777,8 @@ async function api(path, opts = {}) {
       sessionExpired();
     } else if (response.status === 403 && detail === PASSWORD_CHANGE_REQUIRED) {
       showPasswordScreen({forced: true});
+    } else if (response.status === 403 && detail === MFA_SETUP_REQUIRED) {
+      showMfaSetupScreen({forced: true});
     }
     throw err;
   }
@@ -3298,7 +3305,14 @@ async function startConsole() {
   await loadSession();
   const {login_enabled, authenticated, user} = state.auth;
   if (login_enabled && !authenticated) return showSignIn();
+  return continueAfterSignIn(user);
+}
+
+// What a signed-in person must do before the console: choose their own
+// password, then set up two-step sign-in where the server requires it.
+function continueAfterSignIn(user = state.auth.user) {
   if (user?.must_change_password) return showPasswordScreen({forced: true});
+  if (user?.mfa_enrollment_required) return showMfaSetupScreen({forced: true});
   return enterConsole();
 }
 
@@ -3408,6 +3422,14 @@ function showSignIn({notice = null} = {}) {
                                   required: true});
   const error = authError();
   const submit = h("button", {class: "btn primary auth-submit", type: "submit"}, "Sign in");
+  // Shown once the server says the password was right and a code is needed.
+  const code = otpInput({id: "signin-otp-hint", recovery: true});
+  const codeField = otpField(code, "signin-otp-hint",
+    "The 6-digit code from your authenticator app, or one of your recovery codes.");
+  codeField.hidden = true;
+  const restart = h("button", {class: "link auth-alt", type: "button", hidden: true,
+                               onclick: () => showSignIn()}, "Use a different account");
+  let needCode = false;
 
   async function signIn(event) {
     event?.preventDefault?.();
@@ -3417,23 +3439,42 @@ function showSignIn({notice = null} = {}) {
       (name ? password : username).focus?.();
       return;
     }
+    if (needCode && !code.value.trim()) {
+      setAuthError(error, "Enter the code from your authenticator app.", code);
+      code.focus?.();
+      return;
+    }
     submit.disabled = true;
     submit.textContent = "Signing in…";
     setAuthError(error, "");
+    const body = {username: name, password: password.value};
+    if (needCode) body.otp = code.value.trim();
     try {
-      const result = await api("/auth/login", {method: "POST",
-        body: JSON.stringify({username: name, password: password.value})});
+      const result = await api("/auth/login", {method: "POST", body: JSON.stringify(body)});
       // A token from an earlier token session must not ride along with the
       // cookie this sign-in just set.
       state.token = "";
       try { sessionStorage.removeItem("vecshield_token"); } catch { /* private mode */ }
       state.auth = {...state.auth, authenticated: true, user: result?.user || {username: name}};
-      if (state.auth.user.must_change_password) showPasswordScreen({forced: true});
-      else await enterConsole();
+      await continueAfterSignIn();
     } catch (e) {
       submit.disabled = false;
       submit.textContent = "Sign in";
+      if (e.status === 401 && e.body?.mfa_required) {
+        // The password was right: keep it, and ask for the second factor.
+        const first = !needCode;
+        needCode = true;
+        username.readOnly = true;
+        password.readOnly = true;
+        codeField.hidden = false;
+        restart.hidden = false;
+        code.value = "";
+        setAuthError(error, first ? "" : (sentence(e.message) || "That code did not work."), first ? null : code);
+        code.focus?.();
+        return;
+      }
       password.value = "";
+      code.value = "";
       setAuthError(error, sentence(e.message) || "Sign-in failed.", password);
       password.focus?.();
     }
@@ -3444,10 +3485,159 @@ function showSignIn({notice = null} = {}) {
     h("form", {class: "auth-form", onsubmit: signIn, novalidate: true},
       field("Username", username),
       field("Password", password),
+      codeField,
       error,
-      submit));
+      submit,
+      restart));
   username.focus?.();
-  return {username, password, submit, error};
+  return {username, password, code, submit, error};
+}
+
+// ------------------------------------------------------- two-step sign-in ---
+// An authenticator app adds a code to the password (ADR 0004). The server
+// makes the secret and the QR code; the console only shows them and sends
+// back what the app displays.
+
+function otpInput({id, recovery = false} = {}) {
+  return textInput("", {name: "one-time-code", autocomplete: "one-time-code",
+                        inputmode: recovery ? "text" : "numeric", autocapitalize: "none",
+                        spellcheck: "false", maxlength: "64", "aria-describedby": id});
+}
+
+function otpField(input, hintId, hint) {
+  return h("label", {class: "field"}, h("span", {}, "Authentication code"), input,
+    h("small", {class: "auth-hint", id: hintId}, hint));
+}
+
+// "JBSWY3DP EHPK3PXP ..." reads back more easily than 32 characters in a row.
+function groupedKey(secret) {
+  return String(secret || "").replace(/(.{4})/g, "$1 ").trim();
+}
+
+function recoveryCodesBlock(codes, lead) {
+  const list = Array.isArray(codes) ? codes : [];
+  return h("div", {class: "mfa-codes"},
+    statusLine(lead, "ok", {live: true}),
+    h("ul", {class: "mfa-code-list mono", "aria-label": "Recovery codes"}, list.map(c => h("li", {}, c))),
+    h("button", {class: "btn small", type: "button",
+                 onclick: () => copyText(list.join("\n"), "Recovery codes")},
+      icon("copy"), "Copy codes"));
+}
+
+const RECOVERY_LEAD = "Save these recovery codes somewhere safe, away from this device. Each one signs you in once if you lose your authenticator app. They are not shown again.";
+
+// The three steps of adding an authenticator app: confirm the password, scan
+// and prove one code, keep the recovery codes. `after` sits under each step's
+// button (Cancel or Sign out); `onDone` runs once the codes are acknowledged.
+function mfaSetupFlow({onDone, after = ""} = {}) {
+  const box = h("div", {class: "mfa-setup"});
+
+  function stepPassword() {
+    const current = textInput("", {type: "password", name: "current-password",
+                                   autocomplete: "current-password", required: true});
+    const error = authError();
+    const submit = h("button", {class: "btn primary auth-submit", type: "submit"}, "Continue");
+    async function go(event) {
+      event?.preventDefault?.();
+      if (!current.value) {
+        setAuthError(error, "Enter your current password.", current);
+        current.focus?.();
+        return;
+      }
+      submit.disabled = true;
+      setAuthError(error, "");
+      try {
+        const data = await api("/auth/mfa/setup", {method: "POST",
+          body: JSON.stringify({current_password: current.value})});
+        current.value = "";
+        stepScan(data || {});
+      } catch (e) {
+        submit.disabled = false;
+        current.value = "";
+        setAuthError(error, sentence(e.message) || "Two-step sign-in could not be set up.", current);
+        current.focus?.();
+      }
+    }
+    box.replaceChildren(h("form", {class: "auth-form", onsubmit: go, novalidate: true},
+      h("p", {class: "auth-hint"}, "Confirm your password to add an authenticator app."),
+      field("Current password", current), error, submit, after));
+  }
+
+  function stepScan(data) {
+    const code = otpInput({id: "mfa-setup-hint"});
+    const error = authError();
+    const submit = h("button", {class: "btn primary auth-submit", type: "submit"}, "Turn on two-step sign-in");
+    async function confirmCode(event) {
+      event?.preventDefault?.();
+      if (!code.value.trim()) {
+        setAuthError(error, "Enter the code your app shows.", code);
+        code.focus?.();
+        return;
+      }
+      submit.disabled = true;
+      setAuthError(error, "");
+      try {
+        const result = await api("/auth/mfa/confirm", {method: "POST",
+          body: JSON.stringify({code: code.value.trim()})});
+        if (result?.user) state.auth = {...state.auth, user: result.user};
+        stepCodes(result?.recovery_codes || []);
+      } catch (e) {
+        submit.disabled = false;
+        code.value = "";
+        setAuthError(error, sentence(e.message) || "That code did not work.", code);
+        code.focus?.();
+      }
+    }
+    box.replaceChildren(
+      h("ol", {class: "mfa-steps"},
+        h("li", {}, "Open an authenticator app on your phone and add an account."),
+        h("li", {}, "Scan the QR code, or type the setup key."),
+        h("li", {}, "Enter the 6-digit code the app shows.")),
+      h("div", {class: "mfa-qr"},
+        h("img", {src: data.qr_svg || "", alt: "QR code to add VecShield to your authenticator app",
+                  width: "200", height: "200"})),
+      h("p", {class: "mfa-key"}, h("span", {class: "sub"}, "Setup key "),
+        h("code", {class: "mono"}, groupedKey(data.secret))),
+      h("form", {class: "auth-form", onsubmit: confirmCode, novalidate: true},
+        otpField(code, "mfa-setup-hint", "Codes change every 30 seconds."),
+        error, submit, after));
+    code.focus?.();
+  }
+
+  function stepCodes(codes) {
+    const done = h("button", {class: "btn primary auth-submit", type: "button",
+                              onclick: () => onDone?.()}, "I have saved my recovery codes");
+    box.replaceChildren(
+      h("p", {class: "auth-lead"}, "Two-step sign-in is on."),
+      recoveryCodesBlock(codes, RECOVERY_LEAD),
+      done);
+    done.focus?.();
+  }
+
+  stepPassword();
+  return box;
+}
+
+function showMfaSetupScreen({forced = false} = {}) {
+  if (forced && state.authScreen === "mfa") return null;
+  const user = state.auth.user || {};
+  const flow = mfaSetupFlow({
+    onDone: async () => {
+      await enterConsole();
+      toast("Two-step sign-in is on.");
+    },
+    after: h("button", {class: "link auth-alt", type: "button",
+                        onclick: () => (forced ? signOut() : enterConsole())},
+      forced ? "Sign out" : "Cancel"),
+  });
+  authFrame("mfa", "Set up two-step sign-in",
+    h("p", {class: "auth-lead"},
+      forced ? "This server requires a code from an authenticator app as well as your password. Set it up to continue." : "",
+      forced ? " " : "",
+      user.username ? ["Signed in as ", h("strong", {}, user.username), "."] : ""),
+    flow);
+  flow.querySelector("input")?.focus?.();
+  return flow;
 }
 
 // The change-password form, shared by the screen a temporary password forces
@@ -3519,6 +3709,7 @@ function showPasswordScreen({forced = false} = {}) {
   const parts = passwordForm({
     submitLabel: forced ? "Save and continue" : "Change password",
     onSaved: async () => {
+      if (state.auth.user?.mfa_enrollment_required) return showMfaSetupScreen({forced: true});
       await enterConsole();
       toast("Password changed.");
     },
@@ -3701,6 +3892,112 @@ async function renderSettings() {
     await loadSessions();
   }
 
+  const mfaSlot = h("div", {class: "settings-mfa"});
+
+  async function loadMfa() {
+    mfaSlot.replaceChildren(loadingState("Reading two-step sign-in"));
+    try {
+      drawMfa(await api("/auth/mfa"));
+    } catch (e) {
+      mfaSlot.replaceChildren(errorState(unavailableReason(e), loadMfa));
+    }
+  }
+
+  function drawMfa(status) {
+    const required = status?.policy === "all"
+      || (status?.policy === "admin" && (user?.roles || []).includes("admin"));
+    if (!status?.enabled) {
+      const start = h("button", {class: "btn small", type: "button", onclick: () => {
+        const flow = mfaSetupFlow({
+          onDone: async () => {
+            say("Two-step sign-in is on. Your other sessions were signed out.");
+            await loadMfa();
+            await loadSessions();
+          },
+          after: h("button", {class: "link auth-alt", type: "button", onclick: () => loadMfa()}, "Cancel"),
+        });
+        mfaSlot.replaceChildren(flow);
+        flow.querySelector("input")?.focus?.();
+      }}, icon("key"), "Set up two-step sign-in");
+      mfaSlot.replaceChildren(
+        statusLine(required
+          ? "Off, but this server requires it for your account."
+          : "Off. Signing in needs only your password.", "medium"),
+        h("div", {class: "bar"}, start));
+      return;
+    }
+    const left = Number(status.recovery_codes_remaining || 0);
+    mfaSlot.replaceChildren(
+      statusLine(`On. Signing in needs your password and a code from your authenticator app. ${plural(left, "recovery code")} left.`,
+                 left <= 2 ? "medium" : "ok"),
+      h("div", {class: "bar"},
+        h("button", {class: "btn small", type: "button", onclick: () => mfaCodeForm("codes")},
+          icon("refresh"), "New recovery codes"),
+        h("button", {class: "btn small", type: "button", onclick: () => mfaCodeForm("off")},
+          icon("close"), "Turn off")));
+  }
+
+  // Turning it off needs the password and a code; new recovery codes need a
+  // code from the app itself.
+  function mfaCodeForm(kind) {
+    const off = kind === "off";
+    const current = off ? textInput("", {type: "password", name: "current-password",
+                                         autocomplete: "current-password", required: true}) : null;
+    const code = otpInput({id: "mfa-manage-hint", recovery: off});
+    const error = authError();
+    const submit = h("button", {class: "btn primary small", type: "submit"},
+      off ? "Turn off two-step sign-in" : "Issue new recovery codes");
+    async function go(event) {
+      event?.preventDefault?.();
+      if (off && !current.value) {
+        setAuthError(error, "Enter your current password.", current);
+        current.focus?.();
+        return;
+      }
+      if (!code.value.trim()) {
+        setAuthError(error, "Enter the code from your authenticator app.", code);
+        code.focus?.();
+        return;
+      }
+      submit.disabled = true;
+      setAuthError(error, "");
+      try {
+        if (off) {
+          const result = await api("/auth/mfa/disable", {method: "POST",
+            body: JSON.stringify({current_password: current.value, code: code.value.trim()})});
+          if (result?.user) state.auth = {...state.auth, user: result.user};
+          say("Two-step sign-in is off.");
+          if (state.auth.user?.mfa_enrollment_required) return showMfaSetupScreen({forced: true});
+          await loadMfa();
+        } else {
+          const result = await api("/auth/mfa/recovery-codes", {method: "POST",
+            body: JSON.stringify({code: code.value.trim()})});
+          const done = h("button", {class: "btn small", type: "button", onclick: () => loadMfa()}, "Done");
+          mfaSlot.replaceChildren(
+            recoveryCodesBlock(result?.recovery_codes, `New recovery codes. The old ones no longer work. ${RECOVERY_LEAD}`),
+            h("div", {class: "bar"}, done));
+          done.focus?.();
+        }
+      } catch (e) {
+        submit.disabled = false;
+        const wrongPassword = off && e.status === 401 && /password/i.test(e.message || "");
+        if (current) current.value = "";
+        code.value = "";
+        setAuthError(error, sentence(e.message) || "Nothing was changed.", wrongPassword ? current : code);
+        (wrongPassword ? current : code).focus?.();
+      }
+    }
+    mfaSlot.replaceChildren(h("form", {class: "auth-form settings-password", onsubmit: go, novalidate: true},
+      off ? field("Current password", current) : "",
+      otpField(code, "mfa-manage-hint", off
+        ? "From your authenticator app, or one of your recovery codes."
+        : "From your authenticator app. Recovery codes are not accepted here."),
+      error,
+      h("div", {class: "bar"}, submit,
+        h("button", {class: "btn small", type: "button", onclick: () => loadMfa()}, "Cancel"))));
+    (current || code).focus?.();
+  }
+
   if (local) {
     password = passwordForm({
       className: "settings-password",
@@ -3712,6 +4009,8 @@ async function renderSettings() {
     security.append(notice,
       h("h3", {class: "settings-sub"}, "Password"),
       password.form,
+      h("h3", {class: "settings-sub"}, "Two-step sign-in"),
+      mfaSlot,
       h("div", {class: "settings-sub-head"},
         h("h3", {class: "settings-sub"}, "Sessions"), revokeOthers),
       sessionsSlot);
@@ -3741,7 +4040,7 @@ async function renderSettings() {
         "Changes the console's display only. Exports, reports and evidence keep their own timestamps.")))));
 
   if (local) {
-    await loadSessions();
+    await Promise.all([loadSessions(), loadMfa()]);
     if (param("focus") === "password") setTimeout(() => password?.current.focus?.(), 0);
   }
   return box;
@@ -14884,6 +15183,15 @@ function userStatus(u) {
   return stateChip("ok", "active");
 }
 
+// Whether the account signs in with a second factor; unknown on an older
+// server that does not report it.
+function mfaChip(u) {
+  if (u.mfa_enabled === undefined) return "";
+  return u.mfa_enabled
+    ? stateChip("ok", "two-step on", {glyph: "lock"})
+    : stateChip("unknown", "no two-step", {glyph: "sev-notrun"});
+}
+
 function roleChips(roles) {
   const list = sortedRoles(roles);
   return list.length
@@ -15074,6 +15382,21 @@ async function renderUsers() {
         h("h3", {class: "user-edit-title"}, title), body)));
   }
 
+  async function resetMfa(u) {
+    const ok = await confirmAction({
+      title: `Reset two-step sign-in for ${u.username}?`,
+      message: `${u.username}'s authenticator app and recovery codes stop working and they are signed out. They sign in again with their password and, where this server requires it, set up a new authenticator. Do this only once you have confirmed who is asking.`,
+      confirmLabel: "Reset two-step sign-in", danger: true});
+    if (!ok) return;
+    try {
+      await api(`/auth/users/${encodeURIComponent(u.username)}/mfa/reset`, {method: "POST"});
+      say(`Two-step sign-in for ${u.username} was reset.`);
+      await load();
+    } catch (e) {
+      say(sentence(e.message), "error");
+    }
+  }
+
   async function setDisabled(u, disabled) {
     const self = u.username === state.auth.user?.username;
     const ok = await confirmAction(disabled
@@ -15102,7 +15425,7 @@ async function renderUsers() {
         h("td", {}, h("span", {class: "strong mono"}, u.username),
           u.username === me ? h("span", {class: "sub"}, " (you)") : ""),
         h("td", {}, roleChips(u.roles)),
-        h("td", {}, userStatus(u)),
+        h("td", {}, userStatus(u), u.mfa_enabled === undefined ? "" : " ", mfaChip(u)),
         h("td", {}, lastSignIn(u.last_login_at)),
         h("td", {}, u.created_by
           ? h("span", {title: u.created_at ? localTime(u.created_at) : null}, u.created_by)
@@ -15114,6 +15437,9 @@ async function renderUsers() {
           [
             {label: "Reset password", glyph: "key",
              onclick: () => { editing = {username: u.username, kind: "password"}; draw(); }},
+            u.mfa_enabled && u.username !== me
+              ? {label: "Reset two-step sign-in", glyph: "lock", danger: true, onclick: () => resetMfa(u)}
+              : null,
             u.disabled
               ? {label: "Enable", glyph: "check", onclick: () => setDisabled(u, false)}
               : {label: "Disable", glyph: "close", danger: true, onclick: () => setDisabled(u, true)},
@@ -15130,12 +15456,14 @@ async function renderUsers() {
       active: users.filter(u => !u.disabled).length,
       disabled: users.filter(u => u.disabled).length,
       pending: users.filter(u => !u.disabled && u.must_change_password).length,
+      noMfa: users.filter(u => !u.disabled && u.mfa_enabled === false).length,
     };
     listSlot.replaceChildren(
       users.length
         ? h("p", {class: "sub users-count"},
             `${plural(counts.active, "active account")}`,
             counts.pending ? ` · ${number(counts.pending)} yet to choose a password` : "",
+            counts.noMfa ? ` · ${number(counts.noMfa)} without two-step sign-in` : "",
             counts.disabled ? ` · ${number(counts.disabled)} disabled` : "")
         : "",
       list || emptyState("No accounts are recorded."));

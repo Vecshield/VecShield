@@ -45,6 +45,13 @@ auth:
   initialAdminPasswordSecret: ""
   # Key inside that Secret.
   initialAdminPasswordKey: VECSHIELD_INITIAL_ADMIN_PASSWORD
+  # Which local accounts must sign in with an authenticator app (ADR 0004):
+  # off | admin | all (VECSHIELD_MFA_REQUIRED). Accounts that have none are
+  # taken to set-up at their next sign-in.
+  mfaRequired: admin
+  # Accept a JWT only if its amr claim shows the IdP did MFA
+  # (VECSHIELD_JWT_REQUIRE_MFA).
+  jwtRequireMfa: false
 
 config:
   # Mount path for the persistent config store.

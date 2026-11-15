@@ -20,6 +20,10 @@ Security properties:
 * The first start creates ``admin`` (role admin) with a bootstrap password that
   must be changed at first sign-in. Accounts are disabled, never deleted, so
   the audit trail stays attributable.
+* An account can add a second factor (ADR 0004): a TOTP authenticator app,
+  checked with pyotp through :mod:`vecshield_platform.api.mfa`, plus
+  single-use recovery codes stored as SHA-256. A wrong code counts toward the
+  same lockout as a wrong password, and a code is accepted only once.
 """
 
 from __future__ import annotations
@@ -40,6 +44,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Iterable, Optional
 
+from vecshield_platform.api import mfa
 from vecshield_platform.api.auth import ADMIN, ALL_ROLES
 
 logger = logging.getLogger(__name__)
@@ -114,6 +119,18 @@ class AccountGuardError(UserStoreError):
 
 class InvalidCredentialsError(UserStoreError):
     """Wrong username or password, or a disabled account. Deliberately generic."""
+
+
+class InvalidSecondFactorError(InvalidCredentialsError):
+    """A wrong, reused or malformed one-time or recovery code."""
+
+
+class MfaRequiredError(UserStoreError):
+    """The password was right; the account also needs its one-time code."""
+
+
+class MfaStateError(UserStoreError):
+    """The request does not fit the account's two-step sign-in state."""
 
 
 class AccountLockedError(UserStoreError):
@@ -266,6 +283,7 @@ class User:
     created_by: Optional[str]
     updated_at: float
     last_login_at: Optional[float]
+    mfa_enabled: bool = False
 
     def public_dict(self) -> dict:
         return {
@@ -273,6 +291,7 @@ class User:
             "roles": list(self.roles),
             "disabled": self.disabled,
             "must_change_password": self.must_change_password,
+            "mfa_enabled": self.mfa_enabled,
             "created_at": _iso(self.created_at),
             "created_by": self.created_by,
             "last_login_at": _iso(self.last_login_at),
@@ -317,7 +336,26 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 CREATE INDEX IF NOT EXISTS ix_sessions_username ON sessions(username);
 CREATE INDEX IF NOT EXISTS ix_sessions_expires  ON sessions(expires_at);
+
+CREATE TABLE IF NOT EXISTS recovery_codes (
+    code_sha256 TEXT PRIMARY KEY,
+    username    TEXT NOT NULL REFERENCES users(username),
+    created_at  REAL NOT NULL,
+    used_at     REAL
+);
+
+CREATE INDEX IF NOT EXISTS ix_recovery_codes_username ON recovery_codes(username);
 """
+
+#: Columns added to ``users`` after the first release; added on open when a
+#: database predates them. ``mfa_pending_secret`` holds a secret between
+#: "show me the QR code" and "here is a code from it".
+_USER_COLUMNS = (
+    ("mfa_enabled", "INTEGER NOT NULL DEFAULT 0"),
+    ("mfa_secret", "TEXT"),
+    ("mfa_last_step", "INTEGER"),
+    ("mfa_pending_secret", "TEXT"),
+)
 
 
 def _create_private(path: str) -> None:
@@ -380,6 +418,7 @@ def _user(row: sqlite3.Row) -> User:
         updated_at=float(row["updated_at"]),
         last_login_at=(float(row["last_login_at"])
                        if row["last_login_at"] is not None else None),
+        mfa_enabled=bool(row["mfa_enabled"]),
     )
 
 
@@ -420,6 +459,7 @@ class UserStore:
         self._conn.row_factory = sqlite3.Row
         self._conn.executescript(_DDL)
         self._conn.commit()
+        self._migrate()
         if is_file:
             # SQLite gives -wal/-shm the database file's mode; tighten any that
             # an older run left readable. Best effort on odd filesystems.
@@ -432,6 +472,14 @@ class UserStore:
             initial_admin_password = os.environ.get(INITIAL_PASSWORD_ENV) or None
         self._bootstrap_password = initial_admin_password or DEFAULT_BOOTSTRAP_PASSWORD
         self.bootstrapped = self._bootstrap()
+
+    def _migrate(self) -> None:
+        """Add columns a database from an older release does not have."""
+        have = {r["name"] for r in self._conn.execute("PRAGMA table_info(users)")}
+        with self._conn:
+            for name, decl in _USER_COLUMNS:
+                if name not in have:
+                    self._conn.execute(f"ALTER TABLE users ADD COLUMN {name} {decl}")
 
     # ------------------------------------------------------------------ #
     # Bootstrap                                                            #
@@ -499,9 +547,25 @@ class UserStore:
     # Sign-in                                                              #
     # ------------------------------------------------------------------ #
 
-    def authenticate(self, username: object, password: object) -> User:
+    def authenticate(self, username: object, password: object,
+                     otp: object = None) -> User:
         """Verify credentials. Raises :class:`InvalidCredentialsError` (generic)
-        or :class:`AccountLockedError`; returns the user and records the login."""
+        or :class:`AccountLockedError`; returns the user and records the login.
+
+        See :meth:`sign_in` for accounts with a second factor.
+        """
+        return self.sign_in(username, password, otp)[0]
+
+    def sign_in(self, username: object, password: object,
+                otp: object = None) -> tuple[User, Optional[str]]:
+        """Verify the password and, when the account has one, the second factor.
+
+        Returns the user and how the second factor was met (``"totp"``,
+        ``"recovery_code"``, or ``None`` when the account has none). A right
+        password without a code raises :class:`MfaRequiredError` and costs no
+        attempt; a wrong code raises :class:`InvalidSecondFactorError` and
+        counts toward the lockout like a wrong password.
+        """
         pw = password if isinstance(password, str) else ""
         try:
             name = normalize_username(username)
@@ -520,10 +584,19 @@ class UserStore:
             # Not a password failure: hand the reserved attempt back.
             self._release_attempt(name)
             raise InvalidCredentialsError("invalid username or password")
+        method: Optional[str] = None
+        if row["mfa_enabled"]:
+            if otp is None or not str(otp).strip():
+                self._release_attempt(name)
+                raise MfaRequiredError("enter the code from your authenticator app")
+            method = self._consume_second_factor(name, otp, allow_recovery=True)
+            if method is None:
+                self._record_failure(name)
+                raise InvalidSecondFactorError("invalid or already used code")
         self._record_success(name, login=True)
         user = self.get_user(name)
         assert user is not None
-        return user
+        return user, method
 
     # A wrong guess is counted *before* the password is checked, in the same
     # locked transaction that checks the lock. Counting it afterwards let a
@@ -796,19 +869,8 @@ class UserStore:
         """Self-service change. Wrong ``current_password`` counts as a failed
         sign-in (a stolen session must not be a free password oracle)."""
         name = str(username or "").strip().lower()
-        with self._lock:
-            existing = self._conn.execute("SELECT disabled FROM users WHERE username = ?",
-                                          (name,)).fetchone()
-        if existing is None or existing["disabled"]:
-            raise UserNotFoundError(f"unknown user {name!r}")
-        row = self._reserve_attempt(name)
-        if row is None:
-            raise UserNotFoundError(f"unknown user {name!r}")
+        self._check_password_attempt(name, current_password)
         cur = current_password if isinstance(current_password, str) else ""
-        if len(cur) > MAX_PASSWORD_LENGTH or not verify_password(cur, row["password_hash"]):
-            self._record_failure(name)
-            raise InvalidCredentialsError("current password is incorrect")
-        self._record_success(name, login=False)
         check_password_policy(new_password, username=name)
         assert isinstance(new_password, str)
         if hmac.compare_digest(cur.encode("utf-8"), new_password.encode("utf-8")):
@@ -844,6 +906,201 @@ class UserStore:
             self._conn.execute(
                 "DELETE FROM sessions WHERE username = ? AND token_sha256 != ?",
                 (name, keep))
+
+    def _check_password_attempt(self, name: str, password: object) -> None:
+        """Confirm ``password`` before a sensitive self-service change.
+
+        A wrong one counts as a failed sign-in: a stolen session must not be a
+        free password oracle.
+        """
+        with self._lock:
+            existing = self._conn.execute("SELECT disabled FROM users WHERE username = ?",
+                                          (name,)).fetchone()
+        if existing is None or existing["disabled"]:
+            raise UserNotFoundError(f"unknown user {name!r}")
+        row = self._reserve_attempt(name)
+        if row is None:
+            raise UserNotFoundError(f"unknown user {name!r}")
+        pw = password if isinstance(password, str) else ""
+        if len(pw) > MAX_PASSWORD_LENGTH or not verify_password(pw, row["password_hash"]):
+            self._record_failure(name)
+            raise InvalidCredentialsError("current password is incorrect")
+        self._record_success(name, login=False)
+
+    # ------------------------------------------------------------------ #
+    # Second factor                                                        #
+    # ------------------------------------------------------------------ #
+
+    def _consume_second_factor(self, name: str, code: object, *,
+                               allow_recovery: bool) -> Optional[str]:
+        """Check ``code`` and spend it in one transaction.
+
+        A TOTP code records its time step so it cannot be replayed; a recovery
+        code is marked used only if it is still unused, so two concurrent
+        sign-ins cannot both spend it. Returns ``"totp"``,
+        ``"recovery_code"``, or ``None`` when the code is not valid.
+        """
+        now = self._clock()
+        with self._lock, self._conn:
+            row = self._conn.execute(
+                "SELECT mfa_enabled, mfa_secret, mfa_last_step FROM users "
+                "WHERE username = ?", (name,)).fetchone()
+            if row is None or not row["mfa_enabled"] or not row["mfa_secret"]:
+                return None
+            step = mfa.verify_totp(row["mfa_secret"], code, now=now,
+                                   last_step=row["mfa_last_step"])
+            if step is not None:
+                self._conn.execute("UPDATE users SET mfa_last_step = ? WHERE username = ?",
+                                   (step, name))
+                return "totp"
+            if not allow_recovery or mfa.normalize_recovery_code(code) is None:
+                return None
+            cur = self._conn.execute(
+                "UPDATE recovery_codes SET used_at = ? WHERE code_sha256 = ? "
+                "AND username = ? AND used_at IS NULL",
+                (now, mfa.hash_recovery_code(str(code)), name))
+            return "recovery_code" if cur.rowcount == 1 else None
+
+    def _check_second_factor_attempt(self, name: str, code: object, *,
+                                     allow_recovery: bool) -> str:
+        """Like :meth:`_check_password_attempt`, for a code: a wrong one counts."""
+        row = self._reserve_attempt(name)
+        if row is None:
+            raise UserNotFoundError(f"unknown user {name!r}")
+        method = self._consume_second_factor(name, code, allow_recovery=allow_recovery)
+        if method is None:
+            self._record_failure(name)
+            raise InvalidSecondFactorError("invalid or already used code")
+        self._record_success(name, login=False)
+        return method
+
+    def _store_recovery_codes(self, name: str, now: float) -> list[str]:
+        """Replace ``name``'s recovery codes; call inside a transaction."""
+        codes = mfa.new_recovery_codes()
+        self._conn.execute("DELETE FROM recovery_codes WHERE username = ?", (name,))
+        self._conn.executemany(
+            "INSERT INTO recovery_codes (code_sha256, username, created_at) "
+            "VALUES (?, ?, ?)",
+            [(mfa.hash_recovery_code(c), name, now) for c in codes])
+        return codes
+
+    def _require_user_row(self, name: str) -> sqlite3.Row:
+        """The enabled account's row; call holding the lock."""
+        row = self._conn.execute("SELECT * FROM users WHERE username = ?",
+                                 (name,)).fetchone()
+        if row is None or row["disabled"]:
+            raise UserNotFoundError(f"unknown user {name!r}")
+        return row
+
+    def recovery_codes_remaining(self, username: str) -> int:
+        name = str(username or "").strip().lower()
+        with self._lock:
+            return int(self._conn.execute(
+                "SELECT COUNT(*) FROM recovery_codes WHERE username = ? AND used_at IS NULL",
+                (name,)).fetchone()[0])
+
+    def begin_mfa_enrollment(self, username: str, current_password: object) -> dict:
+        """Start adding an authenticator app; returns the secret, URI and QR code.
+
+        Needs the current password, so a borrowed session cannot attach its
+        holder's authenticator to someone else's account. Nothing changes for
+        sign-in until :meth:`confirm_mfa_enrollment` sees a working code.
+        """
+        name = str(username or "").strip().lower()
+        with self._lock:
+            row = self._require_user_row(name)
+        if row["mfa_enabled"]:
+            raise MfaStateError("two-step sign-in is already on; turn it off first to "
+                                "move it to another authenticator")
+        self._check_password_attempt(name, current_password)
+        secret = mfa.new_secret()
+        with self._lock, self._conn:
+            self._conn.execute("UPDATE users SET mfa_pending_secret = ? WHERE username = ?",
+                               (secret, name))
+        return mfa.provisioning(secret, name)
+
+    def confirm_mfa_enrollment(self, username: str, code: object, *,
+                               keep_token: Optional[str] = None) -> list[str]:
+        """Turn two-step sign-in on once ``code`` proves the app is set up.
+
+        Returns fresh recovery codes, the only time they are available in
+        clear. The account's other sessions, which were opened with a password
+        alone, are signed out; ``keep_token`` names the one to keep.
+        """
+        name = str(username or "").strip().lower()
+        now = self._clock()
+        keep = _token_hash(keep_token) if keep_token else ""
+        with self._lock, self._conn:
+            row = self._require_user_row(name)
+            if row["mfa_enabled"]:
+                raise MfaStateError("two-step sign-in is already on")
+            pending = row["mfa_pending_secret"]
+            if not pending:
+                raise MfaStateError("start setting up two-step sign-in first")
+            step = mfa.verify_totp(pending, code, now=now)
+            if step is None:
+                raise InvalidSecondFactorError(
+                    "that code does not match; check the time on your device and "
+                    "enter the current code")
+            self._conn.execute(
+                "UPDATE users SET mfa_enabled = 1, mfa_secret = ?, mfa_last_step = ?, "
+                "mfa_pending_secret = NULL, updated_at = ? WHERE username = ?",
+                (pending, step, now, name))
+            codes = self._store_recovery_codes(name, now)
+            self._conn.execute(
+                "DELETE FROM sessions WHERE username = ? AND token_sha256 != ?",
+                (name, keep))
+        return codes
+
+    def regenerate_recovery_codes(self, username: str, code: object) -> list[str]:
+        """Replace all recovery codes; needs a current code from the app."""
+        name = str(username or "").strip().lower()
+        with self._lock:
+            row = self._require_user_row(name)
+        if not row["mfa_enabled"]:
+            raise MfaStateError("two-step sign-in is not on")
+        self._check_second_factor_attempt(name, code, allow_recovery=False)
+        with self._lock, self._conn:
+            return self._store_recovery_codes(name, self._clock())
+
+    def disable_mfa(self, username: str, current_password: object, code: object) -> str:
+        """Turn two-step sign-in off; needs the password and a code.
+
+        Returns how the code was met (``"totp"`` or ``"recovery_code"``).
+        """
+        name = str(username or "").strip().lower()
+        with self._lock:
+            row = self._require_user_row(name)
+        if not row["mfa_enabled"]:
+            raise MfaStateError("two-step sign-in is not on")
+        self._check_password_attempt(name, current_password)
+        method = self._check_second_factor_attempt(name, code, allow_recovery=True)
+        with self._lock, self._conn:
+            self._clear_mfa(name, self._clock())
+        return method
+
+    def admin_reset_mfa(self, username: str) -> bool:
+        """Administrative removal of a lost authenticator.
+
+        Clears the account's second factor and recovery codes and signs it out
+        everywhere. Returns whether the account had two-step sign-in on.
+        """
+        name = str(username or "").strip().lower()
+        with self._lock, self._conn:
+            row = self._conn.execute("SELECT mfa_enabled FROM users WHERE username = ?",
+                                     (name,)).fetchone()
+            if row is None:
+                raise UserNotFoundError(f"unknown user {name!r}")
+            self._clear_mfa(name, self._clock())
+            self._conn.execute("DELETE FROM sessions WHERE username = ?", (name,))
+        return bool(row["mfa_enabled"])
+
+    def _clear_mfa(self, name: str, now: float) -> None:
+        """Remove every trace of a second factor; call inside a transaction."""
+        self._conn.execute(
+            "UPDATE users SET mfa_enabled = 0, mfa_secret = NULL, mfa_last_step = NULL, "
+            "mfa_pending_secret = NULL, updated_at = ? WHERE username = ?", (now, name))
+        self._conn.execute("DELETE FROM recovery_codes WHERE username = ?", (name,))
 
     # ------------------------------------------------------------------ #
     # Lifecycle                                                            #

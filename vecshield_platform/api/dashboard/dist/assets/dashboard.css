@@ -4747,6 +4747,18 @@ dfn.term { font-style: normal; font-weight: var(--weight-semibold); text-decorat
 .settings-password { max-width: 420px; }
 .settings-password .auth-submit { width: auto; justify-self: start; }
 .settings-count { margin: var(--space-2) 0; }
+/* Two-step sign-in: the QR code stays dark-on-white in either theme so a
+   phone camera can read it; the key and recovery codes are monospace so
+   0/O and 1/l are not confused. */
+.settings-mfa { display: grid; gap: var(--space-3); justify-items: start; }
+.mfa-setup { display: grid; gap: var(--space-3); max-width: 420px; }
+.mfa-steps { margin: 0; padding-left: var(--space-5); color: var(--muted); font-size: var(--text-sm); display: grid; gap: var(--space-1); }
+.mfa-qr { justify-self: start; padding: var(--space-2); background: #ffffff; border: 1px solid var(--border); border-radius: var(--radius-md); line-height: 0; }
+.mfa-qr img { display: block; width: 200px; height: 200px; image-rendering: pixelated; }
+.mfa-key { margin: 0; font-size: var(--text-sm); overflow-wrap: anywhere; }
+.mfa-codes { display: grid; gap: var(--space-3); justify-items: start; }
+.mfa-code-list { margin: 0; padding: var(--space-3) var(--space-4); list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, max-content)); gap: var(--space-1) var(--space-5); background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-md); font-size: var(--text-sm); }
+@media (max-width: 640px) { .mfa-code-list { grid-template-columns: minmax(0, max-content); } }
 .settings-prefs { display: grid; gap: var(--space-4); }
 .settings-prefs > .note { margin: 0; }
 .pref-row { display: grid; justify-items: start; gap: var(--space-1); }

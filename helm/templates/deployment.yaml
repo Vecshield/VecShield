@@ -72,9 +72,15 @@ spec:
                 secretKeyRef:
                   name: {{ .Values.auth.initialAdminPasswordSecret }}
                   key: {{ .Values.auth.initialAdminPasswordKey }}
+            - name: VECSHIELD_MFA_REQUIRED
+              value: {{ .Values.auth.mfaRequired | default "off" | quote }}
             {{- else }}
             - name: VECSHIELD_LOGIN
               value: "off"
+            {{- end }}
+            {{- if .Values.auth.jwtRequireMfa }}
+            - name: VECSHIELD_JWT_REQUIRE_MFA
+              value: "1"
             {{- end }}
             {{- if .Values.hardening.maxBodyBytes }}
             - name: VECSHIELD_MAX_BODY_BYTES

@@ -17,7 +17,8 @@ no long-term support branches yet.
 
 ### Scope
 
-In scope: authentication and authorization bypass, privilege escalation across
+In scope: authentication and authorization bypass (including bypass of
+two-step sign-in), privilege escalation across
 the `viewer` / `operator` / `compliance` / `admin` roles, separation-of-duties
 bypass, unmasking of chunk values outside the audited reveal path, audit-log
 tampering, secret disclosure in logs, reports or diagnostics, and SSRF through
@@ -44,6 +45,11 @@ vulnerability feed for CVE matching, which you can disable.
   (`LOCAL_ADMIN_TOKEN` / `CUSTOMER_API_TOKEN`), JWT validation
   (`VECSHIELD_JWT_SECRET`, `VECSHIELD_JWT_AUDIENCE`, `VECSHIELD_JWT_ISSUER`),
   or local accounts.
+- Require two-step sign-in for console accounts:
+  `VECSHIELD_MFA_REQUIRED=admin` (or `all`). Admins without an authenticator
+  app are taken to set it up at their next sign-in. With an identity provider,
+  set `VECSHIELD_JWT_REQUIRE_MFA=1` so that only JWTs whose `amr` claim shows
+  MFA are accepted.
 - Use least-privilege roles. `viewer` reads (reports, logs, masked views) and
   starts nothing. `operator` runs assessments that write results. `compliance`
   previews erasure, opens and executes DSARs, and stages, approves and executes

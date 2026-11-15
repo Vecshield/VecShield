@@ -61,7 +61,8 @@ async function boot(hash, responses = {}, {theme = "light"} = {}) {
     if (typeof value === "function") value = value(path, opts);
     if (typeof value?.status === "number") {
       return {ok: false, status: value.status, statusText: "Error",
-              headers: {get: () => "application/json"}, json: async () => ({detail: value.detail})};
+              headers: {get: () => "application/json"},
+              json: async () => ({detail: value.detail, ...(value.body || {})})};
     }
     return {ok: true, status: 200, headers: {get: () => "application/json"},
             json: async () => value, text: async () => JSON.stringify(value)};
@@ -413,6 +414,155 @@ test("resetting a password is an inline form that says what happens next", async
   assert.deepEqual(calls.find(c => c.path === "/auth/users/val/password").body,
                    {new_password: "another temporary one"});
   assert.match(doc.querySelector(".users-notice").textContent, /Password for val reset/);
+  dom.window.close();
+});
+
+// ------------------------------------------------------- two-step sign-in ---
+
+const MFA_NEEDED = {status: 401, detail: "enter the code from your authenticator app",
+                    body: {mfa_required: true}};
+
+test("a password that needs a code asks for it, keeps the password, then signs in", async () => {
+  let session = SIGNED_OUT;
+  let attempts = 0;
+  const {dom, window, doc, calls} = await boot("#/overview", {
+    "/auth/session": () => session,
+    "POST /auth/login": () => {
+      attempts += 1;
+      if (attempts === 1) return MFA_NEEDED;
+      session = signedIn(ADMIN);
+      return {user: ADMIN};
+    },
+  });
+  const code = doc.querySelector("input[name='one-time-code']");
+  assert.ok(code.closest("label").hidden, "no code field before the password is checked");
+  type(window, inputNamed(doc, "Username"), "kim");
+  type(window, inputNamed(doc, "Password"), "correct horse battery");
+  submit(window, doc.querySelector("form.auth-form"));
+  await settle();
+  assert.equal(code.closest("label").hidden, false, "the code field appears");
+  assert.equal(code.getAttribute("autocomplete"), "one-time-code");
+  assert.equal(doc.activeElement, code);
+  assert.equal(inputNamed(doc, "Password").value, "correct horse battery", "the password is kept");
+  assert.equal(inputNamed(doc, "Username").readOnly, true);
+  assert.equal(text(doc.querySelector(".auth-error")), "", "asking for a code is not an error");
+  assert.ok(button(doc, "Use a different account"));
+
+  submit(window, doc.querySelector("form.auth-form"));
+  assert.equal(text(doc.querySelector(".auth-error")), "Enter the code from your authenticator app.");
+  assert.equal(attempts, 1, "an empty code is not sent");
+
+  type(window, code, "123 456");
+  submit(window, doc.querySelector("form.auth-form"));
+  await settle(5);
+  const sent = calls.filter(c => c.path === "/auth/login").map(c => c.body);
+  assert.deepEqual(sent[1], {username: "kim", password: "correct horse battery", otp: "123 456"});
+  assert.ok(doc.getElementById("content"), "the console follows");
+  dom.window.close();
+});
+
+test("a wrong code is said inline and the code field is cleared", async () => {
+  const {dom, window, doc} = await boot("#/overview", {
+    "/auth/session": SIGNED_OUT,
+    "POST /auth/login": (_path, opts) => (JSON.parse(opts.body).otp
+      ? {...MFA_NEEDED, detail: "invalid or already used code"} : MFA_NEEDED),
+  });
+  type(window, inputNamed(doc, "Username"), "kim");
+  type(window, inputNamed(doc, "Password"), "correct horse battery");
+  submit(window, doc.querySelector("form.auth-form"));
+  await settle();
+  const code = doc.querySelector("input[name='one-time-code']");
+  type(window, code, "000000");
+  submit(window, doc.querySelector("form.auth-form"));
+  await settle();
+  assert.equal(text(doc.querySelector(".auth-error")), "Invalid or already used code.");
+  assert.equal(code.value, "");
+  assert.equal(code.getAttribute("aria-invalid"), "true");
+  assert.equal(inputNamed(doc, "Password").value, "correct horse battery");
+  assert.equal(doc.getElementById("content"), null, "still signed out");
+  dom.window.close();
+});
+
+const SETUP = {secret: "JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP",
+               uri: "otpauth://totp/VecShield:kim?secret=JBSWY3DPEHPK3PXPJBSWY3DPEHPK3PXP&issuer=VecShield",
+               qr_svg: "data:image/svg+xml;charset=utf-8,%3Csvg%3E%3C%2Fsvg%3E"};
+const CODES = ["aaaaa-bbbbb-ccccc-ddddd", "11111-22222-33333-44444"];
+
+test("a required set-up comes before the console and ends with the recovery codes", async () => {
+  let session = signedIn({...ADMIN, mfa_enabled: false, mfa_enrollment_required: true});
+  const {dom, window, doc, calls} = await boot("#/overview", {
+    "/auth/session": () => session,
+    "POST /auth/mfa/setup": SETUP,
+    "POST /auth/mfa/confirm": () => {
+      session = signedIn({...ADMIN, mfa_enabled: true});
+      return {recovery_codes: CODES, user: {...ADMIN, mfa_enabled: true}};
+    },
+  });
+  assert.equal(doc.getElementById("auth-title").textContent, "Set up two-step sign-in");
+  assert.match(doc.body.textContent, /requires a code from an authenticator app/);
+  assert.equal(doc.getElementById("content"), null, "no console behind it");
+  assert.ok(button(doc, "Sign out"), "the only other way out is signing out");
+
+  const current = inputNamed(doc, "Current password");
+  assert.equal(doc.activeElement, current);
+  type(window, current, "correct horse battery");
+  submit(window, doc.querySelector("form.auth-form"));
+  await settle();
+  assert.deepEqual(calls.find(c => c.path === "/auth/mfa/setup").body,
+                   {current_password: "correct horse battery"});
+  const qr = doc.querySelector(".mfa-qr img");
+  assert.equal(qr.getAttribute("src"), SETUP.qr_svg);
+  assert.match(qr.getAttribute("alt"), /QR code/);
+  assert.equal(text(doc.querySelector(".mfa-key code")), "JBSW Y3DP EHPK 3PXP JBSW Y3DP EHPK 3PXP");
+
+  const code = doc.querySelector("input[name='one-time-code']");
+  type(window, code, "654321");
+  submit(window, doc.querySelector("form.auth-form"));
+  await settle();
+  assert.deepEqual(calls.find(c => c.path === "/auth/mfa/confirm").body, {code: "654321"});
+  assert.deepEqual([...doc.querySelectorAll(".mfa-code-list li")].map(text), CODES);
+  assert.match(doc.body.textContent, /not shown again/);
+  assert.ok(button(doc, "Copy codes"));
+  assert.deepEqual(await axeViolations(dom), []);
+
+  button(doc, "I have saved my recovery codes").click();
+  await settle(5);
+  assert.ok(doc.getElementById("content"), "the console follows");
+  dom.window.close();
+});
+
+test("a 403 'two-step sign-in set-up required' from any request opens the set-up screen", async () => {
+  const {dom, doc} = await boot("#/overview", {
+    "/auth/session": signedIn(ADMIN),
+    "/admin/stores": {status: 403, detail: "two-step sign-in set-up required"},
+  });
+  await settle();
+  assert.equal(doc.getElementById("auth-title").textContent, "Set up two-step sign-in");
+  dom.window.close();
+});
+
+test("the Users list says who has two-step sign-in and offers an admin reset", async () => {
+  const users = BASE["/auth/users"].users.map((u, i) => ({...u, mfa_enabled: i < 2}));
+  const {dom, doc, calls} = await boot("#/users", {
+    "/auth/session": signedIn(ADMIN),
+    "/auth/users": {users},
+    "POST /auth/users/val/mfa/reset": {user: {username: "val", mfa_enabled: false}},
+  });
+  const rows = [...doc.querySelectorAll("#content tbody tr")];
+  assert.match(text(rows[0]), /two-step on/);
+  assert.match(text(rows[2]), /no two-step/);
+
+  rows[0].querySelector(".row-more").click();
+  assert.equal(button(rows[0], "Reset two-step sign-in"), undefined, "not offered on your own row");
+  rows[1].querySelector(".row-more").click();
+  button(rows[1], "Reset two-step sign-in").click();
+  const dialog = doc.querySelector("[role='alertdialog']");
+  assert.match(dialog.textContent, /Reset two-step sign-in for val\?/);
+  assert.equal(calls.filter(c => c.path.endsWith("/mfa/reset")).length, 0, "nothing before confirming");
+  dialog.querySelector("form").dispatchEvent(new dom.window.Event("submit", {bubbles: true, cancelable: true}));
+  await settle();
+  assert.equal(calls.filter(c => c.path === "/auth/users/val/mfa/reset" && c.method === "POST").length, 1);
+  assert.match(doc.querySelector(".users-notice").textContent, /Two-step sign-in for val was reset\./);
   dom.window.close();
 });
 

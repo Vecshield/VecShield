@@ -9,6 +9,23 @@ Changes to the detection engine specifically are also tracked in
 
 ## [Unreleased]
 
+### Added
+
+- Two-step sign-in for local accounts ([ADR 0004](docs/adr/0004-totp-mfa.md)).
+  Anyone can add an authenticator app (TOTP) under Settings → Security and
+  receives ten single-use recovery codes. Sign-in then asks for a code after
+  the password. A wrong code counts toward the lockout, and a code works only
+  once. Admins can reset a lost authenticator from Users. Every change is
+  audited.
+- `--mfa-required` / `VECSHIELD_MFA_REQUIRED` (`off`, `admin`, `all`)
+  requires two-step sign-in. Accounts without it are taken to set-up before
+  anything else. The Helm chart defaults to `admin`.
+- `VECSHIELD_JWT_REQUIRE_MFA=1` accepts a JWT only when its `amr` claim shows
+  the identity provider did MFA.
+- `GET /auth/users` reports `mfa_enabled` for each account.
+- New dependencies: `pyotp` (codes) and `segno` (enrollment QR code). Both are
+  pure Python with no dependencies of their own.
+
 ### Changed
 
 - `GET /admin/jobs` returns each job's `result` summarized to `{"id": ...}`,
