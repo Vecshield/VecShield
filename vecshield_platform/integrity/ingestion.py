@@ -18,7 +18,9 @@ cluster, a hub, an embedding outlier). Other spikes are listed in the stats.
 
 **Provenance contract.** OWASP's Agentic Top 10 (ASI06, memory poisoning)
 recommends provenance on every memory write, and OWASP LLM08:2025 (vector and
-embedding weaknesses) asks for traceable ingestion. The contract report gives
+embedding weaknesses, renumbered to LLM09:2026 in the 2026 edition) asks for
+traceable ingestion. A burst is also evidence toward LLM04:2025 (data and model
+poisoning, LLM05:2026). The contract report gives
 the share of chunks carrying a source id, an ingestion timestamp, a content
 hash, the embedding model/version and the ingesting principal, read from
 common key names (see ``records.CONTRACT_FIELDS``). It is evidence for a
@@ -143,7 +145,8 @@ def analyze_ingestion(
     plain = [e for e in reported if not e["flagged_chunks"]]
     common = {"time_field": field_name, "bucket_seconds": bucket, "burst_z": limits.burst_z,
               "provenance_contract": contract,
-              "references": ["OWASP Agentic Top 10 ASI06", "OWASP LLM08:2025"]}
+              "references": ["OWASP Agentic Top 10 ASI06", "OWASP LLM08:2025",
+                             "OWASP LLM09:2026"]}
     for group, severity, title, extra in (
         (corroborated, Severity.MEDIUM,
          f"Ingestion burst containing flagged chunks in '{collection}'",

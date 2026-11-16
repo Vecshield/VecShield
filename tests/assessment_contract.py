@@ -413,8 +413,14 @@ def assert_capped(audit: dict, *, limit: int,
 
 
 def report_rows(page: str) -> list[tuple[str, str, str]]:
-    """``(check, collection, outcome)`` for each row of the report's coverage table."""
-    start = page.index("<th>Check</th><th>Collection</th><th>Outcome</th>")
+    """``(check, collection, outcome)`` for each row of the report's coverage table.
+
+    The OWASP LLM ids sit between the check and the collection, and are skipped
+    here: what this contract asserts is that every check outcome reaches the
+    report, which the ids do not bear on. ``tests/test_owasp_mapping.py`` covers
+    the column itself.
+    """
+    start = page.index("<th>Check</th><th>OWASP LLM</th><th>Collection</th><th>Outcome</th>")
     table = page[start:page.index("</table>", start)]
-    rows = re.findall(r"<tr><td>(.*?)</td><td>(.*?)</td><td>(.*?)</td>", table)
+    rows = re.findall(r"<tr><td>(.*?)</td><td>.*?</td><td>(.*?)</td><td>(.*?)</td>", table)
     return [tuple(html.unescape(cell) for cell in row) for row in rows]

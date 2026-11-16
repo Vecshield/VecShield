@@ -17,8 +17,10 @@ to a chunk that already carries a real signal, but on their own they can never
 reach the 0.5 threshold. A knowledge base full of runbooks must not light up
 because runbooks are written in the imperative.
 
-Coverage is mapped to OWASP LLM01/LLM08:2025 (indirect injection via retrieved
-content), LLM04 (data poisoning) and MITRE ATLAS AML.T0070 (RAG poisoning) /
+Coverage is mapped to OWASP LLM01:2025 / LLM08:2025 (indirect injection via
+retrieved content) and LLM04:2025 (data and model poisoning) -- in the 2026
+edition LLM01:2026 / LLM09:2026 and LLM05:2026, those entries having been
+renumbered -- and to MITRE ATLAS AML.T0070 (RAG poisoning) /
 AML.T0071 (false RAG entry injection): instruction override, including of the
 *retrieved context* itself; forged attribution; concealment of the injected
 instructions; zero-click exfiltration through rendered markdown/HTML images

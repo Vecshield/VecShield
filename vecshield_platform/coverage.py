@@ -9,6 +9,8 @@ from __future__ import annotations
 from collections import Counter
 from copy import deepcopy
 
+from vecshield_platform.owasp import for_check as _owasp_for_check
+
 
 OUTCOMES = ("passed", "failed", "inconclusive", "error", "unsupported", "skipped")
 
@@ -16,14 +18,25 @@ OUTCOMES = ("passed", "failed", "inconclusive", "error", "unsupported", "skipped
 def check_outcome(check: str, store: str, collection: str | None = None, *,
                   outcome: str, reason: str = "", complete: bool = False,
                   **coverage) -> dict:
+    """One check's result, with the OWASP LLM entries it reports evidence toward.
+
+    ``owasp`` is present only for a check the mapping covers, and carries both
+    editions (``{"2025": [...], "2026": [...]}``) because the 2026 edition
+    renumbered most entries. An unmapped check omits the key rather than
+    carrying an empty one: see :mod:`vecshield_platform.owasp` for why some
+    checks are unmapped on purpose. It describes the check, not this run, so it
+    sits beside ``coverage`` rather than inside it.
+    """
     if outcome not in OUTCOMES:
         raise ValueError(f"Unknown check outcome: {outcome}")
+    owasp = _owasp_for_check(check)
     return {
         "check": check,
         "store": store,
         "collection": collection,
         "outcome": outcome,
         "reason": reason,
+        **({"owasp": owasp} if owasp else {}),
         "coverage": {"status": "complete" if complete else "partial",
                      "complete": complete, **coverage},
     }

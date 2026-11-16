@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "verified_on": "2026-11-15",
+  "note": "OWASP Top 10 for LLM Applications entries that VecShield's checks report evidence toward. A mapping is a pointer for a reviewer, not a claim of coverage: a check that passes contributes evidence to the entry it is mapped to, it does not discharge it. Checks with no entry here are deliberately unmapped rather than mapped approximately.",
+  "editions": {
+    "2025": {
+      "title": "OWASP Top 10 for LLM Applications 2025",
+      "published": "2024-11-17",
+      "source_url": "https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025/"
+    },
+    "2026": {
+      "title": "OWASP Top 10 for LLM Applications 2026",
+      "published": "2026-08-04",
+      "source_url": "https://github.com/GenAI-Security-Project/GenAI-LLM-Top10/blob/main/2026/README.md"
+    }
+  },
+  "renumbering_note": "Eight of the ten entries were renumbered in the 2026 edition, so an ID is only meaningful with its year. The entries VecShield cites: Prompt Injection stayed LLM01; Sensitive Information Disclosure stayed LLM02; Data and Model Poisoning moved LLM04 -> LLM05; Vector and Embedding Weaknesses moved LLM08 -> LLM09. Writing LLM08:2026 for vector and embedding weaknesses would cite Hidden Context Exposure instead.",
+  "references": [
+    {
+      "id": "LLM01:2025",
+      "edition": "2025",
+      "title": "Prompt Injection",
+      "source_url": "https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025/"
+    },
+    {
+      "id": "LLM02:2025",
+      "edition": "2025",
+      "title": "Sensitive Information Disclosure",
+      "source_url": "https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025/"
+    },
+    {
+      "id": "LLM04:2025",
+      "edition": "2025",
+      "title": "Data and Model Poisoning",
+      "source_url": "https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025/"
+    },
+    {
+      "id": "LLM08:2025",
+      "edition": "2025",
+      "title": "Vector and Embedding Weaknesses",
+      "source_url": "https://genai.owasp.org/resource/owasp-top-10-for-llm-applications-2025/"
+    },
+    {
+      "id": "LLM01:2026",
+      "edition": "2026",
+      "title": "Prompt Injection",
+      "source_url": "https://github.com/GenAI-Security-Project/GenAI-LLM-Top10/blob/main/2026/README.md"
+    },
+    {
+      "id": "LLM02:2026",
+      "edition": "2026",
+      "title": "Sensitive Information Disclosure",
+      "source_url": "https://github.com/GenAI-Security-Project/GenAI-LLM-Top10/blob/main/2026/README.md"
+    },
+    {
+      "id": "LLM05:2026",
+      "edition": "2026",
+      "title": "Data and Model Poisoning",
+      "source_url": "https://github.com/GenAI-Security-Project/GenAI-LLM-Top10/blob/main/2026/README.md"
+    },
+    {
+      "id": "LLM09:2026",
+      "edition": "2026",
+      "title": "Vector and Embedding Weaknesses",
+      "source_url": "https://github.com/GenAI-Security-Project/GenAI-LLM-Top10/blob/main/2026/README.md"
+    }
+  ],
+  "checks": {
+    "data_classification": {"2025": ["LLM02:2025"], "2026": ["LLM02:2026"]},
+    "nlp_classification": {"2025": ["LLM02:2025"], "2026": ["LLM02:2026"]},
+    "direct_identifier_exposure": {"2025": ["LLM02:2025"], "2026": ["LLM02:2026"]},
+    "data_representation": {"2025": ["LLM02:2025"], "2026": ["LLM02:2026"]},
+    "pan_representation": {"2025": ["LLM02:2025"], "2026": ["LLM02:2026"]},
+    "biometric_templates": {"2025": ["LLM02:2025"], "2026": ["LLM02:2026"]},
+    "field_encryption": {"2025": ["LLM02:2025"], "2026": ["LLM02:2026"]},
+    "retrieval_exposure": {"2025": ["LLM02:2025"], "2026": ["LLM02:2026"]},
+    "model_egress": {"2025": ["LLM02:2025"], "2026": ["LLM02:2026"]},
+
+    "prompt_injection": {"2025": ["LLM01:2025", "LLM08:2025"], "2026": ["LLM01:2026", "LLM09:2026"]},
+    "rag_integrity": {"2025": ["LLM01:2025", "LLM08:2025"], "2026": ["LLM01:2026", "LLM09:2026"]},
+
+    "embedding_anomaly": {"2025": ["LLM04:2025", "LLM08:2025"], "2026": ["LLM05:2026", "LLM09:2026"]},
+    "embedding_consistency": {"2025": ["LLM04:2025", "LLM08:2025"], "2026": ["LLM05:2026", "LLM09:2026"]},
+    "corpus_duplication": {"2025": ["LLM04:2025", "LLM08:2025"], "2026": ["LLM05:2026", "LLM09:2026"]},
+    "retrieval_hubness": {"2025": ["LLM04:2025", "LLM08:2025"], "2026": ["LLM05:2026", "LLM09:2026"]},
+    "provenance": {"2025": ["LLM04:2025", "LLM08:2025"], "2026": ["LLM05:2026", "LLM09:2026"]},
+    "ingestion_burst": {"2025": ["LLM04:2025", "LLM08:2025"], "2026": ["LLM05:2026", "LLM09:2026"]},
+    "chunk_versions": {"2025": ["LLM04:2025", "LLM08:2025"], "2026": ["LLM05:2026", "LLM09:2026"]},
+
+    "tenant_isolation": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+    "access_grants": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+    "authentication": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+    "query_result_ceiling": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+
+    "cve": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+    "server_vulnerability": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+    "server_support_status": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+    "server_hardening": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+    "configuration_posture": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+    "network_exposure": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+    "transport_encryption": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+    "transport_tls_enforcement": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]},
+    "at_rest_encryption": {"2025": ["LLM08:2025"], "2026": ["LLM09:2026"]}
+  },
+  "unmapped_checks": {
+    "note": "Checks that run but carry no OWASP LLM entry. They answer obligations the Top 10 does not frame (retention, residency, inventory, erasure), and are left unmapped rather than mapped approximately.",
+    "checks": ["retention_horizon", "retention_schedule", "data_residency",
+               "asset_inventory", "erasure_verification"]
+  }
+}

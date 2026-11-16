@@ -216,8 +216,19 @@ and function abuse, fake conversation delimiters, retrieval-ranking
 manipulation, homoglyphs and zero-width and soft-hyphen tricks, Unicode tag
 smuggling, and CSS- or comment-hidden text.
 
-Mapped to **OWASP LLM01 / LLM04 / LLM08** and **MITRE ATLAS AML.T0070,
+Mapped to **OWASP LLM01:2025 / LLM04:2025 / LLM08:2025** — in the 2026 edition
+**LLM01:2026 / LLM05:2026 / LLM09:2026** — and **MITRE ATLAS AML.T0070,
 AML.T0071**.
+
+The 2026 edition renumbered eight of the ten entries, so an ID only means
+something with its year: data and model poisoning moved from LLM04 to LLM05,
+and vector and embedding weaknesses from LLM08 to LLM09. `LLM08:2026` is a
+different risk (hidden context exposure), not the same one renamed. Every check
+outcome carries the IDs for both editions in the JSON and the HTML report; the
+mapping is data, in
+[`compliance/data/owasp_llm_references.json`](../vecshield_platform/compliance/data/owasp_llm_references.json),
+with the source each ID was verified against. A mapping points a reviewer at
+the relevant risk — it does not establish that the risk is addressed.
 
 ## The regulatory model
 
