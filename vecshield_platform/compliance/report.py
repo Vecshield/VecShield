@@ -34,6 +34,20 @@ def _esc(s) -> str:
     return html.escape(str(s))
 
 
+def _owasp_cell(outcome: dict) -> str:
+    """The OWASP LLM ids of one check outcome, both editions, oldest first.
+
+    An em dash for a check the mapping does not cover, so an unmapped check
+    reads as a deliberate blank rather than a missing lookup. Read from the
+    outcome rather than looked up again: a stored audit keeps the ids it was
+    written with, and re-deriving them would silently restate an old report
+    under a newer edition.
+    """
+    owasp = outcome.get("owasp") or {}
+    ids = [str(i) for edition in sorted(owasp) for i in (owasp.get(edition) or [])]
+    return ", ".join(ids) if ids else "—"
+
+
 def _scan_scope(job: ScanJob) -> tuple[str, str, str]:
     """What one scan checked, over which collection, and how much of it.
 
@@ -104,16 +118,24 @@ def build_report(
         outcome for job in jobs for outcome in job.stats.get("check_outcomes", [])
     ]
     if outcomes:
-        parts.append("<table><tr><th>Check</th><th>Collection</th><th>Outcome</th>"
-                     "<th>Coverage</th><th>Limitations</th></tr>")
+        parts.append("<table><tr><th>Check</th><th>OWASP LLM</th><th>Collection</th>"
+                     "<th>Outcome</th><th>Coverage</th><th>Limitations</th></tr>")
         for outcome in outcomes:
             parts.append("<tr>" + "".join(f"<td>{_esc(value)}</td>" for value in (
-                outcome.get("check", "unknown"), outcome.get("collection") or "(store)",
+                outcome.get("check", "unknown"), _owasp_cell(outcome),
+                outcome.get("collection") or "(store)",
                 outcome.get("outcome", "inconclusive"),
                 outcome.get("coverage", {}).get("status", "unknown"),
                 outcome.get("reason", ""),
             )) + "</tr>")
         parts.append("</table>")
+        parts.append("<p class='muted'>OWASP LLM entries are the Top 10 for LLM "
+                     "Applications risks each check reports evidence toward, in both "
+                     "the 2025 and 2026 editions. The 2026 edition renumbered most "
+                     "entries, so an ID is only meaningful with its year. A mapping "
+                     "points a reviewer at the relevant risk; it does not establish "
+                     "that the risk is addressed. Checks with no entry answer "
+                     "obligations the Top 10 does not frame.</p>")
     else:
         parts.append("<p>Coverage unknown: this snapshot has no structured check outcomes.</p>")
 

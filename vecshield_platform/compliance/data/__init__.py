@@ -16,7 +16,9 @@ from typing import Any
 _DIR = Path(__file__).resolve().parent
 
 #: The reference sets that exist. Anything else is a caller error.
-REFERENCE_SETS = ("retention", "biometric", "inventory")
+#: ``owasp_llm`` is also read directly by :mod:`vecshield_platform.owasp`,
+#: which cannot import this package without a cycle through ``coverage``.
+REFERENCE_SETS = ("retention", "biometric", "inventory", "owasp_llm")
 
 
 @lru_cache(maxsize=None)
