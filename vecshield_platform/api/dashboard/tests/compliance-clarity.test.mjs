@@ -151,6 +151,51 @@ test("status chips filter the list and never add up to a score", async () => {
   dom.window.close();
 });
 
+test("criteria filters can be cleared while matching rows remain, without re-evaluating", async () => {
+  const {dom, doc, window, calls} = await boot(
+    "#/criteria?store=prod&framework=GDPR&status=evidence_needed&q=erasure&criterion=GDPR-ERASURE-01",
+    CRITERIA);
+  const tools = doc.querySelector(".crit-tools");
+  const reset = button(tools, "Clear filters");
+  assert.ok(reset && !reset.hidden, "reset is available even with a matching row");
+  assert.equal(doc.querySelectorAll(".crit-row").length, 1);
+  const requests = calls.length;
+  reset.focus();
+  reset.click();
+
+  assert.equal(tools.querySelector('[aria-label="Framework"]').value, "");
+  assert.equal(tools.querySelector('[aria-label="Status"]').value, "");
+  assert.equal(tools.querySelector('[aria-label="Search criteria"]').value, "");
+  assert.equal(doc.activeElement, tools.querySelector('[aria-label="Search criteria"]'));
+  assert.ok(reset.hidden, "reset hides when all filters are clear");
+  const params = new URLSearchParams(window.location.hash.split("?")[1]);
+  for (const key of ["framework", "status", "q"]) assert.equal(params.has(key), false);
+  assert.equal(params.get("store"), "prod");
+  assert.equal(params.get("criterion"), "GDPR-ERASURE-01");
+  assert.equal(calls.length, requests, "reset uses the already loaded evaluation");
+  dom.window.close();
+});
+
+test("the criteria reset follows search, framework and status changes", async () => {
+  const {dom, doc, window} = await boot("#/criteria?store=prod", CRITERIA);
+  const tools = doc.querySelector(".crit-tools");
+  const reset = button(tools, "Clear filters");
+  assert.ok(reset?.hidden);
+  for (const [label, value, event] of [
+    ["Search criteria", "erasure", "input"],
+    ["Framework", "GDPR", "change"],
+    ["Status", "evidence_needed", "change"],
+  ]) {
+    const control = tools.querySelector(`[aria-label="${label}"]`);
+    control.value = value;
+    control.dispatchEvent(new window.Event(event, {bubbles: true}));
+    assert.equal(reset.hidden, false, `${label} makes reset available`);
+    reset.click();
+    assert.equal(reset.hidden, true);
+  }
+  dom.window.close();
+});
+
 test("without a store, criteria still explain themselves and say nothing is evaluated", async () => {
   const {dom, doc, calls} = await boot("#/criteria", {"/compliance/criteria": PACK});
   const row = doc.querySelector(".crit-row");

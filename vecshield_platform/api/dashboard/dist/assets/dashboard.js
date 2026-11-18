@@ -11946,6 +11946,8 @@ async function renderCriteria() {
     param("status"), {"aria-label": "Status"});
   const search = textInput(param("q"), {type: "search", placeholder: "Search title, citation or id",
                                         "aria-label": "Search criteria"});
+  const reset = h("button", {class: "btn small", type: "button", hidden: true,
+                              onclick: clearFilters}, "Clear filters");
   const count = h("span", {class: "result-count", role: "status"}, "");
   const summary = h("div", {class: "crit-summary"});
   const list = h("div", {class: "crit-rows"});
@@ -11976,6 +11978,7 @@ async function renderCriteria() {
 
   // Filters narrow what is already on screen; only a store change re-reads.
   function drawList() {
+    reset.hidden = !framework.value && !status.value && !search.value.trim();
     const assessments = new Map(((result || {}).assessments || []).map(a => [a.criterion_id, a]));
     // An evaluated criterion the loaded pack does not list is still shown.
     const known = new Set(pack.criteria.map(c => c.criterion_id));
@@ -12012,6 +12015,7 @@ async function renderCriteria() {
     framework.value = ""; status.value = ""; search.value = "";
     setParams({framework: "", status: "", q: ""});
     drawList();
+    search.focus();
   }
 
   async function draw() {
@@ -12084,7 +12088,7 @@ async function renderCriteria() {
   box.append(h("div", {class: "crit-tools", role: "search", "aria-label": "Filter criteria"},
     field("Framework", framework), field("Status", status),
     h("label", {class: "field crit-search"}, h("span", {}, "Search"), search),
-    count));
+    reset, count));
   box.append(h("div", {class: "crit-packline"},
     mappingStatus({pack: pack.pack, lifecycle: leastLifecycle(pack.criteria.map(c => c.lifecycle).concat(pack.pack?.lifecycle || [])),
                    hint: true}),
