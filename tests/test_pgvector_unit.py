@@ -156,7 +156,8 @@ def test_capabilities_include_query():
     assert PgVectorConnector.capabilities(PgVectorConnector.__new__(PgVectorConnector)) \
         == {"query", "delete", "transport_introspection",
             "tls_enforcement_introspection", "session_auth_introspection",
-            "access_introspection", "at_rest_introspection", "ann_iterative_scan"}
+            "access_introspection", "at_rest_introspection", "ann_iterative_scan",
+            "row_security_isolation"}
 
 
 def test_connects_in_autocommit_mode(monkeypatch):
@@ -709,6 +710,82 @@ def test_an_unusual_key_type_falls_back_to_text_comparison():
     sql = next(s for s, _p, _n in conn.calls if "DELETE" in s)
     assert sql.endswith('"id"::text = ANY(%s::text[])')
     assert "odd;type" not in sql
+
+
+# ---------------------------------------------- row security as isolation -- #
+
+_READER = ("rag_reader", False, False, False, True, [], [])
+
+
+def _rls_conn(role=_READER, rel=(True, False, "app_owner"),
+              policies=(("tenant_read", True,
+                         "(tenant_id = (current_setting('app.tenant_id'::text))::uuid)"),)):
+    conn = _docs_conn()
+    conn.static += [
+        ("WHERE r.rolname = %s", [role] if role is not None else []),
+        ("pg_get_userbyid(c.relowner)", [rel] if rel is not None else []),
+        ("pg_get_expr(p.polqual, p.polrelid) FROM pg_policy",
+         policies if isinstance(policies, BaseException) else list(policies)),
+    ]
+    c = _make_connector(conn)
+    c._retrieval_role = "rag_reader"
+    return c, conn
+
+
+def test_row_security_naming_the_tenant_field_confines_the_retrieval_role():
+    c, conn = _rls_conn()
+    out = c.row_security_isolation("docs", "tenant_id")
+    assert out["enforced"] is True and out["principal"] == "rag_reader"
+    assert out["policies"][0]["policy"] == "tenant_read"
+    [(sql, params)] = [(s, p) for s, p, _n in conn.calls
+                       if "p.polpermissive, pg_get_expr" in s]
+    assert params == ["public", "docs", "rag_reader"]
+    assert "p.polcmd IN ('r', '*')" in sql and "pg_has_role(%s, pr.r, 'MEMBER')" in sql
+
+
+def test_a_json_tenant_key_is_matched_in_the_policy_expression():
+    c, _ = _rls_conn(policies=[("t", True, "((cmetadata ->> 'tenant_id'::text) = "
+                                           "current_setting('app.tenant'::text))")])
+    assert c.row_security_isolation("docs", "cmetadata.tenant_id")["enforced"] is True
+
+
+@pytest.mark.parametrize("kwargs, reason", [
+    ({"role": None}, "does not exist"),
+    ({"role": ("rag_reader", True, False, False, True, [], [])}, "superuser"),
+    ({"role": ("rag_reader", False, True, False, True, [], [])}, "BYPASSRLS"),
+    ({"role": ("rag_reader", False, False, False, True, [], ["admins"])}, "BYPASSRLS"),
+    ({"rel": (False, False, "app_owner")}, "row security is off"),
+    ({"rel": (True, False, "rag_reader")}, "owns the table"),
+    ({"policies": [("tenant_read", True, "(tenant_id = x)"), ("all", True, "true")]},
+     "admits every row"),
+    ({"policies": [("tenant_read", True, "(tenant_id = x)"),
+                   ("mine", True, "(owner_id = x)")]}, "does not name"),
+    ({"policies": [("tenant_read", True, "(my_tenant_id = x)")]}, "does not name"),
+    ({"policies": [("narrow", False, "(tenant_id = x)")]}, "no permissive policy"),
+])
+def test_row_security_that_does_not_confine_the_role_says_why(kwargs, reason):
+    c, _ = _rls_conn(**kwargs)
+    out = c.row_security_isolation("docs", "tenant_id")
+    assert out["enforced"] is False and reason in out["reason"]
+
+
+def test_an_owner_bound_by_force_row_security_is_confined():
+    c, _ = _rls_conn(rel=(True, True, "rag_reader"))
+    assert c.row_security_isolation("docs", "tenant_id")["enforced"] is True
+
+
+def test_row_security_without_a_declared_role_is_unknown():
+    c, conn = _rls_conn()
+    c._retrieval_role = None
+    out = c.row_security_isolation("docs", "tenant_id")
+    assert out["enforced"] is False and "no retrieval role" in out["reason"]
+    assert not any("pg_policy" in s for s, _p, _n in conn.calls)
+
+
+def test_unreadable_policies_are_never_enforced():
+    c, _ = _rls_conn(policies=InsufficientPrivilege("denied"))
+    out = c.row_security_isolation("docs", "tenant_id")
+    assert out["enforced"] is False and "could not be read" in out["reason"]
 
 
 # ------------------------------------------------- error mapping (real) -- #

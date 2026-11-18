@@ -634,6 +634,19 @@ class Connector(ABC):
         """
         raise UnsupportedCapability(f"{self.kind} does not support access_model()")
 
+    def row_security_isolation(self, collection: str, tenant_field: str) -> dict[str, Any]:
+        """Whether the store itself confines the retrieval principal to one tenant.
+
+        ``{"enforced": bool, "mechanism": str, "principal": str|None,
+        "policies": list, "reason": str}``. ``enforced`` is True only when the
+        store's own access control (PostgreSQL row-level security) binds the
+        declared retrieval principal on this collection with policies that
+        reference ``tenant_field``; then a query that omits the tenant filter
+        is still confined, and isolation is not convention-only. The policy
+        expressions themselves are reported, not evaluated.
+        """
+        raise UnsupportedCapability(f"{self.kind} does not support row_security_isolation()")
+
     def ann_index_info(self, collection: str) -> dict[str, Any]:
         """The collection's approximate index and the settings that bound its scans.
 

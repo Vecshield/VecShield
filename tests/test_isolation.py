@@ -1501,3 +1501,70 @@ def test_a_single_tenant_collection_gets_no_availability_finding():
     conn = AnnStore(tenant_chunks({"acme": 4}))
     job = probe_isolation(conn, "shared", tenant_field="tenant_id")
     assert not [f for f in job.findings if "approximate index" in f.title]
+
+
+
+# --------------------------------------------------------------------------- #
+# row-level security confining the retrieval role                             #
+# --------------------------------------------------------------------------- #
+
+class RlsStore(FakeStore):
+    """A store whose own access control confines (or not) the retrieval role."""
+
+    def __init__(self, chunks, rls, **kw):
+        super().__init__(chunks, **kw)
+        self.rls = rls
+
+    def capabilities(self):
+        return {"query", "row_security_isolation"}
+
+    def row_security_isolation(self, collection, tenant_field):
+        if isinstance(self.rls, Exception):
+            raise self.rls
+        return dict(self.rls)
+
+
+_CONFINED = {"enforced": True, "mechanism": "row_level_security", "principal": "rag_reader",
+             "policies": [{"policy": "tenant_read", "permissive": True,
+                           "using": "(tenant_id = current_setting('app.tenant'))"}],
+             "reason": "row security binds 'rag_reader'"}
+
+
+def test_row_security_that_confines_the_role_replaces_convention_only():
+    job = probe_isolation(RlsStore(tenant_chunks(THREE), _CONFINED), "shared",
+                          tenant_field="tenant_id")
+    out = outcome_of(job)
+    assert not [f for f in job.findings if "convention-only" in f.title]
+    [low] = sev(job, Severity.LOW)
+    assert "rests on row-level security" in low.title
+    assert low.evidence["principal"] == "rag_reader"
+    assert low.evidence["policies"][0]["policy"] == "tenant_read"
+    assert "'tenant_read'" in low.description
+    assert out["outcome"] == "passed" and out["coverage"]["complete"] is True
+    assert out["coverage"]["row_security"]["enforced"] is True
+    assert "row-level security confines the retrieval role 'rag_reader'" in out["reason"]
+    assert "depends on every query" not in out["reason"]
+
+
+@pytest.mark.parametrize("rls", [
+    {"enforced": False, "reason": "row security is off for this table"},
+    RuntimeError("catalog went away"),
+])
+def test_row_security_that_does_not_confine_the_role_stays_convention_only(rls):
+    job = probe_isolation(RlsStore(tenant_chunks(THREE), rls), "shared",
+                          tenant_field="tenant_id")
+    [high] = sev(job, Severity.HIGH)
+    assert "convention-only" in high.title
+    assert outcome_of(job)["coverage"]["row_security"]["enforced"] is False
+
+
+def test_a_leak_still_fails_under_row_security():
+    job = probe_isolation(RlsStore(tenant_chunks(THREE), _CONFINED, filter_mode="ignored"),
+                          "shared", tenant_field="tenant_id")
+    assert sev(job, Severity.CRITICAL) and outcome_of(job)["outcome"] == "failed"
+
+
+def test_a_single_tenant_collection_does_not_ask_about_row_security():
+    store = RlsStore(tenant_chunks({"acme": 3}), RuntimeError("must not be called"))
+    job = probe_isolation(store, "shared", tenant_field="tenant_id")
+    assert "row_security" not in outcome_of(job)["coverage"]

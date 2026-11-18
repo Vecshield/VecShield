@@ -11,6 +11,13 @@ Changes to the detection engine specifically are also tracked in
 
 ### Added
 
+- pgvector: tenant isolation now recognises row-level security that confines
+  the declared retrieval role to one tenant. Before, every shared table got a
+  HIGH "convention-only" finding, even when the database applies the tenant
+  condition to every query the role runs. Such a table now gets a LOW finding
+  that lists the policies for review instead. The connector's new
+  `row_security_isolation()` decides whether the role is confined. Its policy
+  expressions are reported, not evaluated.
 - Two-step sign-in for local accounts ([ADR 0004](docs/adr/0004-totp-mfa.md)).
   Anyone can add an authenticator app (TOTP) under Settings → Security and
   receives ten single-use recovery codes. Sign-in then asks for a code after

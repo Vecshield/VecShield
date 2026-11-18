@@ -178,6 +178,33 @@ therefore leaves out the auditing role itself.
   themselves. `system_user` describes the pooler's connection to the server,
   not your application's connection to the pooler.
 
+## Row-level security and tenant isolation
+
+When several tenants share a table, the isolation probe reports a HIGH
+"convention-only" finding: any query that omits the tenant filter returns
+other tenants' chunks. That is not so when row-level security confines the
+application's role. Then the database applies the tenant condition to every
+query the role runs.
+
+VecShield treats the table as confined when all of the following hold for the
+declared retrieval role (`--retrieval-role`):
+
+- row security is on for the table;
+- the role is not a superuser and has no BYPASSRLS, directly or through
+  membership;
+- the role does not own the table, unless `FORCE ROW LEVEL SECURITY` is set;
+- at least one permissive `SELECT` or `ALL` policy reaches the role;
+- none of those policies is `USING (true)`;
+- every one of those policies names the tenant field. Permissive policies are
+  OR-ed, so a single one that ignores the tenant opens every row.
+
+The HIGH finding is then replaced by a LOW one. It lists the policies and
+their expressions for review. VecShield checks whom a policy binds, not what
+its expression computes: `tenant_id = tenant_id` names the field and confines
+nothing. It also does not check how the application sets the value the policy
+compares against. Without a declared retrieval role, isolation stays
+convention-only.
+
 ## Compliance mapping
 
 `access_grants` is cited by these criteria:

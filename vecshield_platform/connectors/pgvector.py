@@ -240,7 +240,8 @@ class PgVectorConnector(Connector):
     def capabilities(self) -> set[str]:
         return {"query", "delete", "transport_introspection",
                 "tls_enforcement_introspection", "session_auth_introspection",
-                "access_introspection", "at_rest_introspection", "ann_iterative_scan"}
+                "access_introspection", "at_rest_introspection", "ann_iterative_scan",
+            "row_security_isolation"}
 
     def __init__(
         self,
@@ -472,6 +473,85 @@ class PgVectorConnector(Connector):
         """
         sql, params, lay, meta_cols, metric = self._knn_sql(collection, vector, top_k, where)
         return self._knn_hits(self._read(sql, params), lay, meta_cols, metric)
+
+    def row_security_isolation(self, collection: str, tenant_field: str) -> dict[str, Any]:
+        """Whether row-level security confines the retrieval role to one tenant.
+
+        Enforced means every condition holds, for the *declared* retrieval
+        role (the application's, not VecShield's):
+
+        * row security is on for the table, and binds the role: it is not a
+          superuser or BYPASSRLS (directly or by membership), and it does not
+          own the table unless FORCE ROW LEVEL SECURITY is set;
+        * at least one permissive SELECT (or ALL) policy reaches the role,
+          none of them is ``USING (true)``, and every one names the tenant
+          field (the column, or the json key for ``<column>.<key>``).
+
+        Permissive policies are OR-ed, so one that ignores the tenant would
+        undo the rest. The expressions are returned for review, never judged:
+        ``tenant_id = tenant_id`` names the field and confines nothing.
+        """
+        role = getattr(self, "_retrieval_role", None)
+        out: dict[str, Any] = {"enforced": False, "mechanism": "row_level_security",
+                               "principal": role, "policies": []}
+
+        def no(reason: str) -> dict[str, Any]:
+            out["reason"] = reason
+            return out
+
+        if not role:
+            return no("no retrieval role is declared, so whom row security binds is unknown")
+        self._layout_for(collection)  # an unknown collection raises ConnectorNotFound
+        table = collection
+        try:
+            facts = self._role_facts(role)
+            if facts is None:
+                return no(f"the retrieval role '{role}' does not exist")
+            if "error" in facts:
+                return no(f"pg_roles could not be read ({facts['error']})")
+            if facts["superuser"] or facts["member_of_superuser"]:
+                return no(f"'{role}' is a superuser, which row security does not apply to")
+            if facts["bypassrls"] or facts["member_of_bypassrls"]:
+                return no(f"'{role}' bypasses row security (BYPASSRLS)")
+            rel = self._read(
+                "SELECT c.relrowsecurity, c.relforcerowsecurity, "
+                "pg_get_userbyid(c.relowner) FROM pg_class c "
+                "JOIN pg_namespace n ON n.oid = c.relnamespace "
+                "WHERE n.nspname = %s AND c.relname = %s", (self._schema, table), one=True)
+            if not rel or not rel[0]:
+                return no("row security is off for this table")
+            if rel[2] == role and not rel[1]:
+                return no(f"'{role}' owns the table and FORCE ROW LEVEL SECURITY is off, so "
+                          "its policies do not apply to it")
+            rows = self._read(
+                "SELECT p.polname, p.polpermissive, pg_get_expr(p.polqual, p.polrelid) "
+                "FROM pg_policy p JOIN pg_class c ON c.oid = p.polrelid "
+                "JOIN pg_namespace n ON n.oid = c.relnamespace "
+                "WHERE n.nspname = %s AND c.relname = %s AND p.polcmd IN ('r', '*') "
+                "AND (0 = ANY(p.polroles) OR EXISTS (SELECT 1 FROM unnest(p.polroles) "
+                "AS pr(r) WHERE pr.r <> 0 AND pg_has_role(%s, pr.r, 'MEMBER'))) "
+                "ORDER BY p.polname", (self._schema, table, role))
+        except Exception as exc:  # noqa: BLE001 - unknown, never enforced
+            return no(f"the policies could not be read ({type(exc).__name__})")
+        out["policies"] = [{"policy": str(name), "permissive": bool(permissive),
+                            "using": using} for name, permissive, using in rows]
+        permissive = [p for p in out["policies"] if p["permissive"]]
+        if not permissive:
+            return no(f"no permissive policy reaches '{role}', so it reads no rows at all")
+        field = tenant_field.rsplit(".", 1)[-1]
+        named = re.compile(rf"(?<![\w]){re.escape(field)}(?![\w])")
+        for p in permissive:
+            using = (p["using"] or "").strip()
+            if using.lower() in ("", "true"):
+                return no(f"policy '{p['policy']}' admits every row to '{role}'")
+            if not named.search(using):
+                return no(f"policy '{p['policy']}' does not name the tenant field "
+                          f"'{tenant_field}', and permissive policies are OR-ed")
+        out["enforced"] = True
+        out["reason"] = (f"row security binds '{role}' on this table through "
+                         f"{len(permissive)} permissive polic"
+                         f"{'y' if len(permissive) == 1 else 'ies'} naming '{tenant_field}'")
+        return out
 
     def ann_index_info(self, collection: str) -> dict[str, Any]:
         """The column's approximate index, and the settings that bound its scans.

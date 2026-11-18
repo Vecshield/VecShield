@@ -21,7 +21,11 @@ reports the second as a structural fact:
      chunk that is not that tenant's is a bleed (CRITICAL)
   5. one unfiltered query, recording what a query without the filter returns.
      When two or more tenants share the collection, isolation is convention-only
-     by construction (HIGH)
+     by construction (HIGH), unless the store itself confines the application's
+     retrieval principal to a tenant (PostgreSQL row-level security naming the
+     tenant field, ``row_security_isolation``). Then a query that omits the
+     filter is still confined; the policies are reported for review (LOW)
+     because their expressions are not evaluated
 
 Why the sweep proves filter enforcement for the stored corpus
 --------------------------------------------------------------
@@ -539,7 +543,11 @@ def probe_isolation(
     if unexplained:
         job.add(_imprecise_float_finding(store, collection, tenant_field, unexplained,
                                          tenant_value))
-    if shared:
+    row_security = _row_security(connector, collection, tenant_field) if shared else {}
+    if shared and row_security.get("enforced"):
+        job.add(_row_security_finding(store, collection, sharing, tenant_field,
+                                      row_security))
+    elif shared:
         job.add(_convention_only_finding(store, collection, sharing, enforcement,
                                          verified, seen_tenants, cross))
     if untagged:
@@ -560,7 +568,8 @@ def probe_isolation(
         untagged=untagged, field_name=tenant_field, cap_clause=cap_clause, cap=cap,
         capped=capped, sweep=sweep, no_vector=census.no_vector, complete=complete,
         budget=limits.query_budget, ambiguous=ambiguous,
-        collision=bool(numeric["collision"]), imprecise=unexplained)
+        collision=bool(numeric["collision"]), imprecise=unexplained,
+        confined_by=row_security.get("principal") if row_security.get("enforced") else None)
     if query_errors:
         stages = ", ".join(sorted({e["stage"].replace("_", " ") for e in query_errors}))
         reason = (f"A {stages} query failed ({query_errors[0]['error_type']}), so the "
@@ -583,6 +592,8 @@ def probe_isolation(
                "self_rank_queries": sweep["self_rank_queries"],
                "self_rank_widened": sweep["self_rank_widened"],
                "self_rank_unverified": sweep["self_rank_unverified"]}
+    if row_security:
+        details["row_security"] = row_security
     if imprecise:
         details["imprecise_tenants"] = imprecise[:MAX_LISTED_TENANTS]
     if ann.get("index_type") or ann.get("error"):
@@ -976,6 +987,17 @@ def _ann_index(connector: Connector, collection: str) -> dict:
     return dict(info) if isinstance(info, dict) else {}
 
 
+def _row_security(connector: Connector, collection: str, tenant_field: str) -> dict:
+    """The connector's ``row_security_isolation()``, or ``{}`` when it has none."""
+    try:
+        if "row_security_isolation" not in set(connector.capabilities()):
+            return {}
+        info = connector.row_security_isolation(collection, tenant_field)
+    except Exception as exc:  # noqa: BLE001 - convention-only, as without it
+        return {"enforced": False, "reason": f"not read ({type(exc).__name__})"}
+    return dict(info) if isinstance(info, dict) else {}
+
+
 def _ann_details(ann: dict, retry: dict[str, dict]) -> dict:
     keep = ("index_type", "index", "metric", "operator", "partial", "settings",
             "retrieval_role_settings", "iterative_scan", "pgvector_version",
@@ -1110,7 +1132,7 @@ def _queries(count: int) -> str:
 def _reason(*, tenants, scanned, canary, canary_ids, leaking, leaked, verified, unqueried,
             short, per_tenant, shared, untagged, field_name, cap_clause, cap, capped,
             sweep, no_vector, complete, budget, ambiguous=False,
-            collision=False, imprecise=()) -> str:
+            collision=False, imprecise=(), confined_by=None) -> str:
     total = len(tenants)
     bleeds = sum(len(ids) for ids in leaked.values())
     cap_tail = cap_clause
@@ -1181,7 +1203,10 @@ def _reason(*, tenants, scanned, canary, canary_ids, leaking, leaked, verified, 
         if verified and len(verified) < total:
             main += f" (enforcement verified for {len(verified)} of {_n(total, 'tenant')})"
     tail = []
-    if shared and canary != "failed" and not leaking:
+    if shared and canary != "failed" and not leaking and confined_by:
+        tail.append(f"{_n(shared, 'tenant')} share this collection, and row-level "
+                    f"security confines the retrieval role '{confined_by}' to one tenant")
+    elif shared and canary != "failed" and not leaking:
         # Why a verified filter still reads as failed: sharing one collection
         # makes isolation depend on every query carrying the filter.
         tail.append(f"{_n(shared, 'tenant')} share this collection, so isolation "
@@ -1533,6 +1558,35 @@ def _convention_only_finding(store, collection, tenants, enforcement, verified,
             "Enforce the tenant filter server-side (per-tenant API keys or namespaces), "
             "or move each tenant to its own collection so isolation is structural rather "
             "than convention-based."),
+    )
+
+
+def _row_security_finding(store, collection, tenants, field_name, rls: dict) -> Finding:
+    """LOW: the store confines the retrieval role; the policies are not evaluated."""
+    count = len(tenants)
+    principal = rls.get("principal")
+    policies = rls.get("policies") or []
+    names = ", ".join(f"'{p['policy']}'" for p in policies if p.get("permissive"))
+    return Finding(
+        id=f"find-{uuid.uuid4().hex[:10]}",
+        title=f"Tenant isolation in '{collection}' rests on row-level security policies",
+        severity=Severity.LOW, category="isolation", store=store.name,
+        collection=collection,
+        description=(
+            f"{count:,} tenants share one collection. Row-level security binds the "
+            f"retrieval role '{principal}' through {names}, which name "
+            f"'{field_name}', so a query that omits the tenant filter is still confined "
+            "by the database rather than by every query carrying the filter. VecShield "
+            "checked whom the policies bind, not what their expressions compute or how "
+            "the application sets the tenant they compare against."),
+        evidence={"tenants": tenants[:MAX_LISTED_TENANTS], "tenant_count": count,
+                  "mechanism": rls.get("mechanism"), "principal": principal,
+                  "policies": policies[:20], "reason": rls.get("reason")},
+        remediation=(
+            "Review each listed policy expression: it must compare the tenant field with "
+            "a value the application cannot set to another tenant's (for example a "
+            "session setting established at connection from the authenticated identity), "
+            "and must fail closed when that value is unset."),
     )
 
 
