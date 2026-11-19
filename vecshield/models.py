@@ -189,6 +189,14 @@ class IngestGateReport:
     #: Chunks with a text surface longer than the classification window; the
     #: characters past it were not classified.
     truncated_surfaces: list[dict[str, Any]] = field(default_factory=list)
+    #: Chunks in which the injection check found an instruction placed for the
+    #: model that will read them. Listed whether or not the chunk was blocked;
+    #: each entry says which (``"blocked": true``).
+    injection_flags: list[dict[str, Any]] = field(default_factory=list)
+    #: Ids of chunks whose injection scan did not read a whole surface.
+    injection_partial: list[str] = field(default_factory=list)
+    #: The injection check this report was produced with: "off", "flag", "block".
+    injection_mode: str = "off"
 
     @property
     def total(self) -> int:
@@ -208,6 +216,10 @@ class IngestGateReport:
             "findings": [f.to_dict() for f in self.findings],
             "below_threshold": list(self.below_threshold),
             "truncated_surfaces": list(self.truncated_surfaces),
+            "injection": {"mode": self.injection_mode,
+                          "flagged": len(self.injection_flags),
+                          "flags": list(self.injection_flags),
+                          "partly_scanned_chunk_ids": list(self.injection_partial)},
         }
 
 

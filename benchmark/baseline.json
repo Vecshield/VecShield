@@ -335,19 +335,19 @@
       }
     },
     "instruction_override": {
-      "fired_on": 12,
-      "cases": 11,
-      "true_positive": 11,
+      "fired_on": 14,
+      "cases": 13,
+      "true_positive": 13,
       "false_positive": 0,
       "precision": {
-        "observations": 11,
+        "observations": 13,
         "measured": true,
         "value": 1.0,
         "interval": [
-          0.741,
+          0.772,
           1.0
         ],
-        "successes": 11
+        "successes": 13
       }
     },
     "medical_record_context": {
@@ -362,6 +362,17 @@
       }
     },
     "policy_bypass": {
+      "fired_on": 1,
+      "cases": 1,
+      "true_positive": 1,
+      "false_positive": 0,
+      "precision": {
+        "observations": 1,
+        "measured": false,
+        "note": "Fewer than 5 observations; no rate is reported."
+      }
+    },
+    "response_manipulation": {
       "fired_on": 1,
       "cases": 1,
       "true_positive": 1,
@@ -760,6 +771,7 @@
         "injection"
       ],
       "detectors": [
+        "instruction_override",
         "role_manipulation"
       ],
       "counter_signals": [],
@@ -1451,10 +1463,12 @@
       ],
       "detectors": [
         "exfiltration",
-        "hidden_content"
+        "hidden_content",
+        "instruction_override"
       ],
       "counter_signals": [
-        "placeholder_token"
+        "placeholder_token",
+        "reserved_domain"
       ],
       "missing_counter_signals": [],
       "reason": "CSS-hidden exfiltration instruction."
@@ -1469,6 +1483,7 @@
         "injection"
       ],
       "detectors": [
+        "response_manipulation",
         "tool_abuse"
       ],
       "counter_signals": [],

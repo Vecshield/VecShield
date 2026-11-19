@@ -7,6 +7,16 @@ VecShield Community is licensed under the Apache License, Version 2.0.
 
 ---
 
+This product bundles a data file derived from Unicode data:
+
+Unicode confusables data (derived subset)
+  injection/data/confusables_latin.json is derived from the Unicode Security
+  Mechanisms (UTS #39) data file confusables.txt, version 18.0.0.
+  Copyright (c) 1991-2026 Unicode, Inc. All rights reserved.
+  Distributed under the Unicode License v3: https://www.unicode.org/license.txt
+
+---
+
 This product optionally depends on the following third-party libraries,
 which are installed separately via the [nlp] extra and are NOT bundled
 with VecShield. Their copyright notices are reproduced here in accordance

@@ -51,6 +51,9 @@ VecShield ships two Python packages from one distribution:
 | [Regulatory coverage benchmark](library/benchmarks/regulatory_coverage.md) | Coverage measured against the criterion pack. |
 | [ai4privacy ablation](library/benchmarks/ai4privacy_ablation.md) | Results on the public ai4privacy dataset. |
 | [ASQ-PHI ablation](library/benchmarks/asq_phi_ablation.md) | Results on clinical-query PHI. |
+| [Optional injection classifier](library/injection_classifier.md) | Turning on a pre-trained model beside the injection rules, and what it may and may not do. |
+| [Injection benchmark](library/benchmarks/injection.md) | Prompt-injection recall and false positives on public data, with a held-out split. |
+| [Injection engine plan](plans/prompt-injection-detection.md) | The layered design, what is built, and what is next. |
 
 The labelled corpus the detectors are scored against is in
 [`benchmark/corpus/`](../benchmark/corpus/), and its
@@ -77,6 +80,7 @@ result is not a compliance determination.**
 | [ADR 0002](adr/0002-local-accounts-and-sessions.md) | Local accounts and sessions. |
 | [ADR 0003](adr/0003-secret-reference-allowlist.md) | Secret-reference allowlist. |
 | [ADR 0004](adr/0004-totp-mfa.md) | Two-step sign-in (TOTP) for local accounts. |
+| [ADR 0005](adr/0005-layered-injection-detection.md) | Layered injection detection, with an optional pinned classifier. |
 | [Brand](brand/README.md) | The mark, the palette, and the rules the console's tests enforce. |
 
 ## Contributing

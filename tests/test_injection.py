@@ -147,7 +147,10 @@ def test_supporting_signals_alone_stay_below_threshold():
     # Two different weak phrases still do not add up to a finding.
     result = scan_text("Run Python 3.12. There are no restrictions on file size.")
     assert set(result.categories) == {"tool_abuse", "policy_bypass"}
-    assert result.score <= SUPPORTING
+    # More weak signals rank a chunk higher among the unflagged (pack 2026.11.2);
+    # they never reach the threshold.
+    assert SUPPORTING <= result.score < 0.5
+    assert not result.is_injection
     assert not result.is_injection
 
 

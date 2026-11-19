@@ -2,6 +2,7 @@
 
     vecshield detect <file-or-text>
     vecshield ingest-check <file-or-dir>
+    vecshield injection-check <file-or-dir-or-text>
     vecshield training-check <dataset-dir>
     vecshield redact-preview <file-or-text>
 
@@ -117,8 +118,15 @@ def detect(target, no_nlp, fail_on_pii, json_out) -> None:
     default="high",
     help="Exit 2 when a finding at or above this severity is blocked.",
 )
+@click.option(
+    "--injection",
+    type=click.Choice(["off", "flag", "block"]),
+    default="flag",
+    help="Injected instructions: list them (flag), also block the high-confidence "
+         "ones (block), or skip the check (off).",
+)
 @click.option("--json", "json_out", is_flag=True, help="Emit JSON instead of a table.")
-def ingest_check(target, text_field, fmt, no_nlp, fail_on, json_out) -> None:
+def ingest_check(target, text_field, fmt, no_nlp, fail_on, injection, json_out) -> None:
     """Gate a file, JSONL, or directory of chunks before they are embedded.
 
     A literal string is also accepted and treated as a single chunk.
@@ -127,7 +135,8 @@ def ingest_check(target, text_field, fmt, no_nlp, fail_on, json_out) -> None:
 
     block_severity = _FAIL_ON[fail_on]
     chunks = _load_chunks(target, text_field=text_field, fmt=fmt)
-    report = check_chunks(chunks, use_nlp=not no_nlp, block_severity=block_severity)
+    report = check_chunks(chunks, use_nlp=not no_nlp, block_severity=block_severity,
+                          injection=injection)
 
     if json_out:
         click.echo(_json.dumps(report.to_dict(), indent=2))
@@ -139,8 +148,100 @@ def ingest_check(target, text_field, fmt, no_nlp, fail_on, json_out) -> None:
             f"PII density {report.pii_density:.1%}"
         )
         _render_findings(report.findings)
+        _render_injection_flags(report.injection_flags, report.injection_partial)
 
     if report.blocked:
+        sys.exit(2)
+
+
+# --------------------------------------------------------------------------- #
+# injection-check                                                              #
+# --------------------------------------------------------------------------- #
+@cli.command(name="injection-check")
+@click.argument("target")
+@click.option(
+    "--text-field", default=None, help="Record field holding the text (jsonl/csv)."
+)
+@click.option(
+    "--format", "fmt", default=None, help="Force a format reader (jsonl/csv/text/...)."
+)
+@click.option(
+    "--fail-on",
+    type=click.Choice(["high", "any", "never"]),
+    default="high",
+    help="Exit 2 on a high-confidence injection (high), on any flag (any), or never.",
+)
+@click.option(
+    "--model-dir", default=None,
+    help="Directory holding a pinned pre-trained classifier to use beside the rules.",
+)
+@click.option("--model", "model_name", default=None,
+              help="Which catalogued classifier the directory holds, if it holds several.")
+@click.option("--json", "json_out", is_flag=True, help="Emit JSON instead of a table.")
+def injection_check(target, text_field, fmt, fail_on, model_dir, model_name, json_out) -> None:
+    """Look for instructions planted for the model in a file, JSONL, or directory.
+
+    A literal string is also accepted and treated as a single chunk. This reads
+    signatures: no flag means no known signature was found, in a language that
+    has rules. It is not evidence that the text is safe to obey.
+    """
+    from vecshield.injection import (
+        LANGUAGES,
+        PACK_VERSION,
+        UNREVIEWED_LANGUAGES,
+        ClassifierUnavailable,
+        OnnxClassifier,
+        default_classifier,
+        scan_surfaces,
+    )
+
+    classifier: object = "environment"
+    layers = {"signatures": "ran", "similarity": "absent", "classifier": "absent"}
+    if model_dir:
+        try:
+            classifier = OnnxClassifier(model_dir, name=model_name)
+        except ClassifierUnavailable as exc:
+            console.print(f"[error]Classifier not loaded:[/] {escape(str(exc))}")
+            sys.exit(1)
+        layers["classifier"] = "ran"
+    else:
+        model, error = default_classifier()
+        layers["classifier"] = "unavailable" if error else "ran" if model else "absent"
+
+    chunks = _load_chunks(target, text_field=text_field, fmt=fmt)
+    flags, partial = [], []
+    for chunk in chunks:
+        hit, cut = scan_surfaces(chunk.text, chunk.metadata, classifier=classifier)
+        if cut:
+            partial.append(chunk.id)
+        if hit:
+            flags.append({"chunk_id": chunk.id, "verdict": hit["verdict"],
+                          "score": hit["score"], "confidence": hit["confidence"],
+                          "categories": hit["categories"], "rules": hit["rules"],
+                          "surfaces": hit["surfaces"], "spans": hit["spans"]})
+    high = [f for f in flags if f["confidence"] == "high"]
+    if json_out:
+        click.echo(_json.dumps({
+            "chunks": len(chunks), "flagged": len(flags), "high_confidence": len(high),
+            "flags": flags, "partly_scanned_chunk_ids": partial,
+            "method": ("signatures+classifier" if layers["classifier"] == "ran"
+                       else "signatures"),
+            "layers": layers,
+            "rule_pack": PACK_VERSION, "languages_with_rules": list(LANGUAGES),
+            "languages_with_unreviewed_rules": list(UNREVIEWED_LANGUAGES),
+        }, indent=2))
+    else:
+        console.print(
+            f"\n[bold]Injection check[/] — {len(chunks)} chunk(s), "
+            f"[bad]{len(flags)} flagged[/] ({len(high)} at high confidence)"
+        )
+        _render_injection_flags(flags, partial)
+        console.print(
+            f"[muted]Signature rules {PACK_VERSION}; rules exist for "
+            f"{', '.join(LANGUAGES)}. No flag is not proof of absence.[/]"
+        )
+
+    if fail_on == "any" and flags or fail_on == "high" and high:
         sys.exit(2)
 
 
@@ -255,6 +356,22 @@ def _load_chunks(target, *, text_field, fmt) -> list[Chunk]:
 
     # Treat as a literal string.
     return [Chunk(id="0", collection="cli", text=target)]
+
+
+def _render_injection_flags(flags, partial) -> None:
+    """Chunks the injection check flagged, and any it could not read in full."""
+    if flags:
+        table = Table(title="Injected instructions", show_lines=False)
+        for col in ("Chunk", "Verdict", "Confidence", "Score", "Rules"):
+            table.add_column(col, overflow="fold")
+        for flag in sorted(flags, key=lambda f: (f["confidence"] != "high", -f["score"])):
+            verdict = flag["verdict"] + (" (blocked)" if flag.get("blocked") else "")
+            table.add_row(escape(str(flag["chunk_id"])), verdict, flag["confidence"],
+                          f"{flag['score']:.2f}", escape(", ".join(flag["rules"][:4])))
+        console.print(table)
+    if partial:
+        console.print(f"[warn]{len(partial)} chunk(s) were longer than the injection scan "
+                      "limit or ran out of scan time and were read only in part.[/]")
 
 
 def _render_findings(findings) -> None:

@@ -1,0 +1,4035 @@
+{
+ "detector": "vecshield",
+ "dataset_sha256": "4bbe1ae77ab3de03d115b3278b954b0f6a7eb3f3b3fda38824101296e4a1acdb",
+ "dataset_rows": 54192,
+ "rows_scored": 54192,
+ "sample_per_group": null,
+ "all_negatives": false,
+ "sample_key": "split,label,family,source",
+ "splits_scored": [
+  "dev",
+  "test",
+  "heldout"
+ ],
+ "code_commit": "0041576",
+ "working_tree_dirty": true,
+ "legacy_commit": null,
+ "python": "3.12.13",
+ "machine": "Darwin arm64",
+ "timing": {
+  "wall_seconds": 145.69,
+  "characters": 68808360,
+  "ms_per_1000_chars": 2.1174,
+  "slowest_row_ms": 284.2,
+  "slowest_row_id": "ed30bc389b57d906"
+ },
+ "splits": {
+  "dev": {
+   "recall": {
+    "n": 11719,
+    "k": 5246,
+    "measured": true,
+    "value": 0.4476,
+    "interval": [
+     0.4387,
+     0.4567
+    ]
+   },
+   "false_positive_rate": {
+    "n": 8183,
+    "k": 13,
+    "measured": true,
+    "value": 0.0016,
+    "interval": [
+     0.0009,
+     0.0027
+    ]
+   },
+   "precision": 0.9975,
+   "f1": 0.618,
+   "roc_auc": 0.8135651181793486,
+   "roc_auc_interval": [
+    0.8089,
+    0.8182
+   ],
+   "average_precision": 0.8489939337310639,
+   "average_precision_interval": [
+    0.8452,
+    0.8527
+   ],
+   "at_thresholds_chosen_on_dev": {
+    "best_f1_on_dev": {
+     "threshold": 0.3,
+     "f1": 0.7732,
+     "precision": 0.9582,
+     "recall": 0.648,
+     "false_positive_rate": 0.04045,
+     "tp": 7594,
+     "fp": 331,
+     "fn": 4125
+    },
+    "fpr_0.01_on_dev": {
+     "threshold": 0.35,
+     "f1": 0.6798,
+     "precision": 0.9936,
+     "recall": 0.5166,
+     "false_positive_rate": 0.00477,
+     "tp": 6054,
+     "fp": 39,
+     "fn": 5665
+    },
+    "fpr_0.001_on_dev": {
+     "threshold": 0.6,
+     "f1": 0.5604,
+     "precision": 0.9989,
+     "recall": 0.3895,
+     "false_positive_rate": 0.00061,
+     "tp": 4564,
+     "fp": 5,
+     "fn": 7155
+    }
+   },
+   "recall_by_family": {
+    "agentdojo_direct": {
+     "n": 79,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0464
+     ]
+    },
+    "agentdojo_ignore_previous": {
+     "n": 79,
+     "k": 69,
+     "measured": true,
+     "value": 0.8734,
+     "interval": [
+      0.7824,
+      0.9298
+     ]
+    },
+    "agentdojo_important_instructions": {
+     "n": 79,
+     "k": 79,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9536,
+      1.0
+     ]
+    },
+    "agentdojo_injecagent": {
+     "n": 79,
+     "k": 79,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9536,
+      1.0
+     ]
+    },
+    "agentdojo_system_message": {
+     "n": 79,
+     "k": 79,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9536,
+      1.0
+     ]
+    },
+    "bipia_code": {
+     "n": 150,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.025
+     ]
+    },
+    "bipia_text": {
+     "n": 222,
+     "k": 38,
+     "measured": true,
+     "value": 0.1712,
+     "interval": [
+      0.1273,
+      0.2262
+     ]
+    },
+    "container_payload": {
+     "n": 240,
+     "k": 109,
+     "measured": true,
+     "value": 0.4542,
+     "interval": [
+      0.3924,
+      0.5174
+     ]
+    },
+    "diluted_payload": {
+     "n": 239,
+     "k": 109,
+     "measured": true,
+     "value": 0.4561,
+     "interval": [
+      0.3941,
+      0.5194
+     ]
+    },
+    "direct_prompt": {
+     "n": 1556,
+     "k": 690,
+     "measured": true,
+     "value": 0.4434,
+     "interval": [
+      0.4189,
+      0.4682
+     ]
+    },
+    "embedded_payload": {
+     "n": 900,
+     "k": 390,
+     "measured": true,
+     "value": 0.4333,
+     "interval": [
+      0.4013,
+      0.4659
+     ]
+    },
+    "evasion": {
+     "n": 1378,
+     "k": 906,
+     "measured": true,
+     "value": 0.6575,
+     "interval": [
+      0.632,
+      0.6821
+     ]
+    },
+    "foreign_carrier_payload": {
+     "n": 234,
+     "k": 106,
+     "measured": true,
+     "value": 0.453,
+     "interval": [
+      0.3905,
+      0.517
+     ]
+    },
+    "injecagent_base": {
+     "n": 527,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0072
+     ]
+    },
+    "injecagent_enhanced": {
+     "n": 527,
+     "k": 527,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9928,
+      1.0
+     ]
+    },
+    "llmail_attempt": {
+     "n": 2997,
+     "k": 902,
+     "measured": true,
+     "value": 0.301,
+     "interval": [
+      0.2848,
+      0.3176
+     ]
+    },
+    "llmail_succeeded": {
+     "n": 1555,
+     "k": 701,
+     "measured": true,
+     "value": 0.4508,
+     "interval": [
+      0.4262,
+      0.4756
+     ]
+    },
+    "split_payload": {
+     "n": 199,
+     "k": 86,
+     "measured": true,
+     "value": 0.4322,
+     "interval": [
+      0.3653,
+      0.5016
+     ]
+    },
+    "stacked_evasion": {
+     "n": 600,
+     "k": 376,
+     "measured": true,
+     "value": 0.6267,
+     "interval": [
+      0.5873,
+      0.6644
+     ]
+    }
+   },
+   "recall_by_family_source": {
+    "agentdojo_direct/agentdojo": {
+     "n": 79,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0464
+     ]
+    },
+    "agentdojo_ignore_previous/agentdojo": {
+     "n": 79,
+     "k": 69,
+     "measured": true,
+     "value": 0.8734,
+     "interval": [
+      0.7824,
+      0.9298
+     ]
+    },
+    "agentdojo_important_instructions/agentdojo": {
+     "n": 79,
+     "k": 79,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9536,
+      1.0
+     ]
+    },
+    "agentdojo_injecagent/agentdojo": {
+     "n": 79,
+     "k": 79,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9536,
+      1.0
+     ]
+    },
+    "agentdojo_system_message/agentdojo": {
+     "n": 79,
+     "k": 79,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9536,
+      1.0
+     ]
+    },
+    "bipia_code/bipia": {
+     "n": 150,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.025
+     ]
+    },
+    "bipia_text/bipia": {
+     "n": 222,
+     "k": 38,
+     "measured": true,
+     "value": 0.1712,
+     "interval": [
+      0.1273,
+      0.2262
+     ]
+    },
+    "container_payload/deepset": {
+     "n": 23,
+     "k": 5,
+     "measured": true,
+     "value": 0.2174,
+     "interval": [
+      0.0966,
+      0.419
+     ]
+    },
+    "container_payload/gandalf": {
+     "n": 146,
+     "k": 83,
+     "measured": true,
+     "value": 0.5685,
+     "interval": [
+      0.4874,
+      0.6461
+     ]
+    },
+    "container_payload/yanismiraoui": {
+     "n": 71,
+     "k": 21,
+     "measured": true,
+     "value": 0.2958,
+     "interval": [
+      0.2023,
+      0.4102
+     ]
+    },
+    "diluted_payload/deepset": {
+     "n": 23,
+     "k": 5,
+     "measured": true,
+     "value": 0.2174,
+     "interval": [
+      0.0966,
+      0.419
+     ]
+    },
+    "diluted_payload/gandalf": {
+     "n": 146,
+     "k": 84,
+     "measured": true,
+     "value": 0.5753,
+     "interval": [
+      0.4942,
+      0.6526
+     ]
+    },
+    "diluted_payload/yanismiraoui": {
+     "n": 70,
+     "k": 20,
+     "measured": true,
+     "value": 0.2857,
+     "interval": [
+      0.1932,
+      0.4005
+     ]
+    },
+    "direct_prompt/deepset": {
+     "n": 203,
+     "k": 50,
+     "measured": true,
+     "value": 0.2463,
+     "interval": [
+      0.1921,
+      0.3099
+     ]
+    },
+    "direct_prompt/gandalf": {
+     "n": 888,
+     "k": 534,
+     "measured": true,
+     "value": 0.6014,
+     "interval": [
+      0.5688,
+      0.6331
+     ]
+    },
+    "direct_prompt/yanismiraoui": {
+     "n": 465,
+     "k": 106,
+     "measured": true,
+     "value": 0.228,
+     "interval": [
+      0.1921,
+      0.2682
+     ]
+    },
+    "embedded_payload/deepset": {
+     "n": 124,
+     "k": 32,
+     "measured": true,
+     "value": 0.2581,
+     "interval": [
+      0.1891,
+      0.3415
+     ]
+    },
+    "embedded_payload/gandalf": {
+     "n": 497,
+     "k": 298,
+     "measured": true,
+     "value": 0.5996,
+     "interval": [
+      0.5559,
+      0.6418
+     ]
+    },
+    "embedded_payload/yanismiraoui": {
+     "n": 279,
+     "k": 60,
+     "measured": true,
+     "value": 0.2151,
+     "interval": [
+      0.1709,
+      0.267
+     ]
+    },
+    "evasion/gandalf": {
+     "n": 1378,
+     "k": 906,
+     "measured": true,
+     "value": 0.6575,
+     "interval": [
+      0.632,
+      0.6821
+     ]
+    },
+    "foreign_carrier_payload/deepset": {
+     "n": 23,
+     "k": 5,
+     "measured": true,
+     "value": 0.2174,
+     "interval": [
+      0.0966,
+      0.419
+     ]
+    },
+    "foreign_carrier_payload/gandalf": {
+     "n": 146,
+     "k": 84,
+     "measured": true,
+     "value": 0.5753,
+     "interval": [
+      0.4942,
+      0.6526
+     ]
+    },
+    "foreign_carrier_payload/yanismiraoui": {
+     "n": 65,
+     "k": 17,
+     "measured": true,
+     "value": 0.2615,
+     "interval": [
+      0.1702,
+      0.3795
+     ]
+    },
+    "injecagent_base/injecagent": {
+     "n": 527,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0072
+     ]
+    },
+    "injecagent_enhanced/injecagent": {
+     "n": 527,
+     "k": 527,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9928,
+      1.0
+     ]
+    },
+    "llmail_attempt/llmail": {
+     "n": 2997,
+     "k": 902,
+     "measured": true,
+     "value": 0.301,
+     "interval": [
+      0.2848,
+      0.3176
+     ]
+    },
+    "llmail_succeeded/llmail": {
+     "n": 1555,
+     "k": 701,
+     "measured": true,
+     "value": 0.4508,
+     "interval": [
+      0.4262,
+      0.4756
+     ]
+    },
+    "split_payload/deepset": {
+     "n": 22,
+     "k": 4,
+     "measured": true,
+     "value": 0.1818,
+     "interval": [
+      0.0731,
+      0.3852
+     ]
+    },
+    "split_payload/gandalf": {
+     "n": 113,
+     "k": 67,
+     "measured": true,
+     "value": 0.5929,
+     "interval": [
+      0.5007,
+      0.679
+     ]
+    },
+    "split_payload/yanismiraoui": {
+     "n": 64,
+     "k": 15,
+     "measured": true,
+     "value": 0.2344,
+     "interval": [
+      0.1475,
+      0.3513
+     ]
+    },
+    "stacked_evasion/gandalf": {
+     "n": 600,
+     "k": 376,
+     "measured": true,
+     "value": 0.6267,
+     "interval": [
+      0.5873,
+      0.6644
+     ]
+    }
+   },
+   "roc_auc_by_family_source": {
+    "agentdojo_direct/agentdojo": 0.6184,
+    "agentdojo_ignore_previous/agentdojo": 0.9339,
+    "agentdojo_important_instructions/agentdojo": 0.9999,
+    "agentdojo_injecagent/agentdojo": 0.9997,
+    "agentdojo_system_message/agentdojo": 0.9997,
+    "bipia_code/bipia": 0.5196,
+    "bipia_text/bipia": 0.5686,
+    "container_payload/deepset": 0.6143,
+    "container_payload/gandalf": 0.7787,
+    "container_payload/yanismiraoui": 0.6825,
+    "diluted_payload/deepset": 0.6801,
+    "diluted_payload/gandalf": 0.844,
+    "diluted_payload/yanismiraoui": 0.7924,
+    "direct_prompt/deepset": 0.62,
+    "direct_prompt/gandalf": 0.8023,
+    "direct_prompt/yanismiraoui": 0.6067,
+    "embedded_payload/deepset": 0.6501,
+    "embedded_payload/gandalf": 0.8054,
+    "embedded_payload/yanismiraoui": 0.62,
+    "evasion/gandalf": 0.8651,
+    "foreign_carrier_payload/deepset": 0.6143,
+    "foreign_carrier_payload/gandalf": 0.7822,
+    "foreign_carrier_payload/yanismiraoui": 0.6232,
+    "injecagent_base/injecagent": 0.8125,
+    "injecagent_enhanced/injecagent": 0.9997,
+    "llmail_attempt/llmail": 0.8188,
+    "llmail_succeeded/llmail": 0.9013,
+    "split_payload/deepset": 0.5968,
+    "split_payload/gandalf": 0.7923,
+    "split_payload/yanismiraoui": 0.6481,
+    "stacked_evasion/gandalf": 0.8501
+   },
+   "fpr_by_family": {
+    "agentdojo_clean": {
+     "n": 18,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1759
+     ]
+    },
+    "benign_document": {
+     "n": 7150,
+     "k": 13,
+     "measured": true,
+     "value": 0.0018,
+     "interval": [
+      0.0011,
+      0.0031
+     ]
+    },
+    "bipia_clean_context": {
+     "n": 126,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0296
+     ]
+    },
+    "carrier_without_payload": {
+     "n": 474,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.008
+     ]
+    },
+    "direct_prompt": {
+     "n": 343,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0111
+     ]
+    },
+    "llmail_benign_email": {
+     "n": 72,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0507
+     ]
+    }
+   },
+   "fpr_by_source": {
+    "agentdojo": {
+     "n": 18,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1759
+     ]
+    },
+    "bipia": {
+     "n": 126,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0296
+     ]
+    },
+    "deepset": {
+     "n": 343,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0111
+     ]
+    },
+    "django_docs": {
+     "n": 1037,
+     "k": 1,
+     "measured": true,
+     "value": 0.001,
+     "interval": [
+      0.0002,
+      0.0054
+     ]
+    },
+    "llmail": {
+     "n": 72,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0507
+     ]
+    },
+    "owasp_cheatsheets": {
+     "n": 637,
+     "k": 1,
+     "measured": true,
+     "value": 0.0016,
+     "interval": [
+      0.0003,
+      0.0088
+     ]
+    },
+    "prompt_guide": {
+     "n": 244,
+     "k": 10,
+     "measured": true,
+     "value": 0.041,
+     "interval": [
+      0.0224,
+      0.0738
+     ]
+    },
+    "runbooks_openshift": {
+     "n": 230,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0164
+     ]
+    },
+    "runbooks_prometheus": {
+     "n": 51,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.07
+     ]
+    },
+    "tldr_pages": {
+     "n": 1500,
+     "k": 1,
+     "measured": true,
+     "value": 0.0007,
+     "interval": [
+      0.0001,
+      0.0038
+     ]
+    },
+    "wikipedia_ar": {
+     "n": 260,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0146
+     ]
+    },
+    "wikipedia_de": {
+     "n": 354,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0107
+     ]
+    },
+    "wikipedia_en": {
+     "n": 1196,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0032
+     ]
+    },
+    "wikipedia_es": {
+     "n": 346,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.011
+     ]
+    },
+    "wikipedia_fa": {
+     "n": 242,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0156
+     ]
+    },
+    "wikipedia_fr": {
+     "n": 416,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0092
+     ]
+    },
+    "wikipedia_he": {
+     "n": 276,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0137
+     ]
+    },
+    "wikipedia_ja": {
+     "n": 306,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0124
+     ]
+    },
+    "wikipedia_ru": {
+     "n": 315,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.012
+     ]
+    },
+    "wikipedia_zh": {
+     "n": 214,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0176
+     ]
+    }
+   },
+   "out_of_scope_recall": {},
+   "recall_by_obfuscation": {
+    "base64": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "base64+css_hidden": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "base64+url_query": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "base64_twice": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "css_hidden": {
+     "n": 60,
+     "k": 44,
+     "measured": true,
+     "value": 0.7333,
+     "interval": [
+      0.6099,
+      0.8287
+     ]
+    },
+    "fullwidth": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "fullwidth+one_char_per_line": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "hex": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "homoglyph_cyrillic": {
+     "n": 60,
+     "k": 39,
+     "measured": true,
+     "value": 0.65,
+     "interval": [
+      0.5236,
+      0.7583
+     ]
+    },
+    "homoglyph_cyrillic+zero_width_split": {
+     "n": 60,
+     "k": 39,
+     "measured": true,
+     "value": 0.65,
+     "interval": [
+      0.5236,
+      0.7583
+     ]
+    },
+    "html_comment": {
+     "n": 60,
+     "k": 41,
+     "measured": true,
+     "value": 0.6833,
+     "interval": [
+      0.5577,
+      0.7869
+     ]
+    },
+    "html_entities": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "leetspeak": {
+     "n": 60,
+     "k": 33,
+     "measured": true,
+     "value": 0.55,
+     "interval": [
+      0.4249,
+      0.6691
+     ]
+    },
+    "leetspeak+base64": {
+     "n": 60,
+     "k": 33,
+     "measured": true,
+     "value": 0.55,
+     "interval": [
+      0.4249,
+      0.6691
+     ]
+    },
+    "leetspeak+html_comment": {
+     "n": 60,
+     "k": 33,
+     "measured": true,
+     "value": 0.55,
+     "interval": [
+      0.4249,
+      0.6691
+     ]
+    },
+    "letter_spaced": {
+     "n": 60,
+     "k": 36,
+     "measured": true,
+     "value": 0.6,
+     "interval": [
+      0.4737,
+      0.7143
+     ]
+    },
+    "none": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "one_char_per_line": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "quoted_printable": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "reversed": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "reversed+base64": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "rot13": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "rot13+base64": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "soft_hyphen_split": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "tag_smuggled": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "typos": {
+     "n": 58,
+     "k": 33,
+     "measured": true,
+     "value": 0.569,
+     "interval": [
+      0.4412,
+      0.6882
+     ]
+    },
+    "typos+letter_spaced": {
+     "n": 60,
+     "k": 29,
+     "measured": true,
+     "value": 0.4833,
+     "interval": [
+      0.3617,
+      0.6069
+     ]
+    },
+    "unicode_escapes": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "unicode_escapes+html_comment": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "url_encoded": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "url_query": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "variation_selector_smuggled": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "zero_width_split": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    }
+   },
+   "recall_by_container": {
+    "code_comment": {
+     "n": 30,
+     "k": 12,
+     "measured": true,
+     "value": 0.4,
+     "interval": [
+      0.2459,
+      0.5768
+     ]
+    },
+    "csv_cell": {
+     "n": 30,
+     "k": 16,
+     "measured": true,
+     "value": 0.5333,
+     "interval": [
+      0.3614,
+      0.6977
+     ]
+    },
+    "email_quote": {
+     "n": 30,
+     "k": 15,
+     "measured": true,
+     "value": 0.5,
+     "interval": [
+      0.3315,
+      0.6685
+     ]
+    },
+    "footnote": {
+     "n": 30,
+     "k": 12,
+     "measured": true,
+     "value": 0.4,
+     "interval": [
+      0.2459,
+      0.5768
+     ]
+    },
+    "html_alt": {
+     "n": 30,
+     "k": 16,
+     "measured": true,
+     "value": 0.5333,
+     "interval": [
+      0.3614,
+      0.6977
+     ]
+    },
+    "json_field": {
+     "n": 30,
+     "k": 12,
+     "measured": true,
+     "value": 0.4,
+     "interval": [
+      0.2459,
+      0.5768
+     ]
+    },
+    "markdown_table": {
+     "n": 30,
+     "k": 10,
+     "measured": true,
+     "value": 0.3333,
+     "interval": [
+      0.1923,
+      0.5122
+     ]
+    },
+    "yaml_front_matter": {
+     "n": 30,
+     "k": 16,
+     "measured": true,
+     "value": 0.5333,
+     "interval": [
+      0.3614,
+      0.6977
+     ]
+    }
+   },
+   "recall_by_position": {
+    "end": {
+     "n": 300,
+     "k": 124,
+     "measured": true,
+     "value": 0.4133,
+     "interval": [
+      0.359,
+      0.4698
+     ]
+    },
+    "middle": {
+     "n": 300,
+     "k": 130,
+     "measured": true,
+     "value": 0.4333,
+     "interval": [
+      0.3785,
+      0.4899
+     ]
+    },
+    "start": {
+     "n": 300,
+     "k": 136,
+     "measured": true,
+     "value": 0.4533,
+     "interval": [
+      0.3979,
+      0.5099
+     ]
+    }
+   },
+   "recall_by_carrier_length": {
+    "2000": {
+     "n": 300,
+     "k": 142,
+     "measured": true,
+     "value": 0.4733,
+     "interval": [
+      0.4175,
+      0.5298
+     ]
+    },
+    "500": {
+     "n": 300,
+     "k": 128,
+     "measured": true,
+     "value": 0.4267,
+     "interval": [
+      0.372,
+      0.4832
+     ]
+    },
+    "8000": {
+     "n": 300,
+     "k": 120,
+     "measured": true,
+     "value": 0.4,
+     "interval": [
+      0.3462,
+      0.4564
+     ]
+    }
+   },
+   "recall_by_language": {
+    "de": {
+     "n": 120,
+     "k": 23,
+     "measured": true,
+     "value": 0.1917,
+     "interval": [
+      0.1312,
+      0.2712
+     ]
+    },
+    "en": {
+     "n": 1152,
+     "k": 593,
+     "measured": true,
+     "value": 0.5148,
+     "interval": [
+      0.4859,
+      0.5435
+     ]
+    },
+    "es": {
+     "n": 56,
+     "k": 14,
+     "measured": true,
+     "value": 0.25,
+     "interval": [
+      0.1552,
+      0.3769
+     ]
+    },
+    "fr": {
+     "n": 54,
+     "k": 22,
+     "measured": true,
+     "value": 0.4074,
+     "interval": [
+      0.2868,
+      0.5403
+     ]
+    },
+    "it": {
+     "n": 49,
+     "k": 15,
+     "measured": true,
+     "value": 0.3061,
+     "interval": [
+      0.1952,
+      0.4453
+     ]
+    },
+    "pt": {
+     "n": 52,
+     "k": 9,
+     "measured": true,
+     "value": 0.1731,
+     "interval": [
+      0.0938,
+      0.2973
+     ]
+    },
+    "ro": {
+     "n": 2,
+     "k": 0,
+     "measured": false
+    },
+    "undecided": {
+     "n": 71,
+     "k": 14,
+     "measured": true,
+     "value": 0.1972,
+     "interval": [
+      0.1213,
+      0.3042
+     ]
+    }
+   },
+   "recall_by_bipia_marker": {
+    "names_the_answer": {
+     "n": 144,
+     "k": 38,
+     "measured": true,
+     "value": 0.2639,
+     "interval": [
+      0.1987,
+      0.3413
+     ]
+    },
+    "none": {
+     "n": 228,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0166
+     ]
+    }
+   },
+   "recall_by_spml_degree": {},
+   "fpr_by_notinject_level": {},
+   "evasion_retention": {
+    "base64": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "base64+css_hidden": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "base64+url_query": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "base64_twice": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "css_hidden": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "fullwidth": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "fullwidth+one_char_per_line": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "hex": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "homoglyph_cyrillic": {
+     "n": 40,
+     "k": 39,
+     "measured": true,
+     "value": 0.975,
+     "interval": [
+      0.8712,
+      0.9956
+     ]
+    },
+    "homoglyph_cyrillic+zero_width_split": {
+     "n": 40,
+     "k": 39,
+     "measured": true,
+     "value": 0.975,
+     "interval": [
+      0.8712,
+      0.9956
+     ]
+    },
+    "html_comment": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "html_entities": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "leetspeak": {
+     "n": 40,
+     "k": 33,
+     "measured": true,
+     "value": 0.825,
+     "interval": [
+      0.6805,
+      0.9125
+     ]
+    },
+    "leetspeak+base64": {
+     "n": 40,
+     "k": 33,
+     "measured": true,
+     "value": 0.825,
+     "interval": [
+      0.6805,
+      0.9125
+     ]
+    },
+    "leetspeak+html_comment": {
+     "n": 40,
+     "k": 33,
+     "measured": true,
+     "value": 0.825,
+     "interval": [
+      0.6805,
+      0.9125
+     ]
+    },
+    "letter_spaced": {
+     "n": 40,
+     "k": 36,
+     "measured": true,
+     "value": 0.9,
+     "interval": [
+      0.7695,
+      0.9604
+     ]
+    },
+    "one_char_per_line": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "quoted_printable": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "reversed": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "reversed+base64": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "rot13": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "rot13+base64": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "soft_hyphen_split": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "tag_smuggled": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "typos": {
+     "n": 39,
+     "k": 33,
+     "measured": true,
+     "value": 0.8462,
+     "interval": [
+      0.7027,
+      0.9275
+     ]
+    },
+    "typos+letter_spaced": {
+     "n": 40,
+     "k": 29,
+     "measured": true,
+     "value": 0.725,
+     "interval": [
+      0.5716,
+      0.8389
+     ]
+    },
+    "unicode_escapes": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "unicode_escapes+html_comment": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "url_encoded": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "url_query": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "variation_selector_smuggled": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    },
+    "zero_width_split": {
+     "n": 40,
+     "k": 40,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9124,
+      1.0
+     ]
+    }
+   },
+   "discussed_share_of_false_positives": {
+    "n": 13,
+    "k": 7,
+    "measured": true,
+    "value": 0.5385,
+    "interval": [
+     0.2914,
+     0.7679
+    ]
+   },
+   "recall_at_fpr": {
+    "0.001": {
+     "measured": true,
+     "threshold": 0.6,
+     "recall": 0.3895,
+     "fpr": 0.00061,
+     "positives": 11719,
+     "negatives": 8183
+    },
+    "0.01": {
+     "measured": true,
+     "threshold": 0.35,
+     "recall": 0.5166,
+     "fpr": 0.00477,
+     "positives": 11719,
+     "negatives": 8183
+    }
+   }
+  },
+  "test": {
+   "recall": {
+    "n": 10610,
+    "k": 4285,
+    "measured": true,
+    "value": 0.4039,
+    "interval": [
+     0.3946,
+     0.4132
+    ]
+   },
+   "false_positive_rate": {
+    "n": 8105,
+    "k": 20,
+    "measured": true,
+    "value": 0.0025,
+    "interval": [
+     0.0016,
+     0.0038
+    ]
+   },
+   "precision": 0.9954,
+   "f1": 0.5746,
+   "roc_auc": 0.8008852182214933,
+   "roc_auc_interval": [
+    0.7965,
+    0.8052
+   ],
+   "average_precision": 0.8294001776941367,
+   "average_precision_interval": [
+    0.8254,
+    0.8333
+   ],
+   "at_thresholds_chosen_on_dev": {
+    "best_f1_on_dev": {
+     "threshold": 0.3,
+     "f1": 0.7549,
+     "precision": 0.945,
+     "recall": 0.6285,
+     "false_positive_rate": 0.04787,
+     "tp": 6668,
+     "fp": 388,
+     "fn": 3942
+    },
+    "fpr_0.01_on_dev": {
+     "threshold": 0.35,
+     "f1": 0.6555,
+     "precision": 0.9905,
+     "recall": 0.4898,
+     "false_positive_rate": 0.00617,
+     "tp": 5197,
+     "fp": 50,
+     "fn": 5413
+    },
+    "fpr_0.001_on_dev": {
+     "threshold": 0.6,
+     "f1": 0.5306,
+     "precision": 0.9969,
+     "recall": 0.3615,
+     "false_positive_rate": 0.00148,
+     "tp": 3836,
+     "fp": 12,
+     "fn": 6774
+    }
+   },
+   "recall_by_family": {
+    "agentdojo_direct": {
+     "n": 54,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0664
+     ]
+    },
+    "agentdojo_ignore_previous": {
+     "n": 54,
+     "k": 50,
+     "measured": true,
+     "value": 0.9259,
+     "interval": [
+      0.8245,
+      0.9708
+     ]
+    },
+    "agentdojo_important_instructions": {
+     "n": 54,
+     "k": 54,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9336,
+      1.0
+     ]
+    },
+    "agentdojo_injecagent": {
+     "n": 54,
+     "k": 54,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9336,
+      1.0
+     ]
+    },
+    "agentdojo_system_message": {
+     "n": 54,
+     "k": 54,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9336,
+      1.0
+     ]
+    },
+    "bipia_code": {
+     "n": 150,
+     "k": 9,
+     "measured": true,
+     "value": 0.06,
+     "interval": [
+      0.0319,
+      0.1101
+     ]
+    },
+    "bipia_text": {
+     "n": 224,
+     "k": 33,
+     "measured": true,
+     "value": 0.1473,
+     "interval": [
+      0.1069,
+      0.1997
+     ]
+    },
+    "container_payload": {
+     "n": 240,
+     "k": 63,
+     "measured": true,
+     "value": 0.2625,
+     "interval": [
+      0.2109,
+      0.3216
+     ]
+    },
+    "diluted_payload": {
+     "n": 240,
+     "k": 63,
+     "measured": true,
+     "value": 0.2625,
+     "interval": [
+      0.2109,
+      0.3216
+     ]
+    },
+    "direct_prompt": {
+     "n": 681,
+     "k": 188,
+     "measured": true,
+     "value": 0.2761,
+     "interval": [
+      0.2438,
+      0.3108
+     ]
+    },
+    "embedded_payload": {
+     "n": 714,
+     "k": 196,
+     "measured": true,
+     "value": 0.2745,
+     "interval": [
+      0.243,
+      0.3084
+     ]
+    },
+    "evasion": {
+     "n": 1377,
+     "k": 949,
+     "measured": true,
+     "value": 0.6892,
+     "interval": [
+      0.6642,
+      0.7131
+     ]
+    },
+    "foreign_carrier_payload": {
+     "n": 229,
+     "k": 62,
+     "measured": true,
+     "value": 0.2707,
+     "interval": [
+      0.2173,
+      0.3317
+     ]
+    },
+    "injecagent_base": {
+     "n": 527,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0072
+     ]
+    },
+    "injecagent_enhanced": {
+     "n": 527,
+     "k": 527,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9928,
+      1.0
+     ]
+    },
+    "llmail_attempt": {
+     "n": 3003,
+     "k": 863,
+     "measured": true,
+     "value": 0.2874,
+     "interval": [
+      0.2715,
+      0.3038
+     ]
+    },
+    "llmail_succeeded": {
+     "n": 1610,
+     "k": 675,
+     "measured": true,
+     "value": 0.4193,
+     "interval": [
+      0.3954,
+      0.4435
+     ]
+    },
+    "split_payload": {
+     "n": 219,
+     "k": 50,
+     "measured": true,
+     "value": 0.2283,
+     "interval": [
+      0.1777,
+      0.2883
+     ]
+    },
+    "stacked_evasion": {
+     "n": 599,
+     "k": 395,
+     "measured": true,
+     "value": 0.6594,
+     "interval": [
+      0.6206,
+      0.6963
+     ]
+    }
+   },
+   "recall_by_family_source": {
+    "agentdojo_direct/agentdojo": {
+     "n": 54,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0664
+     ]
+    },
+    "agentdojo_ignore_previous/agentdojo": {
+     "n": 54,
+     "k": 50,
+     "measured": true,
+     "value": 0.9259,
+     "interval": [
+      0.8245,
+      0.9708
+     ]
+    },
+    "agentdojo_important_instructions/agentdojo": {
+     "n": 54,
+     "k": 54,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9336,
+      1.0
+     ]
+    },
+    "agentdojo_injecagent/agentdojo": {
+     "n": 54,
+     "k": 54,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9336,
+      1.0
+     ]
+    },
+    "agentdojo_system_message/agentdojo": {
+     "n": 54,
+     "k": 54,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9336,
+      1.0
+     ]
+    },
+    "bipia_code/bipia": {
+     "n": 150,
+     "k": 9,
+     "measured": true,
+     "value": 0.06,
+     "interval": [
+      0.0319,
+      0.1101
+     ]
+    },
+    "bipia_text/bipia": {
+     "n": 224,
+     "k": 33,
+     "measured": true,
+     "value": 0.1473,
+     "interval": [
+      0.1069,
+      0.1997
+     ]
+    },
+    "container_payload/deepset": {
+     "n": 24,
+     "k": 3,
+     "measured": true,
+     "value": 0.125,
+     "interval": [
+      0.0434,
+      0.31
+     ]
+    },
+    "container_payload/gandalf": {
+     "n": 37,
+     "k": 25,
+     "measured": true,
+     "value": 0.6757,
+     "interval": [
+      0.5146,
+      0.8037
+     ]
+    },
+    "container_payload/yanismiraoui": {
+     "n": 179,
+     "k": 35,
+     "measured": true,
+     "value": 0.1955,
+     "interval": [
+      0.1441,
+      0.2598
+     ]
+    },
+    "diluted_payload/deepset": {
+     "n": 24,
+     "k": 3,
+     "measured": true,
+     "value": 0.125,
+     "interval": [
+      0.0434,
+      0.31
+     ]
+    },
+    "diluted_payload/gandalf": {
+     "n": 37,
+     "k": 25,
+     "measured": true,
+     "value": 0.6757,
+     "interval": [
+      0.5146,
+      0.8037
+     ]
+    },
+    "diluted_payload/yanismiraoui": {
+     "n": 179,
+     "k": 35,
+     "measured": true,
+     "value": 0.1955,
+     "interval": [
+      0.1441,
+      0.2598
+     ]
+    },
+    "direct_prompt/deepset": {
+     "n": 60,
+     "k": 10,
+     "measured": true,
+     "value": 0.1667,
+     "interval": [
+      0.0931,
+      0.2803
+     ]
+    },
+    "direct_prompt/gandalf": {
+     "n": 112,
+     "k": 69,
+     "measured": true,
+     "value": 0.6161,
+     "interval": [
+      0.5236,
+      0.7009
+     ]
+    },
+    "direct_prompt/yanismiraoui": {
+     "n": 509,
+     "k": 109,
+     "measured": true,
+     "value": 0.2141,
+     "interval": [
+      0.1807,
+      0.2519
+     ]
+    },
+    "embedded_payload/deepset": {
+     "n": 60,
+     "k": 10,
+     "measured": true,
+     "value": 0.1667,
+     "interval": [
+      0.0931,
+      0.2803
+     ]
+    },
+    "embedded_payload/gandalf": {
+     "n": 112,
+     "k": 69,
+     "measured": true,
+     "value": 0.6161,
+     "interval": [
+      0.5236,
+      0.7009
+     ]
+    },
+    "embedded_payload/yanismiraoui": {
+     "n": 542,
+     "k": 117,
+     "measured": true,
+     "value": 0.2159,
+     "interval": [
+      0.1833,
+      0.2524
+     ]
+    },
+    "evasion/gandalf": {
+     "n": 1377,
+     "k": 949,
+     "measured": true,
+     "value": 0.6892,
+     "interval": [
+      0.6642,
+      0.7131
+     ]
+    },
+    "foreign_carrier_payload/deepset": {
+     "n": 24,
+     "k": 3,
+     "measured": true,
+     "value": 0.125,
+     "interval": [
+      0.0434,
+      0.31
+     ]
+    },
+    "foreign_carrier_payload/gandalf": {
+     "n": 37,
+     "k": 25,
+     "measured": true,
+     "value": 0.6757,
+     "interval": [
+      0.5146,
+      0.8037
+     ]
+    },
+    "foreign_carrier_payload/yanismiraoui": {
+     "n": 168,
+     "k": 34,
+     "measured": true,
+     "value": 0.2024,
+     "interval": [
+      0.1486,
+      0.2695
+     ]
+    },
+    "injecagent_base/injecagent": {
+     "n": 527,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0072
+     ]
+    },
+    "injecagent_enhanced/injecagent": {
+     "n": 527,
+     "k": 527,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9928,
+      1.0
+     ]
+    },
+    "llmail_attempt/llmail": {
+     "n": 3003,
+     "k": 863,
+     "measured": true,
+     "value": 0.2874,
+     "interval": [
+      0.2715,
+      0.3038
+     ]
+    },
+    "llmail_succeeded/llmail": {
+     "n": 1610,
+     "k": 675,
+     "measured": true,
+     "value": 0.4193,
+     "interval": [
+      0.3954,
+      0.4435
+     ]
+    },
+    "split_payload/deepset": {
+     "n": 24,
+     "k": 3,
+     "measured": true,
+     "value": 0.125,
+     "interval": [
+      0.0434,
+      0.31
+     ]
+    },
+    "split_payload/gandalf": {
+     "n": 32,
+     "k": 18,
+     "measured": true,
+     "value": 0.5625,
+     "interval": [
+      0.3933,
+      0.7183
+     ]
+    },
+    "split_payload/yanismiraoui": {
+     "n": 163,
+     "k": 29,
+     "measured": true,
+     "value": 0.1779,
+     "interval": [
+      0.1268,
+      0.2438
+     ]
+    },
+    "stacked_evasion/gandalf": {
+     "n": 599,
+     "k": 395,
+     "measured": true,
+     "value": 0.6594,
+     "interval": [
+      0.6206,
+      0.6963
+     ]
+    }
+   },
+   "roc_auc_by_family_source": {
+    "agentdojo_direct/agentdojo": 0.6693,
+    "agentdojo_ignore_previous/agentdojo": 0.9602,
+    "agentdojo_important_instructions/agentdojo": 0.9995,
+    "agentdojo_injecagent/agentdojo": 0.999,
+    "agentdojo_system_message/agentdojo": 0.999,
+    "bipia_code/bipia": 0.577,
+    "bipia_text/bipia": 0.5552,
+    "container_payload/deepset": 0.5621,
+    "container_payload/gandalf": 0.8293,
+    "container_payload/yanismiraoui": 0.5921,
+    "diluted_payload/deepset": 0.7287,
+    "diluted_payload/gandalf": 0.9099,
+    "diluted_payload/yanismiraoui": 0.7094,
+    "direct_prompt/deepset": 0.5714,
+    "direct_prompt/gandalf": 0.7981,
+    "direct_prompt/yanismiraoui": 0.5927,
+    "embedded_payload/deepset": 0.5963,
+    "embedded_payload/gandalf": 0.8069,
+    "embedded_payload/yanismiraoui": 0.6154,
+    "evasion/gandalf": 0.8627,
+    "foreign_carrier_payload/deepset": 0.5828,
+    "foreign_carrier_payload/gandalf": 0.8293,
+    "foreign_carrier_payload/yanismiraoui": 0.5906,
+    "injecagent_base/injecagent": 0.8203,
+    "injecagent_enhanced/injecagent": 0.999,
+    "llmail_attempt/llmail": 0.8181,
+    "llmail_succeeded/llmail": 0.8897,
+    "split_payload/deepset": 0.5621,
+    "split_payload/gandalf": 0.7702,
+    "split_payload/yanismiraoui": 0.5811,
+    "stacked_evasion/gandalf": 0.8525
+   },
+   "fpr_by_family": {
+    "agentdojo_clean": {
+     "n": 11,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.2588
+     ]
+    },
+    "benign_document": {
+     "n": 7434,
+     "k": 20,
+     "measured": true,
+     "value": 0.0027,
+     "interval": [
+      0.0017,
+      0.0042
+     ]
+    },
+    "bipia_clean_context": {
+     "n": 125,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0298
+     ]
+    },
+    "carrier_without_payload": {
+     "n": 391,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0097
+     ]
+    },
+    "direct_prompt": {
+     "n": 56,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0642
+     ]
+    },
+    "llmail_benign_email": {
+     "n": 88,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0418
+     ]
+    }
+   },
+   "fpr_by_source": {
+    "agentdojo": {
+     "n": 11,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.2588
+     ]
+    },
+    "bipia": {
+     "n": 125,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0298
+     ]
+    },
+    "deepset": {
+     "n": 56,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0642
+     ]
+    },
+    "django_docs": {
+     "n": 1207,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0032
+     ]
+    },
+    "llmail": {
+     "n": 88,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0418
+     ]
+    },
+    "owasp_cheatsheets": {
+     "n": 576,
+     "k": 10,
+     "measured": true,
+     "value": 0.0174,
+     "interval": [
+      0.0095,
+      0.0317
+     ]
+    },
+    "prompt_guide": {
+     "n": 192,
+     "k": 9,
+     "measured": true,
+     "value": 0.0469,
+     "interval": [
+      0.0249,
+      0.0867
+     ]
+    },
+    "runbooks_openshift": {
+     "n": 267,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0142
+     ]
+    },
+    "runbooks_prometheus": {
+     "n": 56,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0642
+     ]
+    },
+    "tldr_pages": {
+     "n": 1500,
+     "k": 1,
+     "measured": true,
+     "value": 0.0007,
+     "interval": [
+      0.0001,
+      0.0038
+     ]
+    },
+    "wikipedia_ar": {
+     "n": 309,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0123
+     ]
+    },
+    "wikipedia_de": {
+     "n": 357,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0106
+     ]
+    },
+    "wikipedia_en": {
+     "n": 1159,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0033
+     ]
+    },
+    "wikipedia_es": {
+     "n": 346,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.011
+     ]
+    },
+    "wikipedia_fa": {
+     "n": 271,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.014
+     ]
+    },
+    "wikipedia_fr": {
+     "n": 337,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0113
+     ]
+    },
+    "wikipedia_he": {
+     "n": 359,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0106
+     ]
+    },
+    "wikipedia_ja": {
+     "n": 329,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0115
+     ]
+    },
+    "wikipedia_ru": {
+     "n": 339,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0112
+     ]
+    },
+    "wikipedia_zh": {
+     "n": 221,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0171
+     ]
+    }
+   },
+   "out_of_scope_recall": {},
+   "recall_by_obfuscation": {
+    "base64": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "base64+css_hidden": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "base64+url_query": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "base64_twice": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "css_hidden": {
+     "n": 60,
+     "k": 45,
+     "measured": true,
+     "value": 0.75,
+     "interval": [
+      0.6277,
+      0.8422
+     ]
+    },
+    "fullwidth": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "fullwidth+one_char_per_line": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "hex": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "homoglyph_cyrillic": {
+     "n": 59,
+     "k": 41,
+     "measured": true,
+     "value": 0.6949,
+     "interval": [
+      0.5685,
+      0.7975
+     ]
+    },
+    "homoglyph_cyrillic+zero_width_split": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "html_comment": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "html_entities": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "leetspeak": {
+     "n": 59,
+     "k": 34,
+     "measured": true,
+     "value": 0.5763,
+     "interval": [
+      0.4493,
+      0.6939
+     ]
+    },
+    "leetspeak+base64": {
+     "n": 59,
+     "k": 34,
+     "measured": true,
+     "value": 0.5763,
+     "interval": [
+      0.4493,
+      0.6939
+     ]
+    },
+    "leetspeak+html_comment": {
+     "n": 60,
+     "k": 35,
+     "measured": true,
+     "value": 0.5833,
+     "interval": [
+      0.4573,
+      0.6994
+     ]
+    },
+    "letter_spaced": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "none": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "one_char_per_line": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "quoted_printable": {
+     "n": 60,
+     "k": 41,
+     "measured": true,
+     "value": 0.6833,
+     "interval": [
+      0.5577,
+      0.7869
+     ]
+    },
+    "reversed": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "reversed+base64": {
+     "n": 60,
+     "k": 40,
+     "measured": true,
+     "value": 0.6667,
+     "interval": [
+      0.5406,
+      0.7727
+     ]
+    },
+    "rot13": {
+     "n": 59,
+     "k": 40,
+     "measured": true,
+     "value": 0.678,
+     "interval": [
+      0.551,
+      0.7831
+     ]
+    },
+    "rot13+base64": {
+     "n": 60,
+     "k": 41,
+     "measured": true,
+     "value": 0.6833,
+     "interval": [
+      0.5577,
+      0.7869
+     ]
+    },
+    "soft_hyphen_split": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "tag_smuggled": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "typos": {
+     "n": 60,
+     "k": 36,
+     "measured": true,
+     "value": 0.6,
+     "interval": [
+      0.4737,
+      0.7143
+     ]
+    },
+    "typos+letter_spaced": {
+     "n": 60,
+     "k": 35,
+     "measured": true,
+     "value": 0.5833,
+     "interval": [
+      0.4573,
+      0.6994
+     ]
+    },
+    "unicode_escapes": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "unicode_escapes+html_comment": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "url_encoded": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "url_query": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "variation_selector_smuggled": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    },
+    "zero_width_split": {
+     "n": 60,
+     "k": 42,
+     "measured": true,
+     "value": 0.7,
+     "interval": [
+      0.5749,
+      0.801
+     ]
+    }
+   },
+   "recall_by_container": {
+    "code_comment": {
+     "n": 30,
+     "k": 10,
+     "measured": true,
+     "value": 0.3333,
+     "interval": [
+      0.1923,
+      0.5122
+     ]
+    },
+    "csv_cell": {
+     "n": 30,
+     "k": 9,
+     "measured": true,
+     "value": 0.3,
+     "interval": [
+      0.1666,
+      0.4788
+     ]
+    },
+    "email_quote": {
+     "n": 30,
+     "k": 6,
+     "measured": true,
+     "value": 0.2,
+     "interval": [
+      0.095,
+      0.3731
+     ]
+    },
+    "footnote": {
+     "n": 30,
+     "k": 7,
+     "measured": true,
+     "value": 0.2333,
+     "interval": [
+      0.1179,
+      0.4093
+     ]
+    },
+    "html_alt": {
+     "n": 30,
+     "k": 6,
+     "measured": true,
+     "value": 0.2,
+     "interval": [
+      0.095,
+      0.3731
+     ]
+    },
+    "json_field": {
+     "n": 30,
+     "k": 11,
+     "measured": true,
+     "value": 0.3667,
+     "interval": [
+      0.2187,
+      0.5449
+     ]
+    },
+    "markdown_table": {
+     "n": 30,
+     "k": 9,
+     "measured": true,
+     "value": 0.3,
+     "interval": [
+      0.1666,
+      0.4788
+     ]
+    },
+    "yaml_front_matter": {
+     "n": 30,
+     "k": 5,
+     "measured": true,
+     "value": 0.1667,
+     "interval": [
+      0.0734,
+      0.3356
+     ]
+    }
+   },
+   "recall_by_position": {
+    "end": {
+     "n": 237,
+     "k": 64,
+     "measured": true,
+     "value": 0.27,
+     "interval": [
+      0.2175,
+      0.3299
+     ]
+    },
+    "middle": {
+     "n": 237,
+     "k": 71,
+     "measured": true,
+     "value": 0.2996,
+     "interval": [
+      0.2448,
+      0.3607
+     ]
+    },
+    "start": {
+     "n": 240,
+     "k": 61,
+     "measured": true,
+     "value": 0.2542,
+     "interval": [
+      0.2033,
+      0.3128
+     ]
+    }
+   },
+   "recall_by_carrier_length": {
+    "2000": {
+     "n": 238,
+     "k": 68,
+     "measured": true,
+     "value": 0.2857,
+     "interval": [
+      0.2321,
+      0.3462
+     ]
+    },
+    "500": {
+     "n": 238,
+     "k": 66,
+     "measured": true,
+     "value": 0.2773,
+     "interval": [
+      0.2243,
+      0.3374
+     ]
+    },
+    "8000": {
+     "n": 238,
+     "k": 62,
+     "measured": true,
+     "value": 0.2605,
+     "interval": [
+      0.2089,
+      0.3198
+     ]
+    }
+   },
+   "recall_by_language": {
+    "de": {
+     "n": 75,
+     "k": 11,
+     "measured": true,
+     "value": 0.1467,
+     "interval": [
+      0.0839,
+      0.2438
+     ]
+    },
+    "en": {
+     "n": 313,
+     "k": 100,
+     "measured": true,
+     "value": 0.3195,
+     "interval": [
+      0.2703,
+      0.3731
+     ]
+    },
+    "es": {
+     "n": 48,
+     "k": 11,
+     "measured": true,
+     "value": 0.2292,
+     "interval": [
+      0.1331,
+      0.3654
+     ]
+    },
+    "fr": {
+     "n": 59,
+     "k": 23,
+     "measured": true,
+     "value": 0.3898,
+     "interval": [
+      0.2758,
+      0.5173
+     ]
+    },
+    "it": {
+     "n": 62,
+     "k": 14,
+     "measured": true,
+     "value": 0.2258,
+     "interval": [
+      0.1396,
+      0.3441
+     ]
+    },
+    "pt": {
+     "n": 65,
+     "k": 15,
+     "measured": true,
+     "value": 0.2308,
+     "interval": [
+      0.1451,
+      0.3464
+     ]
+    },
+    "ro": {
+     "n": 3,
+     "k": 0,
+     "measured": false
+    },
+    "undecided": {
+     "n": 56,
+     "k": 14,
+     "measured": true,
+     "value": 0.25,
+     "interval": [
+      0.1552,
+      0.3769
+     ]
+    }
+   },
+   "recall_by_bipia_marker": {
+    "names_the_answer": {
+     "n": 147,
+     "k": 42,
+     "measured": true,
+     "value": 0.2857,
+     "interval": [
+      0.2189,
+      0.3635
+     ]
+    },
+    "none": {
+     "n": 227,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0166
+     ]
+    }
+   },
+   "recall_by_spml_degree": {},
+   "fpr_by_notinject_level": {},
+   "evasion_retention": {
+    "base64": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "base64+css_hidden": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "base64+url_query": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "base64_twice": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "css_hidden": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "fullwidth": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "fullwidth+one_char_per_line": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "hex": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "homoglyph_cyrillic": {
+     "n": 41,
+     "k": 41,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9143,
+      1.0
+     ]
+    },
+    "homoglyph_cyrillic+zero_width_split": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "html_comment": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "html_entities": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "leetspeak": {
+     "n": 41,
+     "k": 34,
+     "measured": true,
+     "value": 0.8293,
+     "interval": [
+      0.6874,
+      0.9147
+     ]
+    },
+    "leetspeak+base64": {
+     "n": 41,
+     "k": 34,
+     "measured": true,
+     "value": 0.8293,
+     "interval": [
+      0.6874,
+      0.9147
+     ]
+    },
+    "leetspeak+html_comment": {
+     "n": 42,
+     "k": 35,
+     "measured": true,
+     "value": 0.8333,
+     "interval": [
+      0.694,
+      0.9168
+     ]
+    },
+    "letter_spaced": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "one_char_per_line": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "quoted_printable": {
+     "n": 42,
+     "k": 41,
+     "measured": true,
+     "value": 0.9762,
+     "interval": [
+      0.8768,
+      0.9958
+     ]
+    },
+    "reversed": {
+     "n": 42,
+     "k": 40,
+     "measured": true,
+     "value": 0.9524,
+     "interval": [
+      0.8421,
+      0.9868
+     ]
+    },
+    "reversed+base64": {
+     "n": 42,
+     "k": 40,
+     "measured": true,
+     "value": 0.9524,
+     "interval": [
+      0.8421,
+      0.9868
+     ]
+    },
+    "rot13": {
+     "n": 41,
+     "k": 40,
+     "measured": true,
+     "value": 0.9756,
+     "interval": [
+      0.874,
+      0.9957
+     ]
+    },
+    "rot13+base64": {
+     "n": 42,
+     "k": 41,
+     "measured": true,
+     "value": 0.9762,
+     "interval": [
+      0.8768,
+      0.9958
+     ]
+    },
+    "soft_hyphen_split": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "tag_smuggled": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "typos": {
+     "n": 42,
+     "k": 36,
+     "measured": true,
+     "value": 0.8571,
+     "interval": [
+      0.7216,
+      0.9328
+     ]
+    },
+    "typos+letter_spaced": {
+     "n": 42,
+     "k": 35,
+     "measured": true,
+     "value": 0.8333,
+     "interval": [
+      0.694,
+      0.9168
+     ]
+    },
+    "unicode_escapes": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "unicode_escapes+html_comment": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "url_encoded": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "url_query": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "variation_selector_smuggled": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    },
+    "zero_width_split": {
+     "n": 42,
+     "k": 42,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9162,
+      1.0
+     ]
+    }
+   },
+   "discussed_share_of_false_positives": {
+    "n": 20,
+    "k": 12,
+    "measured": true,
+    "value": 0.6,
+    "interval": [
+     0.3866,
+     0.7812
+    ]
+   },
+   "recall_at_fpr": {
+    "0.001": {
+     "measured": true,
+     "threshold": 0.7,
+     "recall": 0.3002,
+     "fpr": 0.00086,
+     "positives": 10610,
+     "negatives": 8105
+    },
+    "0.01": {
+     "measured": true,
+     "threshold": 0.35,
+     "recall": 0.4898,
+     "fpr": 0.00617,
+     "positives": 10610,
+     "negatives": 8105
+    }
+   }
+  },
+  "heldout": {
+   "recall": {
+    "n": 6362,
+    "k": 1086,
+    "measured": true,
+    "value": 0.1707,
+    "interval": [
+     0.1617,
+     0.1801
+    ]
+   },
+   "false_positive_rate": {
+    "n": 8560,
+    "k": 158,
+    "measured": true,
+    "value": 0.0185,
+    "interval": [
+     0.0158,
+     0.0215
+    ]
+   },
+   "precision": 0.873,
+   "f1": 0.2856,
+   "roc_auc": 0.5844960825373787,
+   "roc_auc_interval": [
+    0.5793,
+    0.5903
+   ],
+   "average_precision": 0.5298438925234593,
+   "average_precision_interval": [
+    0.5244,
+    0.5352
+   ],
+   "at_thresholds_chosen_on_dev": {
+    "best_f1_on_dev": {
+     "threshold": 0.3,
+     "f1": 0.326,
+     "precision": 0.7826,
+     "recall": 0.2059,
+     "false_positive_rate": 0.04252,
+     "tp": 1310,
+     "fp": 364,
+     "fn": 5052
+    },
+    "fpr_0.01_on_dev": {
+     "threshold": 0.35,
+     "f1": 0.2907,
+     "precision": 0.8739,
+     "recall": 0.1743,
+     "false_positive_rate": 0.01869,
+     "tp": 1109,
+     "fp": 160,
+     "fn": 5253
+    },
+    "fpr_0.001_on_dev": {
+     "threshold": 0.6,
+     "f1": 0.2068,
+     "precision": 0.9946,
+     "recall": 0.1154,
+     "false_positive_rate": 0.00047,
+     "tp": 734,
+     "fp": 4,
+     "fn": 5628
+    }
+   },
+   "recall_by_family": {
+    "labelled_prompt": {
+     "n": 6222,
+     "k": 1081,
+     "measured": true,
+     "value": 0.1737,
+     "interval": [
+      0.1645,
+      0.1834
+     ]
+    },
+    "summarization_injection": {
+     "n": 140,
+     "k": 5,
+     "measured": true,
+     "value": 0.0357,
+     "interval": [
+      0.0153,
+      0.0809
+     ]
+    }
+   },
+   "recall_by_family_source": {
+    "labelled_prompt/slabs": {
+     "n": 1964,
+     "k": 230,
+     "measured": true,
+     "value": 0.1171,
+     "interval": [
+      0.1036,
+      0.1321
+     ]
+    },
+    "labelled_prompt/spml": {
+     "n": 2000,
+     "k": 71,
+     "measured": true,
+     "value": 0.0355,
+     "interval": [
+      0.0282,
+      0.0445
+     ]
+    },
+    "labelled_prompt/turkish": {
+     "n": 258,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0147
+     ]
+    },
+    "labelled_prompt/wambosec": {
+     "n": 2000,
+     "k": 780,
+     "measured": true,
+     "value": 0.39,
+     "interval": [
+      0.3689,
+      0.4116
+     ]
+    },
+    "summarization_injection/gandalf_summarization": {
+     "n": 140,
+     "k": 5,
+     "measured": true,
+     "value": 0.0357,
+     "interval": [
+      0.0153,
+      0.0809
+     ]
+    }
+   },
+   "roc_auc_by_family_source": {
+    "labelled_prompt/slabs": 0.5483,
+    "labelled_prompt/spml": 0.5038,
+    "labelled_prompt/turkish": 0.4787,
+    "labelled_prompt/wambosec": 0.7204,
+    "summarization_injection/gandalf_summarization": 0.497
+   },
+   "fpr_by_family": {
+    "agent_rules": {
+     "n": 592,
+     "k": 2,
+     "measured": true,
+     "value": 0.0034,
+     "interval": [
+      0.0009,
+      0.0122
+     ]
+    },
+    "labelled_prompt": {
+     "n": 7629,
+     "k": 153,
+     "measured": true,
+     "value": 0.0201,
+     "interval": [
+      0.0171,
+      0.0235
+     ]
+    },
+    "notinject": {
+     "n": 339,
+     "k": 3,
+     "measured": true,
+     "value": 0.0088,
+     "interval": [
+      0.003,
+      0.0257
+     ]
+    }
+   },
+   "fpr_by_source": {
+    "cursor_rules": {
+     "n": 592,
+     "k": 2,
+     "measured": true,
+     "value": 0.0034,
+     "interval": [
+      0.0009,
+      0.0122
+     ]
+    },
+    "jailbreak": {
+     "n": 1323,
+     "k": 146,
+     "measured": true,
+     "value": 0.1104,
+     "interval": [
+      0.0946,
+      0.1284
+     ]
+    },
+    "notinject": {
+     "n": 339,
+     "k": 3,
+     "measured": true,
+     "value": 0.0088,
+     "interval": [
+      0.003,
+      0.0257
+     ]
+    },
+    "slabs": {
+     "n": 1993,
+     "k": 7,
+     "measured": true,
+     "value": 0.0035,
+     "interval": [
+      0.0017,
+      0.0072
+     ]
+    },
+    "spml": {
+     "n": 1955,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.002
+     ]
+    },
+    "turkish": {
+     "n": 358,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0106
+     ]
+    },
+    "wambosec": {
+     "n": 2000,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0019
+     ]
+    }
+   },
+   "out_of_scope_recall": {
+    "jailbreak_prompt/jailbreak": {
+     "n": 653,
+     "k": 285,
+     "measured": true,
+     "value": 0.4364,
+     "interval": [
+      0.3989,
+      0.4747
+     ]
+    }
+   },
+   "recall_by_obfuscation": {},
+   "recall_by_container": {},
+   "recall_by_position": {},
+   "recall_by_carrier_length": {},
+   "recall_by_language": {
+    "tr": {
+     "n": 258,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0147
+     ]
+    }
+   },
+   "recall_by_bipia_marker": {},
+   "recall_by_spml_degree": {
+    "1": {
+     "n": 398,
+     "k": 12,
+     "measured": true,
+     "value": 0.0302,
+     "interval": [
+      0.0173,
+      0.052
+     ]
+    },
+    "10": {
+     "n": 200,
+     "k": 10,
+     "measured": true,
+     "value": 0.05,
+     "interval": [
+      0.0274,
+      0.0896
+     ]
+    },
+    "2": {
+     "n": 188,
+     "k": 4,
+     "measured": true,
+     "value": 0.0213,
+     "interval": [
+      0.0083,
+      0.0534
+     ]
+    },
+    "3": {
+     "n": 378,
+     "k": 11,
+     "measured": true,
+     "value": 0.0291,
+     "interval": [
+      0.0163,
+      0.0514
+     ]
+    },
+    "4": {
+     "n": 219,
+     "k": 4,
+     "measured": true,
+     "value": 0.0183,
+     "interval": [
+      0.0071,
+      0.046
+     ]
+    },
+    "5": {
+     "n": 416,
+     "k": 19,
+     "measured": true,
+     "value": 0.0457,
+     "interval": [
+      0.0294,
+      0.0702
+     ]
+    },
+    "7": {
+     "n": 201,
+     "k": 11,
+     "measured": true,
+     "value": 0.0547,
+     "interval": [
+      0.0308,
+      0.0953
+     ]
+    }
+   },
+   "fpr_by_notinject_level": {
+    "one": {
+     "n": 113,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0329
+     ]
+    },
+    "three": {
+     "n": 113,
+     "k": 2,
+     "measured": true,
+     "value": 0.0177,
+     "interval": [
+      0.0049,
+      0.0622
+     ]
+    },
+    "two": {
+     "n": 113,
+     "k": 1,
+     "measured": true,
+     "value": 0.0088,
+     "interval": [
+      0.0016,
+      0.0484
+     ]
+    }
+   },
+   "evasion_retention": {},
+   "discussed_share_of_false_positives": {
+    "n": 158,
+    "k": 0,
+    "measured": true,
+    "value": 0.0,
+    "interval": [
+     0.0,
+     0.0237
+    ]
+   },
+   "recall_at_fpr": {
+    "0.001": {
+     "measured": true,
+     "threshold": 0.6,
+     "recall": 0.1154,
+     "fpr": 0.00047,
+     "positives": 6362,
+     "negatives": 8560
+    },
+    "0.01": {
+     "measured": true,
+     "threshold": 0.6,
+     "recall": 0.1154,
+     "fpr": 0.00047,
+     "positives": 6362,
+     "negatives": 8560
+    }
+   }
+  }
+ }
+}

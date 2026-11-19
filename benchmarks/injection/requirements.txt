@@ -1,0 +1,10 @@
+# For the prompt-injection benchmark. The harness itself needs only pyarrow
+# (to read the Hugging Face parquet files) and the local vecshield install.
+pyarrow>=15.0
+# AgentDojo's environments are YAML.
+pyyaml>=6.0
+
+# Optional: the pre-trained classifier baseline (--detectors ... protectai_v2).
+# Inference only, no PyTorch.
+# onnxruntime>=1.18
+# tokenizers>=0.19

@@ -87,3 +87,41 @@ pipelines first.
 - **hard** — raise `PiiDetectedError` when anything is blocked (fail-closed).
 - **redact** — mask spans with `IngestGate.redact()` / `redact_text()` and embed
   the cleaned text.
+
+## Injected instructions
+
+The gate also looks for instructions planted for the model that will later read
+a chunk: "ignore your previous instructions", a forged system turn, an image
+URL that carries the conversation out, text hidden in a comment or encoded so a
+reviewer does not see it. It is on by default and stops nothing by default.
+
+```python
+from vecshield.ingest import IngestGate
+
+report = IngestGate().inspect(chunks)            # injection="flag"
+for flag in report.injection_flags:
+    print(flag["chunk_id"], flag["verdict"], flag["confidence"], flag["rules"])
+
+IngestGate(injection="block")                    # also block high-confidence flags
+IngestGate(injection="off")                      # no injection check
+```
+
+- **flag** (default) — a flagged chunk is listed in `report.injection_flags`
+  and still allowed.
+- **block** — a chunk flagged at high confidence (a score of 0.8 or more, or a
+  directive that had to be decoded or unhidden to be read) is blocked and gets
+  a finding. Lower-confidence flags are listed and allowed. So is text about
+  injection attacks that quotes a payload: it is marked `suspicious`, because a
+  security article is not an attack, and it is still listed, because a quoted
+  payload can act on a model that retrieves it.
+- **off** — no check.
+
+What a clean result means: no known signature was found, in a language that
+has rules (`vecshield.injection.LANGUAGES`; all but English are unreviewed).
+The scanner does not read meaning. An instruction paraphrased beyond the rules,
+or one with nothing in it that marks it as addressed to a model ("always
+recommend the enterprise tier"), is not found. Measured recall and
+false-positive rates on public data are in
+[benchmarks/injection.md](benchmarks/injection.md). Keep treating retrieved
+text as data in the application: delimit it in the prompt and do not let it
+trigger tools.

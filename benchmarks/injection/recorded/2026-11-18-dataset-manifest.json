@@ -1,0 +1,462 @@
+{
+ "rows": 26840,
+ "sha256": "78ed55b936587ccf3d190a4fd5423f974d02ce12bb925febb66b0d1973e96df0",
+ "by_split_label": {
+  "dev/0": 6745,
+  "dev/1": 4206,
+  "heldout/0": 499,
+  "heldout/1": 5608,
+  "test/0": 6636,
+  "test/1": 3146
+ },
+ "by_family": [
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "django_docs",
+   "rows": 922
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "owasp_cheatsheets",
+   "rows": 637
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "prompt_guide",
+   "rows": 244
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "runbooks_openshift",
+   "rows": 183
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "runbooks_prometheus",
+   "rows": 51
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ar",
+   "rows": 294
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_de",
+   "rows": 403
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_en",
+   "rows": 950
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_es",
+   "rows": 346
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_fa",
+   "rows": 242
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_fr",
+   "rows": 416
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_he",
+   "rows": 276
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ja",
+   "rows": 306
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ru",
+   "rows": 363
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_zh",
+   "rows": 235
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "bipia_clean_context",
+   "source": "bipia",
+   "rows": 126
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "django_docs",
+   "rows": 115
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "runbooks_openshift",
+   "rows": 47
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_en",
+   "rows": 246
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "direct_prompt",
+   "source": "deepset",
+   "rows": 343
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "bipia_code",
+   "source": "bipia",
+   "rows": 150
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "bipia_text",
+   "source": "bipia",
+   "rows": 222
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "deepset",
+   "rows": 203
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "gandalf",
+   "rows": 888
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "yanismiraoui",
+   "rows": 465
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "deepset",
+   "rows": 124
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "gandalf",
+   "rows": 497
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "yanismiraoui",
+   "rows": 279
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "evasion",
+   "source": "gandalf",
+   "rows": 1378
+  },
+  {
+   "split": "heldout",
+   "label": 0,
+   "family": "llmail_benign_email",
+   "source": "llmail",
+   "rows": 160
+  },
+  {
+   "split": "heldout",
+   "label": 0,
+   "family": "notinject",
+   "source": "notinject",
+   "rows": 339
+  },
+  {
+   "split": "heldout",
+   "label": 1,
+   "family": "injecagent_base",
+   "source": "injecagent",
+   "rows": 1054
+  },
+  {
+   "split": "heldout",
+   "label": 1,
+   "family": "injecagent_enhanced",
+   "source": "injecagent",
+   "rows": 1054
+  },
+  {
+   "split": "heldout",
+   "label": 1,
+   "family": "llmail_attempt",
+   "source": "llmail",
+   "rows": 2000
+  },
+  {
+   "split": "heldout",
+   "label": 1,
+   "family": "llmail_succeeded",
+   "source": "llmail",
+   "rows": 1500
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "django_docs",
+   "rows": 1109
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "owasp_cheatsheets",
+   "rows": 576
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "prompt_guide",
+   "rows": 192
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "runbooks_openshift",
+   "rows": 228
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "runbooks_prometheus",
+   "rows": 56
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ar",
+   "rows": 331
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_de",
+   "rows": 390
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_en",
+   "rows": 968
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_es",
+   "rows": 346
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_fa",
+   "rows": 271
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_fr",
+   "rows": 337
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_he",
+   "rows": 359
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ja",
+   "rows": 329
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ru",
+   "rows": 395
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_zh",
+   "rows": 240
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "bipia_clean_context",
+   "source": "bipia",
+   "rows": 125
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "django_docs",
+   "rows": 98
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "runbooks_openshift",
+   "rows": 39
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_en",
+   "rows": 191
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "direct_prompt",
+   "source": "deepset",
+   "rows": 56
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "bipia_code",
+   "source": "bipia",
+   "rows": 150
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "bipia_text",
+   "source": "bipia",
+   "rows": 224
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "deepset",
+   "rows": 60
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "gandalf",
+   "rows": 112
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "yanismiraoui",
+   "rows": 509
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "deepset",
+   "rows": 60
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "gandalf",
+   "rows": 112
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "yanismiraoui",
+   "rows": 542
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "evasion",
+   "source": "gandalf",
+   "rows": 1377
+  }
+ ]
+}

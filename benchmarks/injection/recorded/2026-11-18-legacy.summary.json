@@ -1,0 +1,2294 @@
+{
+ "detector": "legacy",
+ "dataset_sha256": "78ed55b936587ccf3d190a4fd5423f974d02ce12bb925febb66b0d1973e96df0",
+ "dataset_rows": 26840,
+ "rows_scored": 26840,
+ "sample_per_group": null,
+ "splits_scored": [
+  "dev",
+  "test",
+  "heldout"
+ ],
+ "code_commit": "0041576",
+ "working_tree_dirty": true,
+ "legacy_commit": "0041576",
+ "python": "3.12.13",
+ "machine": "Darwin arm64",
+ "timing": {
+  "wall_seconds": 25.21,
+  "characters": 33377507,
+  "ms_per_1000_chars": 0.7553,
+  "slowest_row_ms": 46.1,
+  "slowest_row_id": "f016b8ee15e6c314"
+ },
+ "splits": {
+  "dev": {
+   "recall": {
+    "n": 4206,
+    "k": 734,
+    "measured": true,
+    "value": 0.1745,
+    "interval": [
+     0.1633,
+     0.1863
+    ]
+   },
+   "false_positive_rate": {
+    "n": 6745,
+    "k": 5,
+    "measured": true,
+    "value": 0.0007,
+    "interval": [
+     0.0003,
+     0.0017
+    ]
+   },
+   "recall_by_family": {
+    "bipia_code": {
+     "n": 150,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.025
+     ]
+    },
+    "bipia_text": {
+     "n": 222,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.017
+     ]
+    },
+    "direct_prompt": {
+     "n": 1556,
+     "k": 319,
+     "measured": true,
+     "value": 0.205,
+     "interval": [
+      0.1857,
+      0.2258
+     ]
+    },
+    "embedded_payload": {
+     "n": 900,
+     "k": 165,
+     "measured": true,
+     "value": 0.1833,
+     "interval": [
+      0.1594,
+      0.2099
+     ]
+    },
+    "evasion": {
+     "n": 1378,
+     "k": 250,
+     "measured": true,
+     "value": 0.1814,
+     "interval": [
+      0.162,
+      0.2026
+     ]
+    }
+   },
+   "recall_by_family_source": {
+    "bipia_code/bipia": {
+     "n": 150,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.025
+     ]
+    },
+    "bipia_text/bipia": {
+     "n": 222,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.017
+     ]
+    },
+    "direct_prompt/deepset": {
+     "n": 203,
+     "k": 13,
+     "measured": true,
+     "value": 0.064,
+     "interval": [
+      0.0378,
+      0.1065
+     ]
+    },
+    "direct_prompt/gandalf": {
+     "n": 888,
+     "k": 304,
+     "measured": true,
+     "value": 0.3423,
+     "interval": [
+      0.3119,
+      0.3742
+     ]
+    },
+    "direct_prompt/yanismiraoui": {
+     "n": 465,
+     "k": 2,
+     "measured": true,
+     "value": 0.0043,
+     "interval": [
+      0.0012,
+      0.0155
+     ]
+    },
+    "embedded_payload/deepset": {
+     "n": 124,
+     "k": 5,
+     "measured": true,
+     "value": 0.0403,
+     "interval": [
+      0.0173,
+      0.0909
+     ]
+    },
+    "embedded_payload/gandalf": {
+     "n": 497,
+     "k": 159,
+     "measured": true,
+     "value": 0.3199,
+     "interval": [
+      0.2804,
+      0.3622
+     ]
+    },
+    "embedded_payload/yanismiraoui": {
+     "n": 279,
+     "k": 1,
+     "measured": true,
+     "value": 0.0036,
+     "interval": [
+      0.0006,
+      0.02
+     ]
+    },
+    "evasion/gandalf": {
+     "n": 1378,
+     "k": 250,
+     "measured": true,
+     "value": 0.1814,
+     "interval": [
+      0.162,
+      0.2026
+     ]
+    }
+   },
+   "fpr_by_family": {
+    "benign_document": {
+     "n": 5868,
+     "k": 5,
+     "measured": true,
+     "value": 0.0009,
+     "interval": [
+      0.0004,
+      0.002
+     ]
+    },
+    "bipia_clean_context": {
+     "n": 126,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0296
+     ]
+    },
+    "carrier_without_payload": {
+     "n": 408,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0093
+     ]
+    },
+    "direct_prompt": {
+     "n": 343,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0111
+     ]
+    }
+   },
+   "fpr_by_source": {
+    "bipia": {
+     "n": 126,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0296
+     ]
+    },
+    "deepset": {
+     "n": 343,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0111
+     ]
+    },
+    "django_docs": {
+     "n": 1037,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0037
+     ]
+    },
+    "owasp_cheatsheets": {
+     "n": 637,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.006
+     ]
+    },
+    "prompt_guide": {
+     "n": 244,
+     "k": 5,
+     "measured": true,
+     "value": 0.0205,
+     "interval": [
+      0.0088,
+      0.0471
+     ]
+    },
+    "runbooks_openshift": {
+     "n": 230,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0164
+     ]
+    },
+    "runbooks_prometheus": {
+     "n": 51,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.07
+     ]
+    },
+    "wikipedia_ar": {
+     "n": 294,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0129
+     ]
+    },
+    "wikipedia_de": {
+     "n": 403,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0094
+     ]
+    },
+    "wikipedia_en": {
+     "n": 1196,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0032
+     ]
+    },
+    "wikipedia_es": {
+     "n": 346,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.011
+     ]
+    },
+    "wikipedia_fa": {
+     "n": 242,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0156
+     ]
+    },
+    "wikipedia_fr": {
+     "n": 416,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0092
+     ]
+    },
+    "wikipedia_he": {
+     "n": 276,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0137
+     ]
+    },
+    "wikipedia_ja": {
+     "n": 306,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0124
+     ]
+    },
+    "wikipedia_ru": {
+     "n": 363,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0105
+     ]
+    },
+    "wikipedia_zh": {
+     "n": 235,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0161
+     ]
+    }
+   },
+   "recall_by_obfuscation": {
+    "base64": {
+     "n": 60,
+     "k": 19,
+     "measured": true,
+     "value": 0.3167,
+     "interval": [
+      0.2131,
+      0.4423
+     ]
+    },
+    "base64_twice": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "css_hidden": {
+     "n": 60,
+     "k": 21,
+     "measured": true,
+     "value": 0.35,
+     "interval": [
+      0.2417,
+      0.4764
+     ]
+    },
+    "fullwidth": {
+     "n": 60,
+     "k": 19,
+     "measured": true,
+     "value": 0.3167,
+     "interval": [
+      0.2131,
+      0.4423
+     ]
+    },
+    "hex": {
+     "n": 60,
+     "k": 19,
+     "measured": true,
+     "value": 0.3167,
+     "interval": [
+      0.2131,
+      0.4423
+     ]
+    },
+    "homoglyph_cyrillic": {
+     "n": 60,
+     "k": 19,
+     "measured": true,
+     "value": 0.3167,
+     "interval": [
+      0.2131,
+      0.4423
+     ]
+    },
+    "html_comment": {
+     "n": 60,
+     "k": 20,
+     "measured": true,
+     "value": 0.3333,
+     "interval": [
+      0.2273,
+      0.4594
+     ]
+    },
+    "html_entities": {
+     "n": 60,
+     "k": 19,
+     "measured": true,
+     "value": 0.3167,
+     "interval": [
+      0.2131,
+      0.4423
+     ]
+    },
+    "leetspeak": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "letter_spaced": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "none": {
+     "n": 60,
+     "k": 19,
+     "measured": true,
+     "value": 0.3167,
+     "interval": [
+      0.2131,
+      0.4423
+     ]
+    },
+    "one_char_per_line": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "quoted_printable": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "reversed": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "rot13": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "soft_hyphen_split": {
+     "n": 60,
+     "k": 19,
+     "measured": true,
+     "value": 0.3167,
+     "interval": [
+      0.2131,
+      0.4423
+     ]
+    },
+    "tag_smuggled": {
+     "n": 60,
+     "k": 19,
+     "measured": true,
+     "value": 0.3167,
+     "interval": [
+      0.2131,
+      0.4423
+     ]
+    },
+    "typos": {
+     "n": 58,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0621
+     ]
+    },
+    "unicode_escapes": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "url_encoded": {
+     "n": 60,
+     "k": 19,
+     "measured": true,
+     "value": 0.3167,
+     "interval": [
+      0.2131,
+      0.4423
+     ]
+    },
+    "url_query": {
+     "n": 60,
+     "k": 19,
+     "measured": true,
+     "value": 0.3167,
+     "interval": [
+      0.2131,
+      0.4423
+     ]
+    },
+    "variation_selector_smuggled": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "zero_width_split": {
+     "n": 60,
+     "k": 19,
+     "measured": true,
+     "value": 0.3167,
+     "interval": [
+      0.2131,
+      0.4423
+     ]
+    }
+   },
+   "recall_by_position": {
+    "end": {
+     "n": 300,
+     "k": 44,
+     "measured": true,
+     "value": 0.1467,
+     "interval": [
+      0.1111,
+      0.1912
+     ]
+    },
+    "middle": {
+     "n": 300,
+     "k": 61,
+     "measured": true,
+     "value": 0.2033,
+     "interval": [
+      0.1617,
+      0.2525
+     ]
+    },
+    "start": {
+     "n": 300,
+     "k": 60,
+     "measured": true,
+     "value": 0.2,
+     "interval": [
+      0.1587,
+      0.2489
+     ]
+    }
+   },
+   "recall_by_carrier_length": {
+    "2000": {
+     "n": 300,
+     "k": 68,
+     "measured": true,
+     "value": 0.2267,
+     "interval": [
+      0.1829,
+      0.2773
+     ]
+    },
+    "500": {
+     "n": 300,
+     "k": 61,
+     "measured": true,
+     "value": 0.2033,
+     "interval": [
+      0.1617,
+      0.2525
+     ]
+    },
+    "8000": {
+     "n": 300,
+     "k": 36,
+     "measured": true,
+     "value": 0.12,
+     "interval": [
+      0.088,
+      0.1617
+     ]
+    }
+   },
+   "recall_by_language": {
+    "de": {
+     "n": 120,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.031
+     ]
+    },
+    "en": {
+     "n": 1152,
+     "k": 317,
+     "measured": true,
+     "value": 0.2752,
+     "interval": [
+      0.2502,
+      0.3017
+     ]
+    },
+    "es": {
+     "n": 56,
+     "k": 2,
+     "measured": true,
+     "value": 0.0357,
+     "interval": [
+      0.0098,
+      0.1212
+     ]
+    },
+    "fr": {
+     "n": 54,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0664
+     ]
+    },
+    "it": {
+     "n": 49,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0727
+     ]
+    },
+    "pt": {
+     "n": 52,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0688
+     ]
+    },
+    "ro": {
+     "n": 2,
+     "k": 0,
+     "measured": false
+    },
+    "undecided": {
+     "n": 71,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0513
+     ]
+    }
+   },
+   "recall_by_bipia_marker": {
+    "names_the_answer": {
+     "n": 144,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.026
+     ]
+    },
+    "none": {
+     "n": 228,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0166
+     ]
+    }
+   },
+   "fpr_by_notinject_level": {},
+   "evasion_retention": {
+    "base64": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    },
+    "base64_twice": {
+     "n": 19,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1682
+     ]
+    },
+    "css_hidden": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    },
+    "fullwidth": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    },
+    "hex": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    },
+    "homoglyph_cyrillic": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    },
+    "html_comment": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    },
+    "html_entities": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    },
+    "leetspeak": {
+     "n": 19,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1682
+     ]
+    },
+    "letter_spaced": {
+     "n": 19,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1682
+     ]
+    },
+    "one_char_per_line": {
+     "n": 19,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1682
+     ]
+    },
+    "quoted_printable": {
+     "n": 19,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1682
+     ]
+    },
+    "reversed": {
+     "n": 19,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1682
+     ]
+    },
+    "rot13": {
+     "n": 19,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1682
+     ]
+    },
+    "soft_hyphen_split": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    },
+    "tag_smuggled": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    },
+    "typos": {
+     "n": 19,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1682
+     ]
+    },
+    "unicode_escapes": {
+     "n": 19,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1682
+     ]
+    },
+    "url_encoded": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    },
+    "url_query": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    },
+    "variation_selector_smuggled": {
+     "n": 19,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1682
+     ]
+    },
+    "zero_width_split": {
+     "n": 19,
+     "k": 19,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8318,
+      1.0
+     ]
+    }
+   },
+   "discussed_share_of_false_positives": {
+    "n": 5,
+    "k": 0,
+    "measured": true,
+    "value": 0.0,
+    "interval": [
+     0.0,
+     0.4345
+    ]
+   },
+   "recall_at_fpr": {
+    "0.001": {
+     "measured": true,
+     "threshold": 0.45,
+     "recall": 0.1888,
+     "fpr": 0.00074,
+     "positives": 4206,
+     "negatives": 6745
+    },
+    "0.01": {
+     "measured": true,
+     "threshold": 0.4,
+     "recall": 0.1893,
+     "fpr": 0.00267,
+     "positives": 4206,
+     "negatives": 6745
+    }
+   }
+  },
+  "test": {
+   "recall": {
+    "n": 3146,
+    "k": 502,
+    "measured": true,
+    "value": 0.1596,
+    "interval": [
+     0.1472,
+     0.1728
+    ]
+   },
+   "false_positive_rate": {
+    "n": 6636,
+    "k": 15,
+    "measured": true,
+    "value": 0.0023,
+    "interval": [
+     0.0014,
+     0.0037
+    ]
+   },
+   "recall_by_family": {
+    "bipia_code": {
+     "n": 150,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.025
+     ]
+    },
+    "bipia_text": {
+     "n": 224,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0169
+     ]
+    },
+    "direct_prompt": {
+     "n": 681,
+     "k": 53,
+     "measured": true,
+     "value": 0.0778,
+     "interval": [
+      0.06,
+      0.1004
+     ]
+    },
+    "embedded_payload": {
+     "n": 714,
+     "k": 44,
+     "measured": true,
+     "value": 0.0616,
+     "interval": [
+      0.0462,
+      0.0817
+     ]
+    },
+    "evasion": {
+     "n": 1377,
+     "k": 405,
+     "measured": true,
+     "value": 0.2941,
+     "interval": [
+      0.2707,
+      0.3187
+     ]
+    }
+   },
+   "recall_by_family_source": {
+    "bipia_code/bipia": {
+     "n": 150,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.025
+     ]
+    },
+    "bipia_text/bipia": {
+     "n": 224,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0169
+     ]
+    },
+    "direct_prompt/deepset": {
+     "n": 60,
+     "k": 4,
+     "measured": true,
+     "value": 0.0667,
+     "interval": [
+      0.0262,
+      0.1593
+     ]
+    },
+    "direct_prompt/gandalf": {
+     "n": 112,
+     "k": 46,
+     "measured": true,
+     "value": 0.4107,
+     "interval": [
+      0.324,
+      0.5033
+     ]
+    },
+    "direct_prompt/yanismiraoui": {
+     "n": 509,
+     "k": 3,
+     "measured": true,
+     "value": 0.0059,
+     "interval": [
+      0.002,
+      0.0172
+     ]
+    },
+    "embedded_payload/deepset": {
+     "n": 60,
+     "k": 4,
+     "measured": true,
+     "value": 0.0667,
+     "interval": [
+      0.0262,
+      0.1593
+     ]
+    },
+    "embedded_payload/gandalf": {
+     "n": 112,
+     "k": 38,
+     "measured": true,
+     "value": 0.3393,
+     "interval": [
+      0.2582,
+      0.431
+     ]
+    },
+    "embedded_payload/yanismiraoui": {
+     "n": 542,
+     "k": 2,
+     "measured": true,
+     "value": 0.0037,
+     "interval": [
+      0.001,
+      0.0134
+     ]
+    },
+    "evasion/gandalf": {
+     "n": 1377,
+     "k": 405,
+     "measured": true,
+     "value": 0.2941,
+     "interval": [
+      0.2707,
+      0.3187
+     ]
+    }
+   },
+   "fpr_by_family": {
+    "benign_document": {
+     "n": 6127,
+     "k": 15,
+     "measured": true,
+     "value": 0.0024,
+     "interval": [
+      0.0015,
+      0.004
+     ]
+    },
+    "bipia_clean_context": {
+     "n": 125,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0298
+     ]
+    },
+    "carrier_without_payload": {
+     "n": 328,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0116
+     ]
+    },
+    "direct_prompt": {
+     "n": 56,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0642
+     ]
+    }
+   },
+   "fpr_by_source": {
+    "bipia": {
+     "n": 125,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0298
+     ]
+    },
+    "deepset": {
+     "n": 56,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0642
+     ]
+    },
+    "django_docs": {
+     "n": 1207,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0032
+     ]
+    },
+    "owasp_cheatsheets": {
+     "n": 576,
+     "k": 10,
+     "measured": true,
+     "value": 0.0174,
+     "interval": [
+      0.0095,
+      0.0317
+     ]
+    },
+    "prompt_guide": {
+     "n": 192,
+     "k": 5,
+     "measured": true,
+     "value": 0.026,
+     "interval": [
+      0.0112,
+      0.0595
+     ]
+    },
+    "runbooks_openshift": {
+     "n": 267,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0142
+     ]
+    },
+    "runbooks_prometheus": {
+     "n": 56,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0642
+     ]
+    },
+    "wikipedia_ar": {
+     "n": 331,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0115
+     ]
+    },
+    "wikipedia_de": {
+     "n": 390,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0098
+     ]
+    },
+    "wikipedia_en": {
+     "n": 1159,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0033
+     ]
+    },
+    "wikipedia_es": {
+     "n": 346,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.011
+     ]
+    },
+    "wikipedia_fa": {
+     "n": 271,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.014
+     ]
+    },
+    "wikipedia_fr": {
+     "n": 337,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0113
+     ]
+    },
+    "wikipedia_he": {
+     "n": 359,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0106
+     ]
+    },
+    "wikipedia_ja": {
+     "n": 329,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0115
+     ]
+    },
+    "wikipedia_ru": {
+     "n": 395,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0096
+     ]
+    },
+    "wikipedia_zh": {
+     "n": 240,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0158
+     ]
+    }
+   },
+   "recall_by_obfuscation": {
+    "base64": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    },
+    "base64_twice": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "css_hidden": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    },
+    "fullwidth": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    },
+    "hex": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    },
+    "homoglyph_cyrillic": {
+     "n": 59,
+     "k": 31,
+     "measured": true,
+     "value": 0.5254,
+     "interval": [
+      0.4004,
+      0.6473
+     ]
+    },
+    "html_comment": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    },
+    "html_entities": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    },
+    "leetspeak": {
+     "n": 59,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0611
+     ]
+    },
+    "letter_spaced": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "none": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    },
+    "one_char_per_line": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "quoted_printable": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "reversed": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "rot13": {
+     "n": 59,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0611
+     ]
+    },
+    "soft_hyphen_split": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    },
+    "tag_smuggled": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    },
+    "typos": {
+     "n": 60,
+     "k": 2,
+     "measured": true,
+     "value": 0.0333,
+     "interval": [
+      0.0092,
+      0.1136
+     ]
+    },
+    "unicode_escapes": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "url_encoded": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    },
+    "url_query": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    },
+    "variation_selector_smuggled": {
+     "n": 60,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0602
+     ]
+    },
+    "zero_width_split": {
+     "n": 60,
+     "k": 31,
+     "measured": true,
+     "value": 0.5167,
+     "interval": [
+      0.3931,
+      0.6383
+     ]
+    }
+   },
+   "recall_by_position": {
+    "end": {
+     "n": 237,
+     "k": 13,
+     "measured": true,
+     "value": 0.0549,
+     "interval": [
+      0.0323,
+      0.0916
+     ]
+    },
+    "middle": {
+     "n": 237,
+     "k": 21,
+     "measured": true,
+     "value": 0.0886,
+     "interval": [
+      0.0587,
+      0.1317
+     ]
+    },
+    "start": {
+     "n": 240,
+     "k": 10,
+     "measured": true,
+     "value": 0.0417,
+     "interval": [
+      0.0228,
+      0.075
+     ]
+    }
+   },
+   "recall_by_carrier_length": {
+    "2000": {
+     "n": 238,
+     "k": 18,
+     "measured": true,
+     "value": 0.0756,
+     "interval": [
+      0.0484,
+      0.1164
+     ]
+    },
+    "500": {
+     "n": 238,
+     "k": 15,
+     "measured": true,
+     "value": 0.063,
+     "interval": [
+      0.0386,
+      0.1014
+     ]
+    },
+    "8000": {
+     "n": 238,
+     "k": 11,
+     "measured": true,
+     "value": 0.0462,
+     "interval": [
+      0.026,
+      0.0809
+     ]
+    }
+   },
+   "recall_by_language": {
+    "de": {
+     "n": 75,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0487
+     ]
+    },
+    "en": {
+     "n": 313,
+     "k": 50,
+     "measured": true,
+     "value": 0.1597,
+     "interval": [
+      0.1233,
+      0.2044
+     ]
+    },
+    "es": {
+     "n": 48,
+     "k": 2,
+     "measured": true,
+     "value": 0.0417,
+     "interval": [
+      0.0115,
+      0.1398
+     ]
+    },
+    "fr": {
+     "n": 59,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0611
+     ]
+    },
+    "it": {
+     "n": 62,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0583
+     ]
+    },
+    "pt": {
+     "n": 65,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0558
+     ]
+    },
+    "ro": {
+     "n": 3,
+     "k": 0,
+     "measured": false
+    },
+    "undecided": {
+     "n": 56,
+     "k": 1,
+     "measured": true,
+     "value": 0.0179,
+     "interval": [
+      0.0032,
+      0.0945
+     ]
+    }
+   },
+   "recall_by_bipia_marker": {
+    "names_the_answer": {
+     "n": 147,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0255
+     ]
+    },
+    "none": {
+     "n": 227,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0166
+     ]
+    }
+   },
+   "fpr_by_notinject_level": {},
+   "evasion_retention": {
+    "base64": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    },
+    "base64_twice": {
+     "n": 31,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1103
+     ]
+    },
+    "css_hidden": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    },
+    "fullwidth": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    },
+    "hex": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    },
+    "homoglyph_cyrillic": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    },
+    "html_comment": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    },
+    "html_entities": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    },
+    "leetspeak": {
+     "n": 31,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1103
+     ]
+    },
+    "letter_spaced": {
+     "n": 31,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1103
+     ]
+    },
+    "one_char_per_line": {
+     "n": 31,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1103
+     ]
+    },
+    "quoted_printable": {
+     "n": 31,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1103
+     ]
+    },
+    "reversed": {
+     "n": 31,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1103
+     ]
+    },
+    "rot13": {
+     "n": 31,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1103
+     ]
+    },
+    "soft_hyphen_split": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    },
+    "tag_smuggled": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    },
+    "typos": {
+     "n": 31,
+     "k": 2,
+     "measured": true,
+     "value": 0.0645,
+     "interval": [
+      0.0179,
+      0.2072
+     ]
+    },
+    "unicode_escapes": {
+     "n": 31,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1103
+     ]
+    },
+    "url_encoded": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    },
+    "url_query": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    },
+    "variation_selector_smuggled": {
+     "n": 31,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.1103
+     ]
+    },
+    "zero_width_split": {
+     "n": 31,
+     "k": 31,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.8897,
+      1.0
+     ]
+    }
+   },
+   "discussed_share_of_false_positives": {
+    "n": 15,
+    "k": 0,
+    "measured": true,
+    "value": 0.0,
+    "interval": [
+     0.0,
+     0.2039
+    ]
+   },
+   "recall_at_fpr": {
+    "0.001": {
+     "measured": true,
+     "threshold": 0.9,
+     "recall": 0.1182,
+     "fpr": 0.00075,
+     "positives": 3146,
+     "negatives": 6636
+    },
+    "0.01": {
+     "measured": true,
+     "threshold": 0.4,
+     "recall": 0.172,
+     "fpr": 0.00512,
+     "positives": 3146,
+     "negatives": 6636
+    }
+   }
+  },
+  "heldout": {
+   "recall": {
+    "n": 5608,
+    "k": 1380,
+    "measured": true,
+    "value": 0.2461,
+    "interval": [
+     0.235,
+     0.2575
+    ]
+   },
+   "false_positive_rate": {
+    "n": 499,
+    "k": 11,
+    "measured": true,
+    "value": 0.022,
+    "interval": [
+     0.0124,
+     0.039
+    ]
+   },
+   "recall_by_family": {
+    "injecagent_base": {
+     "n": 1054,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0036
+     ]
+    },
+    "injecagent_enhanced": {
+     "n": 1054,
+     "k": 1054,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9964,
+      1.0
+     ]
+    },
+    "llmail_attempt": {
+     "n": 2000,
+     "k": 174,
+     "measured": true,
+     "value": 0.087,
+     "interval": [
+      0.0754,
+      0.1002
+     ]
+    },
+    "llmail_succeeded": {
+     "n": 1500,
+     "k": 152,
+     "measured": true,
+     "value": 0.1013,
+     "interval": [
+      0.0871,
+      0.1176
+     ]
+    }
+   },
+   "recall_by_family_source": {
+    "injecagent_base/injecagent": {
+     "n": 1054,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0036
+     ]
+    },
+    "injecagent_enhanced/injecagent": {
+     "n": 1054,
+     "k": 1054,
+     "measured": true,
+     "value": 1.0,
+     "interval": [
+      0.9964,
+      1.0
+     ]
+    },
+    "llmail_attempt/llmail": {
+     "n": 2000,
+     "k": 174,
+     "measured": true,
+     "value": 0.087,
+     "interval": [
+      0.0754,
+      0.1002
+     ]
+    },
+    "llmail_succeeded/llmail": {
+     "n": 1500,
+     "k": 152,
+     "measured": true,
+     "value": 0.1013,
+     "interval": [
+      0.0871,
+      0.1176
+     ]
+    }
+   },
+   "fpr_by_family": {
+    "llmail_benign_email": {
+     "n": 160,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0234
+     ]
+    },
+    "notinject": {
+     "n": 339,
+     "k": 11,
+     "measured": true,
+     "value": 0.0324,
+     "interval": [
+      0.0182,
+      0.0572
+     ]
+    }
+   },
+   "fpr_by_source": {
+    "llmail": {
+     "n": 160,
+     "k": 0,
+     "measured": true,
+     "value": 0.0,
+     "interval": [
+      0.0,
+      0.0234
+     ]
+    },
+    "notinject": {
+     "n": 339,
+     "k": 11,
+     "measured": true,
+     "value": 0.0324,
+     "interval": [
+      0.0182,
+      0.0572
+     ]
+    }
+   },
+   "recall_by_obfuscation": {},
+   "recall_by_position": {},
+   "recall_by_carrier_length": {},
+   "recall_by_language": {},
+   "recall_by_bipia_marker": {},
+   "fpr_by_notinject_level": {
+    "one": {
+     "n": 113,
+     "k": 2,
+     "measured": true,
+     "value": 0.0177,
+     "interval": [
+      0.0049,
+      0.0622
+     ]
+    },
+    "three": {
+     "n": 113,
+     "k": 6,
+     "measured": true,
+     "value": 0.0531,
+     "interval": [
+      0.0246,
+      0.111
+     ]
+    },
+    "two": {
+     "n": 113,
+     "k": 3,
+     "measured": true,
+     "value": 0.0265,
+     "interval": [
+      0.0091,
+      0.0752
+     ]
+    }
+   },
+   "evasion_retention": {},
+   "discussed_share_of_false_positives": {
+    "n": 11,
+    "k": 0,
+    "measured": true,
+    "value": 0.0,
+    "interval": [
+     0.0,
+     0.2588
+    ]
+   },
+   "recall_at_fpr": {
+    "0.001": {
+     "measured": true,
+     "threshold": 1.01,
+     "recall": 0.0,
+     "fpr": 0.0,
+     "positives": 5608,
+     "negatives": 499
+    },
+    "0.01": {
+     "measured": true,
+     "threshold": 0.6,
+     "recall": 0.2439,
+     "fpr": 0.002,
+     "positives": 5608,
+     "negatives": 499
+    }
+   }
+  }
+ }
+}

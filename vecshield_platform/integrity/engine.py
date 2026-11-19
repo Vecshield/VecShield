@@ -39,7 +39,12 @@ from vecshield_platform.integrity.duplication import (
 )
 from vecshield_platform.integrity.hubness import analyze_hubness
 from vecshield_platform.integrity.ingestion import analyze_ingestion
-from vecshield_platform.integrity.injection import scan_text
+from vecshield.injection import LANGUAGES as INJECTION_LANGUAGES
+from vecshield.injection import LAYERS as INJECTION_LAYERS
+from vecshield.injection import PACK_VERSION as INJECTION_PACK_VERSION
+from vecshield.injection import UNREVIEWED_LANGUAGES as INJECTION_UNREVIEWED
+from vecshield.injection import default_classifier as default_injection_classifier
+from vecshield.injection import scan_surfaces
 from vecshield_platform.integrity.limits import IntegrityLimits
 from vecshield_platform.integrity.provenance import analyze_provenance
 from vecshield_platform.integrity.records import (
@@ -188,14 +193,16 @@ def scan_integrity(
             for value in (chunk.metadata or {}).values():
                 surfaces.extend(_metadata_strings(value))
             text_missing += not bool(surfaces)
-            text_truncated += any(len(value) > 5000 for value in surfaces)
-            inj = _scan_injection_surfaces(chunk.text, chunk.metadata or {})
+            inj, partial = _scan_injection_surfaces(chunk.text, chunk.metadata or {}, limits)
+            text_truncated += partial
             if inj:
                 injections.append({
                     "chunk_id": chunk.id,
                     "score": inj["score"],
                     "confidence": inj["confidence"],
+                    "verdict": inj["verdict"],
                     "categories": inj["categories"],
+                    "rules": inj["rules"],
                     "surfaces": inj["surfaces"],
                     "spans": inj["spans"][:5],
                 })
@@ -210,6 +217,10 @@ def scan_integrity(
         # key on it. Severity follows the strongest chunk, so a collection whose
         # only hit is one borderline phrase is not reported like a live payload.
         confident = [inj for inj in injections if inj["confidence"] == "high"]
+        # Flagged, but the text is about injection attacks and the match reads
+        # as a quoted example. Kept in the count: a quoted payload can still
+        # act on a model that retrieves it.
+        quoted = [inj for inj in injections if inj["verdict"] == "suspicious"]
         injections.sort(key=lambda inj: (inj["confidence"] != "high", -inj["score"]))
         job.add(Finding(
             id=f"find-{uuid.uuid4().hex[:10]}",
@@ -221,17 +232,24 @@ def scan_integrity(
             description=(
                 f"{len(injections)}/{scanned} chunks contain suspected prompt-"
                 f"injection payloads (categories: {', '.join(top_cats)}); "
-                f"{len(confident)} at high confidence. Retrieved into an LLM "
-                "context, these can hijack model behavior."
+                f"{len(confident)} at high confidence"
+                + (f", {len(quoted)} that read as quoted examples in text about "
+                   "injection attacks" if quoted else "")
+                + ". Retrieved into an LLM context, these can hijack model behavior."
             ),
             evidence={"count": len(injections), "scanned": scanned,
                       "high_confidence": len(confident),
+                      "quoted_examples": len(quoted),
+                      "rule_pack": INJECTION_PACK_VERSION,
+                      "detection_layers": _injection_layers(),
                       "max_score": max(inj["score"] for inj in injections),
                       "examples": injections[:10]},
             remediation=(
-                "Quarantine and review the flagged chunks; add an injection filter "
-                "to the ingestion pipeline; treat retrieved context as untrusted "
-                "data, not instructions."
+                "Quarantine and review the flagged chunks; turn on the ingest "
+                "gate's injection check (IngestGate(injection=...)) so new ones "
+                "are flagged before they are embedded; and treat retrieved "
+                "context as untrusted data, not instructions: delimit or mark it "
+                "in the prompt, and do not let it trigger tools."
             ),
         ))
 
@@ -470,8 +488,11 @@ def scan_integrity(
     outcomes = []
     for check, detected, limitation in (
         ("prompt_injection", bool(injections),
-         "Some text surfaces were absent or exceeded the 5000-character inspection limit."
-         if text_missing or text_truncated else ""),
+         " ".join(filter(None, [
+             f"Some text surfaces were absent, were longer than the "
+             f"{limits.injection_max_chars:,}-character scan limit, or ran out of scan time."
+             if text_missing or text_truncated else "",
+             _injection_classifier_note()[1]]))),
         ("embedding_anomaly", bool(anomalies or near or norm_outliers),
          f"Embedding analysis failed ({anomaly_error})." if anomaly_error else
          "At least 10 vectors are required for anomaly analysis." if total_vectors < 10 else
@@ -492,6 +513,13 @@ def scan_integrity(
             **({"sampled": bool(result and result.sampled),
                 "vectors_scored": len(result.scores) if result else 0,
                 "vectors_seen": total_vectors} if check == "embedding_anomaly" else {}),
+            **({"method": "signatures", "detection_layers": _injection_layers(),
+                "rule_pack": INJECTION_PACK_VERSION,
+                "languages_with_rules": list(INJECTION_LANGUAGES),
+                "languages_with_unreviewed_rules": list(INJECTION_UNREVIEWED),
+                "surfaces_partly_scanned": text_truncated,
+                **_injection_classifier_note()[0]}
+               if check == "prompt_injection" else {}),
         ))
     capped_note = (f"{records_capped:,} chunks exceeded the record cap "
                    f"({limits.record_cap:,}) and were not analysed."
@@ -524,39 +552,43 @@ def scan_integrity(
     return job
 
 
-def _scan_injection_surfaces(text: str | None, metadata: dict[str, Any]) -> dict | None:
-    surfaces: list[tuple[str, str]] = []
-    if text:
-        surfaces.append(("text", text))
-    for key, value in metadata.items():
-        for item in _metadata_strings(value):
-            surfaces.append((f"metadata.{key}", item))
+def _injection_layers() -> dict[str, str]:
+    """Which injection-detection layers this engine runs.
 
-    hits: list[dict] = []
-    categories: set[str] = set()
-    max_score = 0.0
-    high_confidence = False
-    for surface, value in surfaces:
-        result = scan_text(value[:5000])
-        if not result.is_injection:
-            continue
-        max_score = max(max_score, result.score)
-        high_confidence = high_confidence or result.high_confidence
-        categories.update(result.categories)
-        for span in result.spans[:3]:
-            enriched = dict(span)
-            enriched["surface"] = surface
-            hits.append(enriched)
+    Signatures only, today. The check's outcome is about what was read; this
+    says how it was read, so a pass is never taken for more than "no known
+    signature, in a language that has rules".
+    """
+    layers = {layer: ("ran" if layer == "signatures" else "absent")
+              for layer in INJECTION_LAYERS}
+    model, error = default_injection_classifier()
+    if error:
+        layers["classifier"] = "unavailable"
+    elif model is not None:
+        layers["classifier"] = "ran"
+    return layers
 
-    if not categories:
-        return None
-    return {
-        "score": round(max_score, 3),
-        "confidence": "high" if high_confidence else "medium",
-        "categories": sorted(categories),
-        "surfaces": sorted({h["surface"] for h in hits}),
-        "spans": hits,
-    }
+
+def _injection_classifier_note() -> tuple[dict, str]:
+    """Coverage details for the classifier layer, and why it did not run if asked for."""
+    model, error = default_injection_classifier()
+    if error:
+        return ({"classifier_error": error},
+                "An injection classifier is configured and could not be loaded, so only "
+                "the signature rules ran.")
+    if model is not None:
+        return ({"classifier": {"name": model.name, "revision": model.spec.revision,
+                                "threshold": model.threshold}}, "")
+    return {}, ""
+
+
+def _scan_injection_surfaces(text: str | None, metadata: dict[str, Any],
+                             limits: IntegrityLimits | None = None,
+                             ) -> tuple[dict | None, bool]:
+    """Scan a chunk's text and string metadata. Returns ``(hit, partly scanned)``."""
+    limits = limits or IntegrityLimits()
+    return scan_surfaces(text, metadata, max_chars=limits.injection_max_chars,
+                         time_budget=limits.injection_time_budget)
 
 
 def _metadata_strings(value: Any) -> list[str]:
