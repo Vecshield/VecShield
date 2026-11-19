@@ -156,8 +156,8 @@ def defang(text: str, limit: int = 80) -> str:
 # --------------------------------------------------------------------------- #
 
 _IMAGE_URL = re.compile(
-    r"!\[[^\]]{0,300}\]\(\s*<?(https?://[^)\s>]{1,2000})|"
-    r"<img\b[^>]{0,500}\bsrc\s*=\s*['\"]?(https?://[^'\"\s>]{1,2000})",
+    r"!\[[^\[\]]{0,300}\]\(\s*<?(https?://[^)\s>]{1,2000})|"
+    r"<img\b[^<>]{0,500}\bsrc\s*=\s*['\"]?(https?://[^'\"\s>]{1,2000})",
     re.I)
 # Signed-URL parameters carry credentials and signatures by design (S3, GCS,
 # Azure SAS, CloudFront); an access key id in them is not being smuggled out.
@@ -303,6 +303,8 @@ def scan_text(text: str | None, *, rules: tuple[Rule, ...] = RULES,
                 continue
             if rule.gate is not None and not any(word in lowered for word in rule.gate):
                 continue
+            if rule.requires is not None and not any(w in lowered for w in rule.requires):
+                continue
             if budget.spent():
                 return
             m = rule.pattern.search(view.text)
@@ -374,6 +376,8 @@ def scan_text(text: str | None, *, rules: tuple[Rule, ...] = RULES,
             for rule in rules:
                 if (rule.category in _DIRECTIVE_CATEGORIES and rule.weight >= 0.5
                         and (rule.gate is None or any(w in lowered for w in rule.gate))
+                        and (rule.requires is None
+                             or any(w in lowered for w in rule.requires))
                         and rule.pattern.search(segment.text)):
                     hidden_directive = True
                     inside.append({"rule": rule.id})

@@ -52,11 +52,33 @@ def test_each_rule_passes_its_own_examples(rule):
         assert not rule.pattern.search(text), f"{rule.id} should not match: {text}"
 
 
-@pytest.mark.parametrize("rule", [r for r in RULES if r.gate], ids=lambda r: r.id)
-def test_a_gate_never_hides_a_match(rule):
-    """A gate is a pre-screen: every text the rule matches must pass it."""
+@pytest.mark.parametrize("rule", [r for r in RULES if r.gate or r.requires],
+                         ids=lambda r: r.id)
+def test_a_pre_screen_never_hides_a_match(rule):
+    """Gates are pre-screens: every text the rule matches must pass them."""
     for text in rule.positives:
-        assert any(word in text.lower() for word in rule.gate), (rule.id, rule.gate, text)
+        lowered = text.lower()
+        if rule.gate:
+            assert any(word in lowered for word in rule.gate), (rule.id, rule.gate, text)
+        if rule.requires:
+            assert any(word in lowered for word in rule.requires), (rule.id, rule.requires, text)
+
+
+@pytest.mark.parametrize("rule", [r for r in RULES if r.requires], ids=lambda r: r.id)
+def test_a_required_word_is_required_by_the_pattern(rule):
+    """Take every required word out of a matching text, and the rule must stop matching.
+
+    A cheap check that ``requires`` lists nothing the pattern can do without:
+    if the regex still matched with every listed word gone, the screen would
+    be skipping texts the rule would have flagged.
+    """
+    import re as _re
+
+    for text in rule.positives:
+        stripped = text
+        for word in sorted(rule.requires, key=len, reverse=True):
+            stripped = _re.sub(_re.escape(word), "zz", stripped, flags=_re.I)
+        assert not rule.pattern.search(stripped), (rule.id, stripped)
 
 
 @pytest.mark.parametrize("rule", [r for r in RULES if r.positives], ids=lambda r: r.id)

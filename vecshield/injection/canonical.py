@@ -283,28 +283,30 @@ def collapse_spaced_directives(text: str) -> str:
     return _SPACED.sub(join, text)
 
 
+#: One pass that does what trying each segmentation word in turn at every
+#: position does, longest word first, but inside the regex engine: a run of a
+#: hundred thousand letters takes milliseconds, not seconds.
+_SEGMENTER = re.compile(
+    "(?P<word>" + "|".join(re.escape(w) for w in _SEGMENT_WORDS if len(w) >= 3)
+    + ")|(?P<other>.)", re.S)
+
+
 def _segment(run: str) -> str:
     """Put spaces back into letters run together, using the directive words.
 
     Letters that belong to no known word stay together as one word, so a
     single spaced word ("s h a r e") comes back whole.
     """
-    lowered = run.lower()
     out: list[str] = []
     unknown: list[str] = []
-    i = 0
-    while i < len(lowered):
-        for word in _SEGMENT_WORDS:
-            if len(word) >= 3 and lowered.startswith(word, i):
-                if unknown:
-                    out.append("".join(unknown))
-                    unknown = []
-                out.append(word)
-                i += len(word)
-                break
+    for m in _SEGMENTER.finditer(run.lower()):
+        if m.lastgroup == "word":
+            if unknown:
+                out.append("".join(unknown))
+                unknown = []
+            out.append(m.group())
         else:
-            unknown.append(lowered[i])
-            i += 1
+            unknown.append(m.group())
     if unknown:
         out.append("".join(unknown))
     return " ".join(out)
