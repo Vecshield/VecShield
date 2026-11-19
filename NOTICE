@@ -32,6 +32,13 @@ JetBrains Mono
   Licensed under the SIL Open Font License, Version 1.1.
   https://github.com/JetBrains/JetBrainsMono
 
+Unicode confusables data (derived subset)
+  vecshield/injection/data/confusables_latin.json is derived from the Unicode
+  Security Mechanisms (UTS #39) data file confusables.txt, version 18.0.0.
+  Copyright (c) 1991-2026 Unicode, Inc. All rights reserved.
+  Distributed under the Unicode License v3: https://www.unicode.org/license.txt
+  The file records the source version, date and SHA-256 it was derived from.
+
 ---
 
 Optional third-party dependencies
@@ -50,6 +57,22 @@ spaCy  (extra: nlp)
   2015 Matthew Honnibal
   Licensed under the MIT License.
   https://github.com/explosion/spaCy
+
+ONNX Runtime  (extra: injection-ml)
+  Copyright (c) Microsoft Corporation.
+  Licensed under the MIT License.
+  https://github.com/microsoft/onnxruntime
+
+tokenizers  (extra: injection-ml)
+  Copyright 2020 The HuggingFace Team.
+  Licensed under the Apache License, Version 2.0.
+  https://github.com/huggingface/tokenizers
+
+Pre-trained injection classifiers (optional, placed by the operator, NOT
+bundled): Horizon-Labs/prompt-injection-guard-small and
+patronus-studio/wolf-defender-prompt-injection-small, both Apache-2.0, both
+built on jhu-clsp/mmBERT-small (MIT). VecShield ships neither; it records
+their SHA-256 so it loads only the files it was measured with.
 
 Vector-store client libraries (extras: chroma, pgvector, qdrant, weaviate,
 milvus, pinecone, redis, opensearch, mongodb, openai, azure, bedrock, vertex)

@@ -23,6 +23,23 @@ a span keeps its label's severity when it is corroborated by
 The rated basis is recorded on each blocked finding (``severity_basis``), and
 every sensitive chunk that was let through below the bar is listed in the
 report's ``below_threshold`` entries, so a downgrade is never silent.
+
+Injected instructions
+---------------------
+The gate also looks for instructions planted for the model that will later
+read the chunk (:mod:`vecshield.injection`). ``injection`` sets what it does
+with one:
+
+  * ``"flag"`` (default): the chunk is listed in ``report.injection_flags`` and
+    still allowed. Nothing is stopped on a signature alone.
+  * ``"block"``: a chunk flagged at high confidence (a score of 0.8 or more, or
+    a directive that had to be decoded or unhidden to be read) is blocked.
+    Lower-confidence flags, and text that reads as a quoted example in a
+    document about injection attacks, are listed and allowed.
+  * ``"off"``: no injection check.
+
+The check reads signatures. A clean result means no known signature was found,
+in a language that has rules; it is not evidence that a chunk is safe to obey.
 """
 
 from __future__ import annotations
@@ -32,6 +49,7 @@ import uuid
 
 from vecshield.classify import Classifier, default_classifier
 from vecshield.classify.base import LABEL_PRIORITY
+from vecshield.injection import scan_surfaces
 from vecshield.classify.surfaces import (
     chunk_text_surfaces,
     classify_chunk,
@@ -124,9 +142,12 @@ class PiiDetectedError(Exception):
 
     def __init__(self, report: IngestGateReport):
         self.report = report
+        blocked_for_injection = sum(bool(f.get("blocked")) for f in report.injection_flags)
+        what = ("sensitive data or injected instructions" if blocked_for_injection
+                else "sensitive data")
         super().__init__(
             f"ingest blocked: {len(report.blocked_chunks)} of {report.total} "
-            f"chunks contain sensitive data"
+            f"chunks contain {what}"
         )
 
 
@@ -138,9 +159,17 @@ class IngestGate:
         mode: str = "soft",  # "soft" | "hard"
         block_severity: Severity = Severity.HIGH,
         dataset: str = "ingest",
+        injection: str = "flag",  # "off" | "flag" | "block"
+        injection_classifier: object = "environment",
     ):
         if mode not in ("soft", "hard"):
             raise ValueError("mode must be 'soft' or 'hard'")
+        if injection not in ("off", "flag", "block"):
+            raise ValueError("injection must be 'off', 'flag' or 'block'")
+        self.injection = injection
+        #: An OnnxClassifier, None for the rules alone, or "environment" for
+        #: whatever VECSHIELD_INJECTION_MODEL_DIR configures (nothing, if unset).
+        self.injection_classifier = injection_classifier
         self.classifier = classifier or default_classifier()
         self.mode = mode
         self.block_severity = block_severity
@@ -148,8 +177,10 @@ class IngestGate:
 
     def inspect(self, chunks: list[Chunk]) -> IngestGateReport:
         """Classify a batch and return a report. Never raises (use check() for hard)."""
-        report = IngestGateReport()
+        report = IngestGateReport(injection_mode=self.injection)
+        sensitive_blocked = 0
         for chunk in chunks:
+            injected = self._inspect_injection(chunk, report)
             # Surfaces longer than the classification window are read only in
             # part; say so rather than let the tail pass as inspected.
             cut = truncated_surfaces(chunk_text_surfaces(chunk))
@@ -162,12 +193,13 @@ class IngestGate:
             result = classify_chunk(self.classifier, chunk)
             chunk.classification = result
             if not result.is_sensitive:
-                report.allowed_chunks.append(chunk)
+                (report.blocked_chunks if injected else report.allowed_chunks).append(chunk)
                 continue
 
             top, severity, basis = rate_chunk(result)
 
             if severity.rank >= self.block_severity.rank:
+                sensitive_blocked += 1
                 report.blocked_chunks.append(chunk)
                 report.findings.append(
                     Finding(
@@ -197,17 +229,62 @@ class IngestGate:
                     )
                 )
             else:
-                report.allowed_chunks.append(chunk)
+                (report.blocked_chunks if injected else report.allowed_chunks).append(chunk)
                 report.below_threshold.append({
                     "chunk_id": chunk.id, "label": top.value,
                     "severity": severity.value, "severity_basis": basis,
                     "detectors": list(result.detectors),
                 })
 
-        report.pii_density = (
-            len(report.blocked_chunks) / report.total if report.total else 0.0
-        )
+        # Chunks blocked for sensitive data; one blocked only for an injected
+        # instruction is not PII.
+        report.pii_density = sensitive_blocked / report.total if report.total else 0.0
         return report
+
+    def _inspect_injection(self, chunk: Chunk, report: IngestGateReport) -> bool:
+        """Record an injection flag for ``chunk``. Returns whether it blocks."""
+        if self.injection == "off":
+            return False
+        hit, partial = scan_surfaces(chunk.text, chunk.metadata,
+                                     classifier=self.injection_classifier)
+        if partial:
+            report.injection_partial.append(chunk.id)
+        if not hit:
+            return False
+        blocks = (self.injection == "block" and hit["confidence"] == "high"
+                  and hit["verdict"] == "injection")
+        report.injection_flags.append({
+            "chunk_id": chunk.id, "verdict": hit["verdict"], "score": hit["score"],
+            "confidence": hit["confidence"], "categories": hit["categories"],
+            "rules": hit["rules"], "surfaces": hit["surfaces"],
+            "pack_version": hit["pack_version"], "layers": hit["layers"],
+            "blocked": blocks,
+        })
+        if blocks:
+            report.findings.append(Finding(
+                id=f"find-{uuid.uuid4().hex[:10]}",
+                title="Prompt injection blocked at ingest",
+                severity=Severity.HIGH,
+                category="ingest_gate",
+                store=self.dataset,
+                collection=chunk.collection,
+                description=(
+                    f"Chunk '{chunk.id}' carries an instruction placed for the model "
+                    f"that will read it ({', '.join(hit['categories'])}) and was "
+                    "blocked before embedding."
+                ),
+                evidence={"chunk_id": chunk.id, "label": "injection",
+                          "score": hit["score"], "rules": hit["rules"],
+                          "categories": hit["categories"], "spans": hit["spans"],
+                          "surfaces": hit["surfaces"],
+                          "pack_version": hit["pack_version"]},
+                remediation=(
+                    "Review the source document. If the text is legitimate, ingest "
+                    "it with the injection check set to flag; otherwise remove it "
+                    "at the source and find out how it got there."
+                ),
+            ))
+        return blocks
 
     def check(self, chunks: list[Chunk]) -> IngestGateReport:
         """Inspect; in hard mode raise PiiDetectedError when anything is blocked."""

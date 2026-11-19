@@ -84,16 +84,16 @@
     },
     "instruction_override": {
       "class": "possible",
-      "reason": "Precision 1.0 with a lower bound of 0.741, at or above the 0.5 floor for 'possible'.",
+      "reason": "Precision 1.0 with a lower bound of 0.772, at or above the 0.5 floor for 'possible'.",
       "precision": {
-        "observations": 11,
+        "observations": 13,
         "measured": true,
         "value": 1.0,
         "interval": [
-          0.741,
+          0.772,
           1.0
         ],
-        "successes": 11
+        "successes": 13
       }
     },
     "medical_record_context": {
@@ -101,6 +101,10 @@
       "reason": "Only 1 independent case(s); too few to measure a precision."
     },
     "policy_bypass": {
+      "class": "uncertain",
+      "reason": "Only 1 independent case(s); too few to measure a precision."
+    },
+    "response_manipulation": {
       "class": "uncertain",
       "reason": "Only 1 independent case(s); too few to measure a precision."
     },

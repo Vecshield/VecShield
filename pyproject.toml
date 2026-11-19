@@ -71,6 +71,10 @@ nlp-transformer = ["presidio-analyzer>=2.2,<2.3", "spacy>=3.8,<3.9",
                    "spacy-curated-transformers>=0.2.2,<1.0", "torch>=2.6,<2.15"]
 # Runtime for the slim image's model (en_core_web_lg): no PyTorch.
 nlp-lg = ["presidio-analyzer>=2.2,<2.3", "spacy>=3.8,<3.9"]
+# The optional pre-trained classifier beside the injection rules: inference
+# only, no PyTorch. The model files are placed by the operator and verified by
+# hash; see docs/library/injection_classifier.md.
+injection-ml = ["onnxruntime>=1.18", "tokenizers>=0.19"]
 # Everything the bundled demo estate needs. Seeds into a local Chroma
 # directory; no Docker, no network, no API keys. See demo/README.md.
 demo = ["chromadb>=0.5"]
@@ -104,7 +108,7 @@ build-backend = "setuptools.build_meta"
 include = ["vecshield_platform*", "vecshield", "vecshield.*"]
 
 [tool.setuptools.package-data]
-vecshield = ["py.typed", "LICENSE", "NOTICE"]
+vecshield = ["py.typed", "LICENSE", "NOTICE", "injection/data/*.json"]
 vecshield_platform = [
     "api/dashboard/dist/*.html",
     "api/dashboard/dist/assets/*.css",

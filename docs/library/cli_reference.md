@@ -42,6 +42,31 @@ Options:
 | `--text-field FIELD` | Field containing text in JSONL/CSV records. |
 | `--format FORMAT` | Force a reader format such as `jsonl`, `csv`, or `text`. |
 | `--fail-on LEVEL` | Exit `2` for findings at or above `info`, `low`, `medium`, `high`, or `critical`. |
+| `--injection MODE` | `flag` (default) lists chunks carrying an injected instruction; `block` also blocks the high-confidence ones; `off` skips the check. |
+
+## `vecshield injection-check`
+
+Look for instructions planted for the model in a file, JSONL, directory or
+literal string.
+
+```bash
+vecshield injection-check ./chunks.jsonl --text-field content
+vecshield injection-check ./corpus/ --json --fail-on any
+```
+
+Options:
+
+| Option | Meaning |
+| --- | --- |
+| `--text-field FIELD` | Field containing text in JSONL/CSV records. |
+| `--format FORMAT` | Force a reader format such as `jsonl`, `csv`, or `text`. |
+| `--fail-on LEVEL` | Exit `2` on a high-confidence injection (`high`, default), on any flag (`any`), or `never`. |
+| `--model-dir DIR` | Use the pinned pre-trained classifier in `DIR` beside the rules. Exits `1` if it cannot be loaded. |
+| `--model NAME` | Which catalogued classifier `DIR` holds, if it holds more than one. |
+
+The JSON output names the rule pack, the languages that have rules and the
+detection layers that ran. No flag means no known signature was found; see the
+[benchmark](benchmarks/injection.md) for how much that covers.
 
 ## `vecshield training-check`
 

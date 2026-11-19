@@ -39,6 +39,13 @@ class IntegrityLimits:
     #: ...and at least this multiple of the median norm.
     norm_ratio: float = 1.5
 
+    # --- prompt injection ------------------------------------------------------
+    #: Characters of one text surface scanned for injected instructions. A
+    #: longer surface is scanned up to here and the check is recorded partial.
+    injection_max_chars: int = 200_000
+    #: Seconds one surface may take before its scan stops and says so.
+    injection_time_budget: float = 2.0
+
     # --- text duplication (MinHash) -----------------------------------------
     min_chunk_chars: int = 64
     max_text_chars: int = 20_000
@@ -125,7 +132,8 @@ class IntegrityLimits:
         positive = ("record_cap", "minhash_perms", "minhash_bands", "text_signature_cap",
                     "cluster_min_size", "cluster_threshold_sample", "simhash_bands",
                     "simhash_bits_per_band", "hub_k", "hub_pool_size", "hub_probe_count",
-                    "hub_block", "burst_max_buckets", "shingle_words", "lsh_bucket_cap")
+                    "hub_block", "burst_max_buckets", "shingle_words", "lsh_bucket_cap",
+                    "injection_max_chars")
         for name in positive:
             if getattr(self, name) < 1:
                 raise ValueError(f"{name} must be positive")

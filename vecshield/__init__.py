@@ -38,6 +38,7 @@ from vecshield.sdk import (
     DatasetReport,
     check_chunks,
     check_dataset,
+    check_injection,
     check_text,
     redact_text,
 )
@@ -46,6 +47,7 @@ __all__ = [
     "__version__",
     # SDK
     "check_text",
+    "check_injection",
     "check_chunks",
     "check_dataset",
     "redact_text",

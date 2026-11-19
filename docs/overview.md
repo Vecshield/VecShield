@@ -199,6 +199,19 @@ drops beyond tolerance.
 | pii, regex only | 10 | not measured | 0.50 | — |
 | pci / phi / clean | 16 | too few observations — reported as not measured | | |
 
+The injection row is an upper bound: that corpus was written alongside the
+rules. On 54,192 rows of public data the picture is different, and depends on
+which layers run. The signature rules alone reach F1 0.58 and ROC-AUC 0.80 on
+the unseen half of the sources they were developed against, and F1 0.28 and
+ROC-AUC 0.59 on six sources they were never run against: they do not
+generalise to attack styles they were not written for. With the optional
+pre-trained classifier beside them, F1 is 0.84 to 0.91 and ROC-AUC 0.97 on the
+first, and F1 0.66 to 0.73 and ROC-AUC 0.95 on the second, at false-positive
+rates of 0.2% to 0.6%; much of that is on data the classifiers were trained
+on, and on the sources known to be outside one model's training data it finds
+a quarter of attacks. The method, the sources, the overlap and what no layer
+finds are in the [injection benchmark](library/benchmarks/injection.md).
+
 The corpus is small and was written by the detector authors; the intervals are
 wide and the content classifier is English-only. The project publishes these
 caveats alongside the numbers rather than quoting a headline score. The fuller
@@ -207,14 +220,26 @@ account of what the detectors cannot see is in
 
 ### What poisoning looks like
 
-Injection scoring decodes before it matches — base64, hex and URL encoding are
-unwrapped, and text is NFKC-normalised — so evasion does not buy a clean score.
-A directive that only becomes visible after decoding is flagged as a hidden
-directive. The classes covered: instruction override, system and role
-impersonation, policy-bypass requests, exfiltration via rendered images, tool
-and function abuse, fake conversation delimiters, retrieval-ranking
-manipulation, homoglyphs and zero-width and soft-hyphen tricks, Unicode tag
-smuggling, and CSS- or comment-hidden text.
+Injection scoring decodes before it matches, so the common evasions do not
+buy a clean score: nested base64, hex and URL encoding, ROT13, reversed text,
+digit-for-letter spellings, letter spacing, look-alike letters, and text
+hidden in Unicode tag characters, variation selectors, HTML comments or
+hidden elements are each read as a view of the chunk. A directive that only
+becomes visible that way is flagged as a hidden directive. The whole of each
+text surface is read, and a surface too long to read in full makes the check
+partial. The scanner reads signatures (rule pack `2026.11.3`, with rules for
+ten languages, nine of them unreviewed): an instruction paraphrased beyond the
+rules, or one with nothing in it that marks it as addressed to a model, is not
+found, and the check's coverage says which layers ran. An optional pre-trained
+classifier can be placed beside the rules as a second opinion
+([how](library/injection_classifier.md)); it is hash-pinned, off by default,
+and can flag a chunk for review but never block one.
+
+The classes covered: instruction override, system and role impersonation,
+authority claims, text addressed to the model, task hijack, instructions about
+the answer, policy-bypass requests, prompt-leak requests, exfiltration via
+rendered images, tool and function abuse, fake conversation delimiters and
+retrieval-ranking manipulation.
 
 Mapped to **OWASP LLM01:2025 / LLM04:2025 / LLM08:2025** — in the 2026 edition
 **LLM01:2026 / LLM05:2026 / LLM09:2026** — and **MITRE ATLAS AML.T0070,
