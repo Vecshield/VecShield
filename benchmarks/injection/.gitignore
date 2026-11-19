@@ -1,0 +1,3 @@
+# Downloaded third-party data and per-run outputs. Neither is redistributed.
+.cache/
+results/

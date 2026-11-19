@@ -1,0 +1,185 @@
+{
+ "note": "Held-out rows from sources that Horizon's model card does not name as training data: attacks from spml, turkish, gandalf_summarization; benign rows from spml, turkish, cursor_rules, notinject.",
+ "results": {
+  "horizon_small/rules": {
+   "f1": 0.0441,
+   "precision": 0.7143,
+   "recall": {
+    "n": 440,
+    "k": 10,
+    "measured": true,
+    "value": 0.0227,
+    "interval": [
+     0.0124,
+     0.0413
+    ]
+   },
+   "false_positive_rate": {
+    "n": 3244,
+    "k": 4,
+    "measured": true,
+    "value": 0.0012,
+    "interval": [
+     0.0005,
+     0.0032
+    ]
+   },
+   "roc_auc": 0.4898245712364085,
+   "roc_auc_interval": [
+    0.4805,
+    0.5004
+   ],
+   "average_precision": 0.13177032742728018
+  },
+  "horizon_small/model": {
+   "f1": 0.3853,
+   "precision": 1.0,
+   "recall": {
+    "n": 440,
+    "k": 105,
+    "measured": true,
+    "value": 0.2386,
+    "interval": [
+     0.2012,
+     0.2806
+    ]
+   },
+   "false_positive_rate": {
+    "n": 3244,
+    "k": 0,
+    "measured": true,
+    "value": 0.0,
+    "interval": [
+     0.0,
+     0.0012
+    ]
+   },
+   "roc_auc": 0.9376022867391548,
+   "roc_auc_interval": [
+    0.9243,
+    0.9474
+   ],
+   "average_precision": 0.7590629778716192
+  },
+  "horizon_small/fused": {
+   "f1": 0.3855,
+   "precision": 0.9636,
+   "recall": {
+    "n": 440,
+    "k": 106,
+    "measured": true,
+    "value": 0.2409,
+    "interval": [
+     0.2033,
+     0.283
+    ]
+   },
+   "false_positive_rate": {
+    "n": 3244,
+    "k": 4,
+    "measured": true,
+    "value": 0.0012,
+    "interval": [
+     0.0005,
+     0.0032
+    ]
+   },
+   "roc_auc": 0.9156659847550723,
+   "roc_auc_interval": [
+    0.9007,
+    0.9264
+   ],
+   "average_precision": 0.6594121282593967
+  },
+  "wolf_small/rules": {
+   "f1": 0.0441,
+   "precision": 0.7143,
+   "recall": {
+    "n": 440,
+    "k": 10,
+    "measured": true,
+    "value": 0.0227,
+    "interval": [
+     0.0124,
+     0.0413
+    ]
+   },
+   "false_positive_rate": {
+    "n": 3244,
+    "k": 4,
+    "measured": true,
+    "value": 0.0012,
+    "interval": [
+     0.0005,
+     0.0032
+    ]
+   },
+   "roc_auc": 0.4898245712364085,
+   "roc_auc_interval": [
+    0.4805,
+    0.5004
+   ],
+   "average_precision": 0.13177032742728018
+  },
+  "wolf_small/model": {
+   "f1": 0.6365,
+   "precision": 0.9462,
+   "recall": {
+    "n": 440,
+    "k": 211,
+    "measured": true,
+    "value": 0.4795,
+    "interval": [
+     0.4332,
+     0.5262
+    ]
+   },
+   "false_positive_rate": {
+    "n": 3244,
+    "k": 12,
+    "measured": true,
+    "value": 0.0037,
+    "interval": [
+     0.0021,
+     0.0065
+    ]
+   },
+   "roc_auc": 0.9561610245488174,
+   "roc_auc_interval": [
+    0.9434,
+    0.9668
+   ],
+   "average_precision": 0.8501566929424075
+  },
+  "wolf_small/fused": {
+   "f1": 0.6366,
+   "precision": 0.9381,
+   "recall": {
+    "n": 440,
+    "k": 212,
+    "measured": true,
+    "value": 0.4818,
+    "interval": [
+     0.4355,
+     0.5285
+    ]
+   },
+   "false_positive_rate": {
+    "n": 3244,
+    "k": 14,
+    "measured": true,
+    "value": 0.0043,
+    "interval": [
+     0.0026,
+     0.0072
+    ]
+   },
+   "roc_auc": 0.934203354444569,
+   "roc_auc_interval": [
+    0.9208,
+    0.9455
+   ],
+   "average_precision": 0.7483092757506763
+  }
+ }
+}

@@ -1,0 +1,1027 @@
+[
+ {
+  "rule": "addressing.note_to_ai",
+  "fired_on_attacks": 2,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 2,
+   "k": 2,
+   "measured": false
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "bypass.safety",
+  "fired_on_attacks": 1,
+  "fired_on_benign": 11,
+  "precision_on_this_mix": {
+   "n": 12,
+   "k": 1,
+   "measured": true,
+   "value": 0.0833,
+   "interval": [
+    0.0149,
+    0.3539
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 11,
+   "measured": true,
+   "value": 0.0015,
+   "interval": [
+    0.0009,
+    0.0028
+   ]
+  }
+ },
+ {
+  "rule": "de.override",
+  "fired_on_attacks": 16,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 16,
+   "k": 16,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.8064,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "de.reveal_prompt",
+  "fired_on_attacks": 6,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 6,
+   "k": 6,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.6097,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "delimiter.chat_tokens",
+  "fired_on_attacks": 207,
+  "fired_on_benign": 19,
+  "precision_on_this_mix": {
+   "n": 226,
+   "k": 207,
+   "measured": true,
+   "value": 0.9159,
+   "interval": [
+    0.8724,
+    0.9455
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 19,
+   "measured": true,
+   "value": 0.0027,
+   "interval": [
+    0.0017,
+    0.0042
+   ]
+  }
+ },
+ {
+  "rule": "es.override",
+  "fired_on_attacks": 14,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 14,
+   "k": 14,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.7847,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "es.reveal_prompt",
+  "fired_on_attacks": 18,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 18,
+   "k": 18,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.8241,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "exfil.repeat_instructions",
+  "fired_on_attacks": 96,
+  "fired_on_benign": 4,
+  "precision_on_this_mix": {
+   "n": 100,
+   "k": 96,
+   "measured": true,
+   "value": 0.96,
+   "interval": [
+    0.9016,
+    0.9843
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 4,
+   "measured": true,
+   "value": 0.0006,
+   "interval": [
+    0.0002,
+    0.0014
+   ]
+  }
+ },
+ {
+  "rule": "exfil.reveal_prompt",
+  "fired_on_attacks": 30,
+  "fired_on_benign": 3,
+  "precision_on_this_mix": {
+   "n": 33,
+   "k": 30,
+   "measured": true,
+   "value": 0.9091,
+   "interval": [
+    0.7643,
+    0.9686
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 3,
+   "measured": true,
+   "value": 0.0004,
+   "interval": [
+    0.0001,
+    0.0012
+   ]
+  }
+ },
+ {
+  "rule": "exfil.what_are_your_instructions",
+  "fired_on_attacks": 2,
+  "fired_on_benign": 1,
+  "precision_on_this_mix": {
+   "n": 3,
+   "k": 2,
+   "measured": false
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 1,
+   "measured": true,
+   "value": 0.0001,
+   "interval": [
+    0.0,
+    0.0008
+   ]
+  }
+ },
+ {
+  "rule": "fr.obey_only_me",
+  "fired_on_attacks": 16,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 16,
+   "k": 16,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.8064,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "fr.override",
+  "fired_on_attacks": 27,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 27,
+   "k": 27,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.8754,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "fr.reveal_prompt",
+  "fired_on_attacks": 18,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 18,
+   "k": 18,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.8241,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "hidden.markup",
+  "fired_on_attacks": 104,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 104,
+   "k": 104,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.9644,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "impersonation.tagged_turn",
+  "fired_on_attacks": 194,
+  "fired_on_benign": 1,
+  "precision_on_this_mix": {
+   "n": 195,
+   "k": 194,
+   "measured": true,
+   "value": 0.9949,
+   "interval": [
+    0.9715,
+    0.9991
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 1,
+   "measured": true,
+   "value": 0.0001,
+   "interval": [
+    0.0,
+    0.0008
+   ]
+  }
+ },
+ {
+  "rule": "it.obey_only_me",
+  "fired_on_attacks": 11,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 11,
+   "k": 11,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.7412,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "it.override",
+  "fired_on_attacks": 13,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 13,
+   "k": 13,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.7719,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "it.reveal_prompt",
+  "fired_on_attacks": 18,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 18,
+   "k": 18,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.8241,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "ja.override",
+  "fired_on_attacks": 4,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 4,
+   "k": 4,
+   "measured": false
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "override.abandon_your_rules",
+  "fired_on_attacks": 144,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 144,
+   "k": 144,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.974,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "override.all_instructions",
+  "fired_on_attacks": 1577,
+  "fired_on_benign": 5,
+  "precision_on_this_mix": {
+   "n": 1582,
+   "k": 1577,
+   "measured": true,
+   "value": 0.9968,
+   "interval": [
+    0.9926,
+    0.9986
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 5,
+   "measured": true,
+   "value": 0.0007,
+   "interval": [
+    0.0003,
+    0.0016
+   ]
+  }
+ },
+ {
+  "rule": "override.do_not_mention",
+  "fired_on_attacks": 0,
+  "fired_on_benign": 1,
+  "precision_on_this_mix": {
+   "n": 1,
+   "k": 0,
+   "measured": false
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 1,
+   "measured": true,
+   "value": 0.0001,
+   "interval": [
+    0.0,
+    0.0008
+   ]
+  }
+ },
+ {
+  "rule": "override.forget_everything",
+  "fired_on_attacks": 6,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 6,
+   "k": 6,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.6097,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "override.new_instructions",
+  "fired_on_attacks": 90,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 90,
+   "k": 90,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.9591,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "override.obey_only_me",
+  "fired_on_attacks": 4,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 4,
+   "k": 4,
+   "measured": false
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "override.original_instructions",
+  "fired_on_attacks": 25,
+  "fired_on_benign": 2,
+  "precision_on_this_mix": {
+   "n": 27,
+   "k": 25,
+   "measured": true,
+   "value": 0.9259,
+   "interval": [
+    0.7663,
+    0.9794
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 2,
+   "measured": true,
+   "value": 0.0003,
+   "interval": [
+    0.0001,
+    0.001
+   ]
+  }
+ },
+ {
+  "rule": "override.previous_directions",
+  "fired_on_attacks": 107,
+  "fired_on_benign": 6,
+  "precision_on_this_mix": {
+   "n": 113,
+   "k": 107,
+   "measured": true,
+   "value": 0.9469,
+   "interval": [
+    0.889,
+    0.9754
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 6,
+   "measured": true,
+   "value": 0.0008,
+   "interval": [
+    0.0004,
+    0.0018
+   ]
+  }
+ },
+ {
+  "rule": "override.previous_instructions",
+  "fired_on_attacks": 1944,
+  "fired_on_benign": 8,
+  "precision_on_this_mix": {
+   "n": 1952,
+   "k": 1944,
+   "measured": true,
+   "value": 0.9959,
+   "interval": [
+    0.9919,
+    0.9979
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 8,
+   "measured": true,
+   "value": 0.0011,
+   "interval": [
+    0.0006,
+    0.0022
+   ]
+  }
+ },
+ {
+  "rule": "override.romance_verbs",
+  "fired_on_attacks": 26,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 26,
+   "k": 26,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.8713,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "override.what_you_were_told",
+  "fired_on_attacks": 26,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 26,
+   "k": 26,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.8713,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "override.your_instructions",
+  "fired_on_attacks": 134,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 134,
+   "k": 134,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.9721,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "override.your_new_task",
+  "fired_on_attacks": 41,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 41,
+   "k": 41,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.9143,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "pt.override",
+  "fired_on_attacks": 13,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 13,
+   "k": 13,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.7719,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "pt.reveal_prompt",
+  "fired_on_attacks": 18,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 18,
+   "k": 18,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.8241,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "response.in_your_answer",
+  "fired_on_attacks": 85,
+  "fired_on_benign": 1,
+  "precision_on_this_mix": {
+   "n": 86,
+   "k": 85,
+   "measured": true,
+   "value": 0.9884,
+   "interval": [
+    0.937,
+    0.9979
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 1,
+   "measured": true,
+   "value": 0.0001,
+   "interval": [
+    0.0,
+    0.0008
+   ]
+  }
+ },
+ {
+  "rule": "retrieval.ignore_context",
+  "fired_on_attacks": 6,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 6,
+   "k": 6,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.6097,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "role.enter_mode",
+  "fired_on_attacks": 2,
+  "fired_on_benign": 1,
+  "precision_on_this_mix": {
+   "n": 3,
+   "k": 2,
+   "measured": false
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 1,
+   "measured": true,
+   "value": 0.0001,
+   "interval": [
+    0.0,
+    0.0008
+   ]
+  }
+ },
+ {
+  "rule": "role.in_mode",
+  "fired_on_attacks": 0,
+  "fired_on_benign": 1,
+  "precision_on_this_mix": {
+   "n": 1,
+   "k": 0,
+   "measured": false
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 1,
+   "measured": true,
+   "value": 0.0001,
+   "interval": [
+    0.0,
+    0.0008
+   ]
+  }
+ },
+ {
+  "rule": "role.named_mode",
+  "fired_on_attacks": 0,
+  "fired_on_benign": 2,
+  "precision_on_this_mix": {
+   "n": 2,
+   "k": 0,
+   "measured": false
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 2,
+   "measured": true,
+   "value": 0.0003,
+   "interval": [
+    0.0001,
+    0.001
+   ]
+  }
+ },
+ {
+  "rule": "role.pretend",
+  "fired_on_attacks": 1,
+  "fired_on_benign": 5,
+  "precision_on_this_mix": {
+   "n": 6,
+   "k": 1,
+   "measured": true,
+   "value": 0.1667,
+   "interval": [
+    0.0301,
+    0.5635
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 5,
+   "measured": true,
+   "value": 0.0007,
+   "interval": [
+    0.0003,
+    0.0016
+   ]
+  }
+ },
+ {
+  "rule": "role.you_are_now",
+  "fired_on_attacks": 1,
+  "fired_on_benign": 2,
+  "precision_on_this_mix": {
+   "n": 3,
+   "k": 1,
+   "measured": false
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 2,
+   "measured": true,
+   "value": 0.0003,
+   "interval": [
+    0.0001,
+    0.001
+   ]
+  }
+ },
+ {
+  "rule": "ru.override",
+  "fired_on_attacks": 19,
+  "fired_on_benign": 0,
+  "precision_on_this_mix": {
+   "n": 19,
+   "k": 19,
+   "measured": true,
+   "value": 1.0,
+   "interval": [
+    0.8318,
+    1.0
+   ]
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 0,
+   "measured": true,
+   "value": 0.0,
+   "interval": [
+    0.0,
+    0.0005
+   ]
+  }
+ },
+ {
+  "rule": "tool.call_syntax",
+  "fired_on_attacks": 2,
+  "fired_on_benign": 1,
+  "precision_on_this_mix": {
+   "n": 3,
+   "k": 2,
+   "measured": false
+  },
+  "benign_fire_rate": {
+   "n": 7135,
+   "k": 1,
+   "measured": true,
+   "value": 0.0001,
+   "interval": [
+    0.0,
+    0.0008
+   ]
+  }
+ }
+]

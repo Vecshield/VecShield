@@ -1,0 +1,399 @@
+{
+ "agentdojo/src/agentdojo/attacks/baseline_attacks.py": {
+  "bytes": 2864,
+  "sha256": "0e3f3cec2173524989d67bd3d934d032774ad3fc5995969c9565613efaa21c6d"
+ },
+ "agentdojo/src/agentdojo/attacks/important_instructions_attacks.py": {
+  "bytes": 6222,
+  "sha256": "519f24e0b9d72f43343d665679adacc33758b50cd1b586a81fa53fb098dcfe71"
+ },
+ "agentdojo/src/agentdojo/data/suites/banking/environment.yaml": {
+  "bytes": 2267,
+  "sha256": "3f539da1d97779b244cd122afc683dc69d602f338e1b3c42d126cbde33611c8b"
+ },
+ "agentdojo/src/agentdojo/data/suites/banking/injection_vectors.yaml": {
+  "bytes": 657,
+  "sha256": "4eb98a601c108d9b4d88f5d3f2dbf455f775a718975a0ae2624b4cf0d0f6f819"
+ },
+ "agentdojo/src/agentdojo/data/suites/slack/environment.yaml": {
+  "bytes": 3867,
+  "sha256": "0ea2f9b83e5ffaae0bf50fab2b13d6c8ee59a952f791b16c9554fdc48935c87d"
+ },
+ "agentdojo/src/agentdojo/data/suites/slack/injection_vectors.yaml": {
+  "bytes": 554,
+  "sha256": "efc01621ffa7955ee10e00e916ac933a41bd8347ba285e1e4888813bf5e0d3a2"
+ },
+ "agentdojo/src/agentdojo/data/suites/travel/environment.yaml": {
+  "bytes": 20964,
+  "sha256": "ca8ef591bde5a8d8b9e2efe6830b8e4646c43f633c86f14cb878f588bb4b8a3c"
+ },
+ "agentdojo/src/agentdojo/data/suites/travel/injection_vectors.yaml": {
+  "bytes": 1529,
+  "sha256": "a6ab848b39d862439e7b4844a617e578294de93cd0176c1851184dd901edb51c"
+ },
+ "agentdojo/src/agentdojo/data/suites/workspace/include/calendar.yaml": {
+  "bytes": 9610,
+  "sha256": "69b0ae96804e986b5a0dba694ad6ca34cf01c8c6b57bb8ceb618d9ed8640b803"
+ },
+ "agentdojo/src/agentdojo/data/suites/workspace/include/cloud_drive.yaml": {
+  "bytes": 28245,
+  "sha256": "a9731cd49fe7eb726e43c1727c40eff0d6ca2d85d53728aa744860a8c4214130"
+ },
+ "agentdojo/src/agentdojo/data/suites/workspace/include/inbox.yaml": {
+  "bytes": 13942,
+  "sha256": "e6fac364bfb0e89d3d0251ef8079ffa2791504673a426029034356b8228f2082"
+ },
+ "agentdojo/src/agentdojo/data/suites/workspace/injection_vectors.yaml": {
+  "bytes": 2997,
+  "sha256": "3390ac3da090ea0fde5f50ef0a74bf260786b35ab6ff14d47a199ecb41a15489"
+ },
+ "agentdojo/src/agentdojo/default_suites/v1/banking/injection_tasks.py": {
+  "bytes": 15309,
+  "sha256": "fa2dedf8e66c95ffadb54f5a26648728b08c56f302858de4ee9a5cc0b3891618"
+ },
+ "agentdojo/src/agentdojo/default_suites/v1/slack/injection_tasks.py": {
+  "bytes": 9144,
+  "sha256": "d5775da1689e13192b665837e72cee88ed76f622e9b998e9def18b700fdc5afc"
+ },
+ "agentdojo/src/agentdojo/default_suites/v1/travel/injection_tasks.py": {
+  "bytes": 12604,
+  "sha256": "9252be834b0ae0e28fe06744e052987d71d8ad3666b8d0b1f65f2875f998fca8"
+ },
+ "agentdojo/src/agentdojo/default_suites/v1/workspace/injection_tasks.py": {
+  "bytes": 10615,
+  "sha256": "03e0894ffb544a79fd0bfd2c62cc5f90b19a2b1d429068d800239bfd020b6dcc"
+ },
+ "bipia/benchmark/code/test.jsonl": {
+  "bytes": 100451,
+  "sha256": "ed40b84f541352fb45753032a80750922de8d5e0b70997924df3d04cf942e058"
+ },
+ "bipia/benchmark/code/train.jsonl": {
+  "bytes": 125926,
+  "sha256": "5e6879b621a5cefe265a5b41b7ed0be632536f658f6097baf85a28b9abcb3115"
+ },
+ "bipia/benchmark/code_attack_test.json": {
+  "bytes": 16356,
+  "sha256": "892545c5aaec0645b1ded65dc7816b3d70e9ef4eadcba2301a7a3db93676b6e0"
+ },
+ "bipia/benchmark/code_attack_train.json": {
+  "bytes": 16343,
+  "sha256": "fe515080b6da2b5c0b67ca7ba2a3b3c2ce57c48f45733c475ebc813cba118484"
+ },
+ "bipia/benchmark/email/test.jsonl": {
+  "bytes": 30334,
+  "sha256": "217b403faaa1d0cb12c24892bea39f4a0b9e2819919ac7e2b902006e28278cdb"
+ },
+ "bipia/benchmark/email/train.jsonl": {
+  "bytes": 31586,
+  "sha256": "82207193cb8ce06713eeb7c33ca0716446613512e2ad9303b302ba14d425ddd4"
+ },
+ "bipia/benchmark/table/test.jsonl": {
+  "bytes": 183302,
+  "sha256": "3d5eaab192b80bada762e3cd7655583a14e5888ba8b845a01f0434e4ccc4291e"
+ },
+ "bipia/benchmark/table/train.jsonl": {
+  "bytes": 1638481,
+  "sha256": "ae1c3ff25733fb3ff1a35bda3009716f4d25a17ae6833c73521be0411d576494"
+ },
+ "bipia/benchmark/text_attack_test.json": {
+  "bytes": 6322,
+  "sha256": "75750e7b4e8b34e8f9d88d89b357aeaaf02bd07f9e493ccd37eda74a0cd7c7f8"
+ },
+ "bipia/benchmark/text_attack_train.json": {
+  "bytes": 5999,
+  "sha256": "63f95d3e67eac4178cdabdbdaf192cd05f2b6ed0702b578f1d30d556e5155670"
+ },
+ "cursor_rules/@commit": {
+  "commit": "b044f956f021b6e8877f16781bcfc466a6a120e9"
+ },
+ "deepset/data/test-00000-of-00001-701d16158af87368.parquet": {
+  "bytes": 10892,
+  "sha256": "39ac797cabc157eeed58435a08593b2952bb6cb16fc394a2d383f447cc7b246e"
+ },
+ "deepset/data/train-00000-of-00001-9564e8b05b4757ab.parquet": {
+  "bytes": 40323,
+  "sha256": "2e10bc7ab30f542c97e4e83e2a5683000b5057d25ec10908784c631d44124c04"
+ },
+ "django_docs/@commit": {
+  "commit": "9e2e5a31e2ef2e8673d3c2a38d2a391dbf42cf23"
+ },
+ "gandalf/data/test-00000-of-00001-bc92128b9288a6d1.parquet": {
+  "bytes": 7336,
+  "sha256": "56b646d133335ebc535266bd55dbe1b5bee7caa4b95bf49d040684b9b5dd9972"
+ },
+ "gandalf/data/train-00000-of-00001-ded53be747ff55cd.parquet": {
+  "bytes": 36715,
+  "sha256": "5b6acf3e5a5998d21f8e1222bb45bbdec25a14408747b1cd63bebef4a75fa439"
+ },
+ "gandalf/data/validation-00000-of-00001-94481a2a09ff2fff.parquet": {
+  "bytes": 7464,
+  "sha256": "f51ab3e3407a368845b0f57932cc745c09280429416d7507bd178a16326a79f6"
+ },
+ "gandalf_summarization/data/test-00000-of-00001-1696577a5023b698.parquet": {
+  "bytes": 11326,
+  "sha256": "cf63d8ee1a9a4c0ce45f53f2e6702d526cf35544bb4b4c86f746503923dc43b1"
+ },
+ "gandalf_summarization/data/train-00000-of-00001-44378fdb62cbf9b7.parquet": {
+  "bytes": 66302,
+  "sha256": "8d160db880b4eb8efd8e6dc5425f10466ba594fa32da8aa6da4b2ceb22899214"
+ },
+ "gandalf_summarization/data/validation-00000-of-00001-c7b174a69fca3472.parquet": {
+  "bytes": 9680,
+  "sha256": "d1a29b60a10228db16e0cf75dae9cd9be9904f905eefdaa5f9a48a0f557ea52b"
+ },
+ "injecagent/data/test_cases_dh_base.json": {
+  "bytes": 672918,
+  "sha256": "0a8186468d21389af432e8c7b399ae42264d1b93a07b65c7a489468508604305"
+ },
+ "injecagent/data/test_cases_dh_enhanced.json": {
+  "bytes": 721878,
+  "sha256": "885602716b72c18af80695ce6c2e1f242fa03163bc90b0788b0c5e4ab6216d50"
+ },
+ "injecagent/data/test_cases_ds_base.json": {
+  "bytes": 765370,
+  "sha256": "4daab35c62a3845e8b9400f4dca58b9c9f37e57cd33b2337552557fbb26282e9"
+ },
+ "injecagent/data/test_cases_ds_enhanced.json": {
+  "bytes": 817594,
+  "sha256": "7bc510868df032511053fc40e8470e68a041fb7148d055112093594bf73ab0ce"
+ },
+ "jailbreak/default/jailbreak_dataset_full.csv": {
+  "bytes": 2143822,
+  "sha256": "79a7b90b0abe00e3586cc5048353c3236543cca228a1ee261fe3b57a7cb7e29f"
+ },
+ "llmail/data/emails_for_fp_tests.json": {
+  "bytes": 55486,
+  "sha256": "4ddd950b5dbaa8548f5597c886d8e09a051ba07f80a9291fdcca9c2397d22abe"
+ },
+ "llmail/data/labelled_unique_submissions_phase2.json": {
+  "bytes": 68586935,
+  "sha256": "f89af984e345430c3b357903890e30867bf4676f4ef10c138cc7bad218e890b8"
+ },
+ "notinject/data/NotInject_one-00000-of-00001.parquet": {
+  "bytes": 10859,
+  "sha256": "5b1d3a8ec341205305efd8c6d2cabeb5ba0f594dd8726b08ee7fde1a46ddc6ec"
+ },
+ "notinject/data/NotInject_three-00000-of-00001.parquet": {
+  "bytes": 13009,
+  "sha256": "d5c685b123570c092a0f374ba6bdf324b2026d905a2751a243eb2bb360d411a8"
+ },
+ "notinject/data/NotInject_two-00000-of-00001.parquet": {
+  "bytes": 11183,
+  "sha256": "a5a8c1b3b851b0b5acc3b6caf8bfee26d7da631b2967dd31ca90358df8883feb"
+ },
+ "owasp_cheatsheets/@commit": {
+  "commit": "c12dd22e17cefa0b8448f3a82b15a60bb3357914"
+ },
+ "prompt_guide/@commit": {
+  "commit": "57673726396dd94acb23bdb1e67f27c78ee85a8e"
+ },
+ "runbooks_openshift/@commit": {
+  "commit": "bc71a1798c469150156e95ade3d57ba3684c9c4d"
+ },
+ "runbooks_prometheus/@commit": {
+  "commit": "a685d14cf5128bb30e2bf935c3983decd772d885"
+ },
+ "slabs/data/test.csv": {
+  "bytes": 111112,
+  "sha256": "4c7a9f0fff2bf7d3f6d3e7b84863a8f5d6c48c70c3ac7fe874917074c8f27853"
+ },
+ "slabs/data/train.csv": {
+  "bytes": 747016,
+  "sha256": "bab012fec95d4214599b18777fd6efc5cc5e9545354df581880aeca5c1d487d7"
+ },
+ "slabs/data/validation.csv": {
+  "bytes": 122918,
+  "sha256": "c7d14d24a14dd30a37ebe0de928b8ccdcdf6639c3c2e830b59561e2dd5fb7b55"
+ },
+ "spml/spml_prompt_injection.csv": {
+  "bytes": 29051327,
+  "sha256": "4ca6590cd8ec10832fcebee5e243acb32be5c3e79b7a260f8638eed738c784f8"
+ },
+ "tldr_pages/@commit": {
+  "commit": "bc614bf4855805510fadd5ba3823f1e556f8ca63"
+ },
+ "turkish/data/test.jsonl": {
+  "bytes": 33586,
+  "sha256": "5b2fe87ddd589e0d16c52c5689d88375b87bd1546aef5ad241d9cfbd79b771e8"
+ },
+ "turkish/data/train.jsonl": {
+  "bytes": 151572,
+  "sha256": "5917b498e3bc153d2575dfdc6a5ee40153acfd5514631e02a731b0a2d43cb912"
+ },
+ "wambosec/data/test-00000-of-00001.parquet": {
+  "bytes": 98090,
+  "sha256": "24a7b363225c32260e1e3fddb138315570345c891608e4dd3b32438a9366b782"
+ },
+ "wambosec/data/train-00000-of-00001.parquet": {
+  "bytes": 809716,
+  "sha256": "6e98332144e5ed52658ba7f899cfd583e388cd7fda733720a8c354af340f03e9"
+ },
+ "wikipedia/ar-0": {
+  "content_sha256": "56a298f5b7e979cf3168b168ab70dd696a1da06dad2669afc6f1147c8656bc4c",
+  "rows": 100
+ },
+ "wikipedia/ar-19946": {
+  "content_sha256": "5462e2f132ea4ae4ad8201a381d32fc3d79d70f25c3657f43f17575f601975ea",
+  "rows": 100
+ },
+ "wikipedia/ar-9973": {
+  "content_sha256": "501eee9b9befc3664d61e4ac00d16e285cb1cc0ba2dc544986cc9c0a7b324de3",
+  "rows": 100
+ },
+ "wikipedia/de-0": {
+  "content_sha256": "0728c178cf484567d6176e96177a18b07510ccf7afb7f9c0e8a9f131ab1ce103",
+  "rows": 100
+ },
+ "wikipedia/de-19946": {
+  "content_sha256": "935484009b312360be024602a193ad83c8e9b48e67a16e41267412c3d2a77083",
+  "rows": 100
+ },
+ "wikipedia/de-9973": {
+  "content_sha256": "72a12b35cf9f80eb500fc148d63772ee458d84ba072ef26211cdffcb5e9ceecd",
+  "rows": 100
+ },
+ "wikipedia/en-0": {
+  "content_sha256": "ea78b93f613d4a3f68ac3b0fd920b150b263e2eff43407e433a0f9166c0f3bf6",
+  "rows": 100
+ },
+ "wikipedia/en-109703": {
+  "content_sha256": "dfafb1e6a88b19426557c2a9f70864c2406e63b5a64ef6f6769a5e2d1a89de4b",
+  "rows": 100
+ },
+ "wikipedia/en-119676": {
+  "content_sha256": "b3946feff177a3f59634cd8385339056606fd2745f95babe06589510b7e9aa51",
+  "rows": 100
+ },
+ "wikipedia/en-129649": {
+  "content_sha256": "8105322fbd1805ad91b036d93a65505a055848e84435911b9fb3b0378fbdc624",
+  "rows": 100
+ },
+ "wikipedia/en-19946": {
+  "content_sha256": "26a159f0b223c62e5370602dcf0b8189fa85b081a4fe428899f75e9269c44470",
+  "rows": 100
+ },
+ "wikipedia/en-29919": {
+  "content_sha256": "75b49262c2cab9423fc58fec2ddaf4e2eb7b6a103de35877efcf848ebb3646a3",
+  "rows": 100
+ },
+ "wikipedia/en-39892": {
+  "content_sha256": "f435f6461eac9160e2e1067e1bc4c886d4e4404b700abf3728d23fad69a16f03",
+  "rows": 100
+ },
+ "wikipedia/en-49865": {
+  "content_sha256": "cc9a4b64017c6f5eee5dd958010008b5ba6bfd2c18ba56aaeeb65464e65e0d2a",
+  "rows": 100
+ },
+ "wikipedia/en-59838": {
+  "content_sha256": "b8c733405c3339b23073d930f7cb7825786b412b68908365ecc11b652f2aa2a5",
+  "rows": 100
+ },
+ "wikipedia/en-69811": {
+  "content_sha256": "933f69586f9bbae8498178b4661e32e653747c5c0e10797d4452b56816eae7a2",
+  "rows": 100
+ },
+ "wikipedia/en-79784": {
+  "content_sha256": "acf5a03ab49cf11c60c7ed43e1bb461917e79ea61fa95f3adaf890f293f25e5c",
+  "rows": 100
+ },
+ "wikipedia/en-89757": {
+  "content_sha256": "d646d6c75521c4f5d622bc58bb02ffb630386eb87a5b9f1067240075e924fc21",
+  "rows": 100
+ },
+ "wikipedia/en-9973": {
+  "content_sha256": "91691b7ba716747ae7d7fc05f0594d7b8b38ff284d103edd5276ac41fae05503",
+  "rows": 100
+ },
+ "wikipedia/en-99730": {
+  "content_sha256": "de3d418b401ed60ef899c78ae3e68d2b62c7a2bf094641fb7ec3531b0c6b44c8",
+  "rows": 100
+ },
+ "wikipedia/es-0": {
+  "content_sha256": "72969ded2860c17789db50f54a58573d59bdd0c04a14465ba5eeb5caa2a236e6",
+  "rows": 100
+ },
+ "wikipedia/es-19946": {
+  "content_sha256": "cad412de33f89ed3c6555009983dc560462f037dc6f2590c094a9e57abfaa954",
+  "rows": 100
+ },
+ "wikipedia/es-9973": {
+  "content_sha256": "f74e2631af8ad86f84070adacf5006b8ec9061d1722a289806375c2d8536947d",
+  "rows": 100
+ },
+ "wikipedia/fa-0": {
+  "content_sha256": "ee1fd51cc382e5bb43287f2f1d802cb687c32184e367c140d349973774691899",
+  "rows": 100
+ },
+ "wikipedia/fa-19946": {
+  "content_sha256": "41ab1f5f215c5163020676c8f06a312ba6e66bc469719e8dfc8ec61900bbb4ec",
+  "rows": 100
+ },
+ "wikipedia/fa-9973": {
+  "content_sha256": "46bd61b20dc1e362a56eb7bd2c8fcdb4dd34bddb806e343ddbea429abcd1cac0",
+  "rows": 100
+ },
+ "wikipedia/fr-0": {
+  "content_sha256": "810ed6fe8b8cb08ea1dee3e09494a3fc0fbafe209dd990dcd08b54b20f6a67af",
+  "rows": 100
+ },
+ "wikipedia/fr-19946": {
+  "content_sha256": "8a0da5198262802c654aba620ae62dfcaa5a1030e665642624ab21c1d5f30d2a",
+  "rows": 100
+ },
+ "wikipedia/fr-9973": {
+  "content_sha256": "8f8cae175e6f00998f0772960e7aef0d640d0aa60c184afb881c357576fb8edb",
+  "rows": 100
+ },
+ "wikipedia/he-0": {
+  "content_sha256": "ca0a281e730798fa2aee2434c2a67905f218cc0b8588ec8ece07fb1631416740",
+  "rows": 100
+ },
+ "wikipedia/he-19946": {
+  "content_sha256": "aad0856d0d0aecc2a2b62cd2578d225bcf865880c5ff4983e2782b51133c0319",
+  "rows": 100
+ },
+ "wikipedia/he-9973": {
+  "content_sha256": "6441d659603c75203e73a8bfad1538bcc86e4ac6331c5b78479cdb96cf686509",
+  "rows": 100
+ },
+ "wikipedia/ja-0": {
+  "content_sha256": "5253f15a1585ef39463f85a3f628a1c331827a2ce01bd3fe06abc4be06ec0d40",
+  "rows": 100
+ },
+ "wikipedia/ja-19946": {
+  "content_sha256": "7d9ba0266b5811573fac55f6eaa54c4e4af3dfa0f934a5a3ed0d86832f232ca8",
+  "rows": 100
+ },
+ "wikipedia/ja-9973": {
+  "content_sha256": "bfc513adc6d73997fe101c5d9a10340596439e274e8711cdbf212aaf7b356cf2",
+  "rows": 100
+ },
+ "wikipedia/ru-0": {
+  "content_sha256": "6630b06240974e07b21a66cb74a5e84026da8f21d121a72c95ba4150344bd5c4",
+  "rows": 100
+ },
+ "wikipedia/ru-19946": {
+  "content_sha256": "745a0271cdcb8b87c82879fcb19f491d311b5826cd46e92118665ec0a79cfc89",
+  "rows": 100
+ },
+ "wikipedia/ru-9973": {
+  "content_sha256": "d8128ca3077b9947099aeb575768da080e4ba11ebe0f1c2214f24e193fba753d",
+  "rows": 100
+ },
+ "wikipedia/zh-0": {
+  "content_sha256": "2a29793d42fba68ded24e541c7126846550affb1d7abe09d36acdb9705988433",
+  "rows": 100
+ },
+ "wikipedia/zh-19946": {
+  "content_sha256": "0314c674d16bd113159702e16470cf6aea6eaecd43debbcd70af2b5ea4973a8f",
+  "rows": 100
+ },
+ "wikipedia/zh-9973": {
+  "content_sha256": "ef20b8066fe4f0e54db80ec7ed4d41d314ea5ec1699063b95d6f571fe3613ec6",
+  "rows": 100
+ },
+ "yanismiraoui/prompt_injections.csv": {
+  "bytes": 77986,
+  "sha256": "f4843f1841fa19b980f804796a68fc72f06841775eaba2723c768c7d772aabad"
+ }
+}

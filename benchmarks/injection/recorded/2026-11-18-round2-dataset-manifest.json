@@ -1,0 +1,917 @@
+{
+ "rows": 54192,
+ "sha256": "4bbe1ae77ab3de03d115b3278b954b0f6a7eb3f3b3fda38824101296e4a1acdb",
+ "by_split_label": {
+  "dev/0": 8183,
+  "dev/1": 11719,
+  "heldout/0": 8560,
+  "heldout/1": 7015,
+  "test/0": 8105,
+  "test/1": 10610
+ },
+ "by_family": [
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "agentdojo_clean",
+   "source": "agentdojo",
+   "rows": 18
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "django_docs",
+   "rows": 922
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "owasp_cheatsheets",
+   "rows": 637
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "prompt_guide",
+   "rows": 244
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "runbooks_openshift",
+   "rows": 183
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "runbooks_prometheus",
+   "rows": 51
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "tldr_pages",
+   "rows": 1500
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ar",
+   "rows": 244
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_de",
+   "rows": 333
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_en",
+   "rows": 950
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_es",
+   "rows": 346
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_fa",
+   "rows": 242
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_fr",
+   "rows": 416
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_he",
+   "rows": 276
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ja",
+   "rows": 306
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ru",
+   "rows": 296
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_zh",
+   "rows": 204
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "bipia_clean_context",
+   "source": "bipia",
+   "rows": 126
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "django_docs",
+   "rows": 115
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "runbooks_openshift",
+   "rows": 47
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_ar",
+   "rows": 16
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_de",
+   "rows": 21
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_en",
+   "rows": 246
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_ru",
+   "rows": 19
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_zh",
+   "rows": 10
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "direct_prompt",
+   "source": "deepset",
+   "rows": 343
+  },
+  {
+   "split": "dev",
+   "label": 0,
+   "family": "llmail_benign_email",
+   "source": "llmail",
+   "rows": 72
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "agentdojo_direct",
+   "source": "agentdojo",
+   "rows": 79
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "agentdojo_ignore_previous",
+   "source": "agentdojo",
+   "rows": 79
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "agentdojo_important_instructions",
+   "source": "agentdojo",
+   "rows": 79
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "agentdojo_injecagent",
+   "source": "agentdojo",
+   "rows": 79
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "agentdojo_system_message",
+   "source": "agentdojo",
+   "rows": 79
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "bipia_code",
+   "source": "bipia",
+   "rows": 150
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "bipia_text",
+   "source": "bipia",
+   "rows": 222
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "container_payload",
+   "source": "deepset",
+   "rows": 23
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "container_payload",
+   "source": "gandalf",
+   "rows": 146
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "container_payload",
+   "source": "yanismiraoui",
+   "rows": 71
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "diluted_payload",
+   "source": "deepset",
+   "rows": 23
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "diluted_payload",
+   "source": "gandalf",
+   "rows": 146
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "diluted_payload",
+   "source": "yanismiraoui",
+   "rows": 70
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "deepset",
+   "rows": 203
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "gandalf",
+   "rows": 888
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "yanismiraoui",
+   "rows": 465
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "deepset",
+   "rows": 124
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "gandalf",
+   "rows": 497
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "yanismiraoui",
+   "rows": 279
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "evasion",
+   "source": "gandalf",
+   "rows": 1378
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "foreign_carrier_payload",
+   "source": "deepset",
+   "rows": 23
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "foreign_carrier_payload",
+   "source": "gandalf",
+   "rows": 146
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "foreign_carrier_payload",
+   "source": "yanismiraoui",
+   "rows": 65
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "injecagent_base",
+   "source": "injecagent",
+   "rows": 527
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "injecagent_enhanced",
+   "source": "injecagent",
+   "rows": 527
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "llmail_attempt",
+   "source": "llmail",
+   "rows": 2997
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "llmail_succeeded",
+   "source": "llmail",
+   "rows": 1555
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "split_payload",
+   "source": "deepset",
+   "rows": 22
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "split_payload",
+   "source": "gandalf",
+   "rows": 113
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "split_payload",
+   "source": "yanismiraoui",
+   "rows": 64
+  },
+  {
+   "split": "dev",
+   "label": 1,
+   "family": "stacked_evasion",
+   "source": "gandalf",
+   "rows": 600
+  },
+  {
+   "split": "heldout",
+   "label": 0,
+   "family": "agent_rules",
+   "source": "cursor_rules",
+   "rows": 592
+  },
+  {
+   "split": "heldout",
+   "label": 0,
+   "family": "labelled_prompt",
+   "source": "jailbreak",
+   "rows": 1323
+  },
+  {
+   "split": "heldout",
+   "label": 0,
+   "family": "labelled_prompt",
+   "source": "slabs",
+   "rows": 1993
+  },
+  {
+   "split": "heldout",
+   "label": 0,
+   "family": "labelled_prompt",
+   "source": "spml",
+   "rows": 1955
+  },
+  {
+   "split": "heldout",
+   "label": 0,
+   "family": "labelled_prompt",
+   "source": "turkish",
+   "rows": 358
+  },
+  {
+   "split": "heldout",
+   "label": 0,
+   "family": "labelled_prompt",
+   "source": "wambosec",
+   "rows": 2000
+  },
+  {
+   "split": "heldout",
+   "label": 0,
+   "family": "notinject",
+   "source": "notinject",
+   "rows": 339
+  },
+  {
+   "split": "heldout",
+   "label": 1,
+   "family": "jailbreak_prompt",
+   "source": "jailbreak",
+   "rows": 653
+  },
+  {
+   "split": "heldout",
+   "label": 1,
+   "family": "labelled_prompt",
+   "source": "slabs",
+   "rows": 1964
+  },
+  {
+   "split": "heldout",
+   "label": 1,
+   "family": "labelled_prompt",
+   "source": "spml",
+   "rows": 2000
+  },
+  {
+   "split": "heldout",
+   "label": 1,
+   "family": "labelled_prompt",
+   "source": "turkish",
+   "rows": 258
+  },
+  {
+   "split": "heldout",
+   "label": 1,
+   "family": "labelled_prompt",
+   "source": "wambosec",
+   "rows": 2000
+  },
+  {
+   "split": "heldout",
+   "label": 1,
+   "family": "summarization_injection",
+   "source": "gandalf_summarization",
+   "rows": 140
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "agentdojo_clean",
+   "source": "agentdojo",
+   "rows": 11
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "django_docs",
+   "rows": 1109
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "owasp_cheatsheets",
+   "rows": 576
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "prompt_guide",
+   "rows": 192
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "runbooks_openshift",
+   "rows": 228
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "runbooks_prometheus",
+   "rows": 56
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "tldr_pages",
+   "rows": 1500
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ar",
+   "rows": 297
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_de",
+   "rows": 344
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_en",
+   "rows": 968
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_es",
+   "rows": 346
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_fa",
+   "rows": 271
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_fr",
+   "rows": 337
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_he",
+   "rows": 359
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ja",
+   "rows": 329
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_ru",
+   "rows": 308
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "benign_document",
+   "source": "wikipedia_zh",
+   "rows": 214
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "bipia_clean_context",
+   "source": "bipia",
+   "rows": 125
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "django_docs",
+   "rows": 98
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "runbooks_openshift",
+   "rows": 39
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_ar",
+   "rows": 12
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_de",
+   "rows": 13
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_en",
+   "rows": 191
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_ru",
+   "rows": 31
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "carrier_without_payload",
+   "source": "wikipedia_zh",
+   "rows": 7
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "direct_prompt",
+   "source": "deepset",
+   "rows": 56
+  },
+  {
+   "split": "test",
+   "label": 0,
+   "family": "llmail_benign_email",
+   "source": "llmail",
+   "rows": 88
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "agentdojo_direct",
+   "source": "agentdojo",
+   "rows": 54
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "agentdojo_ignore_previous",
+   "source": "agentdojo",
+   "rows": 54
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "agentdojo_important_instructions",
+   "source": "agentdojo",
+   "rows": 54
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "agentdojo_injecagent",
+   "source": "agentdojo",
+   "rows": 54
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "agentdojo_system_message",
+   "source": "agentdojo",
+   "rows": 54
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "bipia_code",
+   "source": "bipia",
+   "rows": 150
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "bipia_text",
+   "source": "bipia",
+   "rows": 224
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "container_payload",
+   "source": "deepset",
+   "rows": 24
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "container_payload",
+   "source": "gandalf",
+   "rows": 37
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "container_payload",
+   "source": "yanismiraoui",
+   "rows": 179
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "diluted_payload",
+   "source": "deepset",
+   "rows": 24
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "diluted_payload",
+   "source": "gandalf",
+   "rows": 37
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "diluted_payload",
+   "source": "yanismiraoui",
+   "rows": 179
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "deepset",
+   "rows": 60
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "gandalf",
+   "rows": 112
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "direct_prompt",
+   "source": "yanismiraoui",
+   "rows": 509
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "deepset",
+   "rows": 60
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "gandalf",
+   "rows": 112
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "embedded_payload",
+   "source": "yanismiraoui",
+   "rows": 542
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "evasion",
+   "source": "gandalf",
+   "rows": 1377
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "foreign_carrier_payload",
+   "source": "deepset",
+   "rows": 24
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "foreign_carrier_payload",
+   "source": "gandalf",
+   "rows": 37
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "foreign_carrier_payload",
+   "source": "yanismiraoui",
+   "rows": 168
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "injecagent_base",
+   "source": "injecagent",
+   "rows": 527
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "injecagent_enhanced",
+   "source": "injecagent",
+   "rows": 527
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "llmail_attempt",
+   "source": "llmail",
+   "rows": 3003
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "llmail_succeeded",
+   "source": "llmail",
+   "rows": 1610
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "split_payload",
+   "source": "deepset",
+   "rows": 24
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "split_payload",
+   "source": "gandalf",
+   "rows": 32
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "split_payload",
+   "source": "yanismiraoui",
+   "rows": 163
+  },
+  {
+   "split": "test",
+   "label": 1,
+   "family": "stacked_evasion",
+   "source": "gandalf",
+   "rows": 599
+  }
+ ]
+}
