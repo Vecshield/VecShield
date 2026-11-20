@@ -87,6 +87,12 @@ Changes to the detection engine specifically are also tracked in
   process. A job leaves memory once its final state is saved to history, and
   is read from there. Without history, only the newest 200 finished jobs are
   kept.
+- pgvector: an HNSW or IVFFlat index on an expression over the vector column
+  now counts as a pgvector index. pgvector documents two such patterns:
+  half-precision indexing (`(embedding::halfvec(n)) halfvec_cosine_ops`) and
+  binary quantization (`binary_quantize(embedding)::bit(n)`). Before, a table
+  indexed only this way was reported as having "no pgvector index", and a
+  half-precision index's cosine metric was lost.
 - The console's static assets are served gzip-compressed to clients that
   accept it. `dashboard.js` and `dashboard.css` drop from about 1.07 MB to
   about 290 KB on a first load. Only the `/static` mount is compressed: API
