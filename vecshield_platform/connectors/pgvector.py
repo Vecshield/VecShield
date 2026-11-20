@@ -21,6 +21,14 @@ embedding are named in ``metadata["unread_vector_columns"]``, so no vector
 column is dropped without a trace. ``sparsevec`` and ``bit`` values are not
 dense float vectors and are never decoded as one.
 
+Metadata is every other column. A ``json``/``jsonb`` column holding an object
+(LangChain's ``cmetadata``, LlamaIndex's ``metadata_``) is flattened into its
+top-level keys, because that is where those frameworks keep the tenant, source
+and document fields their filters use; a key that collides with a column (or
+an earlier json column's key) is kept as ``<column>.<key>``. ``query(where=)``
+filters such a key inside the json column, and refuses a key it cannot find
+rather than running the query unfiltered.
+
 A chunk id is the key value as text. With a composite primary key it is a
 JSON array of the key values as text, in key order, so every id names exactly
 one row; ``delete_chunks`` takes the same form back.
@@ -354,6 +362,10 @@ class PgVectorConnector(Connector):
                                       metadata=metadata))
                 continue
             metadata.update(key_columns=list(lay["key_cols"]), id_source=lay["id_source"])
+            json_cols = [c for c in self._json_columns(table)
+                         if c in self._metadata_columns(table, lay)]
+            if json_cols:
+                metadata["json_metadata_columns"] = json_cols
             if lay["row_filtered"]:
                 self._note_row_filtered(table)
                 metadata.update(row_security_filtered=True,
@@ -463,9 +475,13 @@ class PgVectorConnector(Connector):
         ``<+>`` L1), so the query takes the path the application's queries
         take; a column without one is searched by cosine distance.
 
-        `where` is applied as equality filters on real table columns; keys that
-        aren't columns of the table are ignored (so a caller can't inject SQL or
-        crash the probe on a typo). Scores rise as results get closer:
+        `where` is applied as equality filters: on a table column, or on a
+        top-level key of a json/jsonb metadata column (``<column>.<key>`` names
+        one explicitly). A key that is neither raises UnsupportedCapability:
+        silently dropping it would run the query unfiltered, which a tenant
+        query must never do. Keys are only ever matched against the catalog
+        and passed as parameters, never interpolated. Scores rise as results
+        get closer:
         ``1/(1+distance)``, or the inner product itself for ``<#>``. Only dense
         columns (``vector``, ``halfvec``) can be searched with a float query
         vector.
@@ -620,6 +636,10 @@ class PgVectorConnector(Connector):
                 if k in known:
                     clauses.append(f"{_quote_ident(k)} = %s")
                     params.append(v)
+                    continue
+                clause, extra = self._json_filter(collection, k, v)
+                clauses.append(clause)
+                params.extend(extra)
             if clauses:
                 where_sql = " WHERE " + " AND ".join(clauses)
         params.append(top_k)
@@ -787,6 +807,7 @@ class PgVectorConnector(Connector):
             "vector_columns": columns, "readable": info["readable"],
             "row_filtered": bool(info.get("row_filtered")),
             "text": None, "key_cols": [], "key_types": [], "id_source": None,
+            "table": table,
         }
         if not info["readable"]:
             return lay
@@ -826,10 +847,25 @@ class PgVectorConnector(Connector):
             # The key columns are named in the id too, but a tenant column in
             # a composite key is exactly the metadata isolation checks need.
             metadata.update(zip(lay["key_cols"], key_values))
+        objects: list[tuple[str, dict]] = []
+        json_cols = self._json_columns_for(lay)
         for mc in meta_cols:
-            metadata[mc] = row[idx]
+            value = row[idx]
             idx += 1
+            if mc in json_cols and isinstance(value, dict):
+                objects.append((mc, value))
+            else:
+                metadata[mc] = value
+        # After the columns, so a column always keeps its own name.
+        for column, obj in objects:
+            for key, value in obj.items():
+                name = str(key)
+                metadata[f"{column}.{name}" if name in metadata else name] = value
         return _compose_id(key_values), text, metadata, list(row[idx:])
+
+    def _json_columns_for(self, lay: dict[str, Any]) -> dict[str, str]:
+        table = lay.get("table")
+        return self._json_columns(table) if table else {}
 
     def _row_chunk(self, collection: str, lay: dict[str, Any], meta_cols: list[str],
                    row: Any) -> Chunk:
@@ -1356,6 +1392,67 @@ class PgVectorConnector(Connector):
             ORDER BY ordinal_position
         """
         return [r[0] for r in self._read(sql, (self._schema, table))]
+
+    def _json_columns(self, table: str) -> dict[str, str]:
+        """``{column: json|jsonb}`` for the table's json columns, in column order."""
+        cache = self.__dict__.setdefault("_json_cols", {})
+        if table not in cache:
+            sql = """
+                SELECT column_name, data_type, ordinal_position
+                FROM information_schema.columns
+                WHERE table_schema = %s AND table_name = %s
+                  AND data_type = ANY('{json,jsonb}')
+                ORDER BY 3
+            """
+            cache[table] = {str(r[0]): str(r[1]) for r in self._read(sql, (self._schema, table))}
+        return cache[table]
+
+    def _json_filter(self, table: str, key: str, value: Any) -> tuple[str, list]:
+        """A WHERE clause matching ``key == value`` inside a json metadata column.
+
+        ``key`` is a top-level key of the first json column (in column order)
+        where any row has it, or ``<column>.<key>`` for a flattened key that
+        collided. The value must match exactly, type included: ``@>`` lets a
+        GIN index on a jsonb column narrow the rows, and ``->`` equality keeps
+        an array that merely contains the value from matching.
+        """
+        json_cols = {c: t for c, t in self._json_columns(table).items()
+                     if c in self._meta_cols.get(table, list(self._json_columns(table)))}
+        column, inner = None, key
+        head, _, tail = key.partition(".")
+        if tail and head in json_cols:
+            column, inner = head, tail
+        else:
+            for col in json_cols:
+                if self._json_has_key(table, col, key):
+                    column = col
+                    break
+        if column is None:
+            raise UnsupportedCapability(
+                f"{self.kind}: {table!r} has no column or json metadata key {key!r}, so "
+                "the filter cannot be applied")
+        try:
+            contained, expected = json.dumps({inner: value}), json.dumps(value)
+        except (TypeError, ValueError):
+            raise UnsupportedCapability(
+                f"{self.kind}: a {type(value).__name__} value cannot be matched inside "
+                f"json column {column!r}") from None
+        ref = _quote_ident(column)
+        if json_cols[column] != "jsonb":
+            ref = f"{ref}::jsonb"
+        return (f"({ref} @> %s::jsonb AND ({ref} -> %s) = %s::jsonb)",
+                [contained, inner, expected])
+
+    def _json_has_key(self, table: str, column: str, key: str) -> bool:
+        cache = self.__dict__.setdefault("_json_key_cache", {})
+        if (table, column, key) not in cache:
+            ref = _quote_ident(column)
+            row = self._read(
+                f"SELECT EXISTS (SELECT 1 FROM {self._qtable(table)} "
+                f"WHERE jsonb_typeof({ref}::jsonb) = 'object' AND {ref}::jsonb ? %s)",
+                (key,), one=True)
+            cache[(table, column, key)] = bool(row and row[0])
+        return cache[(table, column, key)]
 
     def _metadata_columns(self, table: str, lay: dict[str, Any]) -> list[str]:
         """Columns surfaced as chunk metadata: everything but key/text/vector.

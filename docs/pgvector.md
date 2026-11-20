@@ -89,6 +89,26 @@ fix is `ALTER ROLE <app role> SET hnsw.iterative_scan = strict_order`, on
 pgvector 0.8.0 or later. Don't fix short results by retrieving as a role that
 bypasses row security; that trades lost recall for a leak.
 
+## Metadata in json columns
+
+LangChain (`langchain_pg_embedding.cmetadata`) and LlamaIndex (`metadata_`)
+keep a chunk's tenant, source and document fields in one `json` or `jsonb`
+column. VecShield flattens such a column's top-level keys into the chunk's
+metadata. So `--tenant-field tenant_id` finds a tenant stored as
+`cmetadata->>'tenant_id'`, and the isolation probe filters on it the way the
+framework does:
+
+```sql
+cmetadata @> '{"tenant_id": "acme"}' AND cmetadata -> 'tenant_id' = '"acme"'
+```
+
+The `@>` lets a GIN index on the column serve the filter. The `->` equality
+keeps an array that merely contains the value from matching. A key that
+collides with a real column keeps the column's name as a prefix
+(`cmetadata.collection_id`), and either form can be used as the tenant field.
+A filter key that is neither a column nor a key in any row's json metadata is
+refused. VecShield never runs a tenant query without its filter.
+
 ## Declare the retrieval role
 
 Least privilege is about the role the application reads as, which VecShield

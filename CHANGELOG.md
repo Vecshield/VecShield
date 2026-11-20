@@ -83,6 +83,14 @@ Changes to the detection engine specifically are also tracked in
 
 ### Fixed
 
+- pgvector: a tenant kept in a json/jsonb metadata column (LangChain's
+  `cmetadata`, LlamaIndex's `metadata_`) is now found and probed. Before, such
+  a table was reported as single-tenant ("isolation is not applicable") while
+  several tenants shared it. The column's top-level keys become chunk metadata,
+  and `query(where=)` filters inside it. A filter key the table has neither as
+  a column nor as a json key now raises instead of being dropped, which ran
+  the query unfiltered. This also applies to filters passed through the
+  runtime proxy.
 - Finished background jobs no longer stay in server memory for the life of the
   process. A job leaves memory once its final state is saved to history, and
   is read from there. Without history, only the newest 200 finished jobs are
