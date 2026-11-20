@@ -63,6 +63,13 @@ Changes to the detection engine specifically are also tracked in
 - `GET /auth/users` reports `mfa_enabled` for each account.
 - New dependencies: `pyotp` (codes) and `segno` (enrollment QR code). Both are
   pure Python with no dependencies of their own.
+- pgvector: a partitioned table is audited as one collection, through its
+  parent, with its partitions listed in `partitions`. Before, the parent was
+  skipped and each partition was audited as a separate table without the
+  parent's row security. That hid a BYPASSRLS retrieval role on a partitioned
+  RLS table. A new HIGH rule, `partition_bypasses_row_security`, reports a
+  partition with no row security of its own that the retrieval role or PUBLIC
+  can read directly, bypassing the parent's policies.
 
 ### Changed
 

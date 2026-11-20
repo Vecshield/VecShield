@@ -41,7 +41,7 @@ application connects as.
 | Severity | Rule |
 |---|---|
 | CRITICAL | The retrieval role is a superuser, or a member of one. It has BYPASSRLS (or is a member of a role that has it) while a vector table relies on row security |
-| HIGH | The retrieval role owns an RLS table without `FORCE ROW LEVEL SECURITY`. It holds INSERT, UPDATE, DELETE or TRUNCATE on a vector table. It has CREATEROLE. Separately, PUBLIC can SELECT a vector table that has row security off |
+| HIGH | The retrieval role owns an RLS table without `FORCE ROW LEVEL SECURITY`. It holds INSERT, UPDATE, DELETE or TRUNCATE on a vector table. It has CREATEROLE. Separately, PUBLIC can SELECT a vector table that has row security off. Separately, the retrieval role or PUBLIC can SELECT a partition, without row security of its own, of a partitioned table that relies on row security |
 | MEDIUM | PUBLIC can CREATE in the vector extension's schema or a schema on the search path |
 | LOW | VecShield itself audited as a superuser or BYPASSRLS role (see below). Separately, a table that relies on row security is searched through an HNSW/IVFFlat index with iterative scans off, so its searches can come back short. Nothing leaks |
 
@@ -108,6 +108,24 @@ In that case it:
 
 A role that does not exist in the database is named in the result. It is
 never treated as clean.
+
+## Partitioned tables
+
+A partitioned table is audited as one collection, through the parent, the way
+the application queries it. Its partitions are not listed separately. They are
+named in the collection's `partitions`.
+
+Row security is per table. The parent's policies apply to rows read through
+the parent. Queried by name, a partition is filtered only by its own policies,
+and most partitions have none. So `GRANT SELECT ON ALL TABLES IN SCHEMA ...`
+on a schema with a partitioned RLS table gives every partition to the grantee
+unfiltered. `partition_bypasses_row_security` reports each such partition the
+retrieval role or PUBLIC can read. It does not report a role that is a
+superuser or has BYPASSRLS, which is reported as such. To fix it, grant SELECT
+on the partitioned table only, or enable row security on the partition with
+the same policies.
+
+Listing partitions needs `pg_partition_tree()` (PostgreSQL 12 and later).
 
 ## The role to audit with
 

@@ -138,6 +138,47 @@ def test_public_reads_without_rls_and_public_create_are_principal_independent():
     assert outcome["outcome"] == "failed"
 
 
+def _partitioned(*partitions, rls=True):
+    return [{"table": "notes", "owner": "app_owner", "rls": rls, "force_rls": False,
+             "public_select": False, "policies": 1, "retrieval_privileges": ["SELECT"],
+             "partitions": list(partitions)}]
+
+
+def _part(name, rls=False, role=False, public=False):
+    return {"partition": name, "rls": rls, "retrieval_select": role, "public_select": public}
+
+
+def test_a_partition_readable_without_its_parents_policies_is_high():
+    findings, outcome = assess_access_grants(_model(tables=_partitioned(
+        _part("app.notes_north", role=True), _part("app.notes_south", public=True),
+        _part("app.notes_east", rls=True, role=True, public=True),
+        _part("app.notes_west"))), STORE)
+    assert _rules(findings) == ["partition_bypasses_row_security"] * 2
+    assert outcome["outcome"] == "failed"
+    by_part = {f.evidence["partition"]: f for f in findings}
+    assert set(by_part) == {"app.notes_north", "app.notes_south"}
+    assert by_part["app.notes_north"].evidence["readers"] == ["rag_reader"]
+    assert by_part["app.notes_south"].evidence["readers"] == ["PUBLIC"]
+    assert all(f.severity == Severity.HIGH and f.collection == "notes" for f in findings)
+
+
+def test_partitions_matter_only_under_a_parent_with_row_security():
+    findings, _ = assess_access_grants(_model(tables=_partitioned(
+        _part("app.notes_north", role=True), rls=False)), STORE)
+    assert findings == []
+
+
+@pytest.mark.parametrize("principal", [{"bypassrls": True}, {"superuser": True},
+                                       {"assumed": True, "name": "vs_auditor"}])
+def test_a_principal_that_skips_policies_or_is_assumed_is_not_named_per_partition(principal):
+    model = _model(tables=_partitioned(_part("app.notes_north", role=True),
+                                       _part("app.notes_south", public=True)),
+                   retrieval_principal=principal)
+    hits = [h for h in access_hits(model) if h[0] == "partition_bypasses_row_security"]
+    # PUBLIC still reads the partition directly, whoever retrieves.
+    assert [h[3]["partition"] for h in hits] == ["app.notes_south"]
+
+
 def test_a_medium_weakness_alone_is_inconclusive_not_failed():
     schemas = [{"schema": "public", "public_create": True,
                 "uses": ["vector_extension"]}]
@@ -379,7 +420,10 @@ def _models_firing_every_rule():
                             "retrieval_privileges": ["SELECT", "INSERT"],
                             "ann_index": {"index": "a_hnsw", "index_type": "hnsw",
                                           "metric": "cosine"},
-                            "iterative_scan": "off"},
+                            "iterative_scan": "off",
+                            "partitions": [{"partition": "public.a_p1", "rls": False,
+                                            "retrieval_select": True,
+                                            "public_select": True}]},
                            {"table": "b", "owner": "x", "rls": False, "force_rls": False,
                             "public_select": True, "policies": 0,
                             "retrieval_privileges": ["SELECT"]}],

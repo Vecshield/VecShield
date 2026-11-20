@@ -111,6 +111,11 @@ def _hits(model: dict[str, Any]) -> list[tuple[str, Optional[str], str, dict]]:
                 hits.append(("retrieval_createrole", None,
                              f"'{name}' has CREATEROLE.", {}))
 
+    # A superuser or BYPASSRLS principal is already reported as such; its
+    # reads skip every policy, so naming it per partition adds nothing.
+    privileged_principal = known and bool(
+        principal.get("superuser") or principal.get("member_of_superuser")
+        or principal.get("bypassrls") or principal.get("member_of_bypassrls"))
     for t in tables:
         ann = t.get("ann_index") or {}
         if t.get("rls") and ann and str(t.get("iterative_scan") or "").lower() == "off":
@@ -123,6 +128,24 @@ def _hits(model: dict[str, Any]) -> list[tuple[str, Optional[str], str, dict]]:
                          "rows the policies hide are never returned.",
                          {"index": ann.get("index"), "index_type": ann.get("index_type"),
                           "iterative_scan": t.get("iterative_scan"), "leaks_data": False}))
+        if t.get("rls"):
+            for part in t.get("partitions") or []:
+                if part.get("rls"):
+                    continue
+                readers = [who for who, ok in (
+                    (f"'{name}'" if name else "the retrieval role",
+                     part.get("retrieval_select") and not assumed
+                     and not privileged_principal),
+                    ("PUBLIC", part.get("public_select"))) if ok]
+                if not readers:
+                    continue
+                hits.append(("partition_bypasses_row_security", t["table"],
+                             f"'{t['table']}' relies on row security, but its partition "
+                             f"'{part['partition']}' has none and {' and '.join(readers)} "
+                             f"can SELECT it. Queried by name, a partition is filtered "
+                             f"only by its own policies, so the parent's are bypassed.",
+                             {"partition": part["partition"],
+                              "readers": [r.strip("'") for r in readers]}))
         if t.get("public_select") and not t.get("rls"):
             hits.append(("public_select_without_rls", t["table"],
                          f"PUBLIC holds SELECT on '{t['table']}' and row security is off, "

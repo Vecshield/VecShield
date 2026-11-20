@@ -374,6 +374,49 @@ def test_iter_chunks_surfaces_metadata_columns():
     assert chunks[0].embedding == [0.1, 0.2]
 
 
+# ------------------------------------------------------ partitioned tables -- #
+
+def test_partitioned_tables_are_listed_through_the_parent_only():
+    conn = _docs_conn()
+    conn.static.append(("pg_partition_tree", [("public.docs_2025",), ("public.docs_2026",)]))
+    c = _make_connector(conn)
+    [col] = c.list_collections()
+    assert col.metadata["partitions"] == ["public.docs_2025", "public.docs_2026"]
+    [sql] = [s for s, _p, _n in conn.calls if "row_security_active" in s]
+    assert "c.relkind IN ('r', 'p')" in sql and "NOT c.relispartition" in sql
+
+
+def test_a_server_without_pg_partition_tree_lists_the_table_without_partitions():
+    conn = _docs_conn()
+    conn.static.append(("pg_partition_tree", InsufficientPrivilege("no such function")))
+    c = _make_connector(conn)
+    [col] = c.list_collections()
+    assert "partitions" not in col.metadata and c.read_errors() == []
+
+
+def test_the_access_model_reads_partitions_of_row_security_tables_as_the_role():
+    conn = _access_conn(retrieval=("rag_reader", False, False, False, True, [], []))
+    conn.static.insert(0, ("pc.relrowsecurity",
+                           [("docs", "app.docs_north", False, True, False)]))
+    c = _make_connector(conn)
+    c._retrieval_role = "rag_reader"
+    model = c.access_model()
+    [table] = model["tables"]
+    assert table["partitions"] == [{"partition": "app.docs_north", "rls": False,
+                                    "retrieval_select": True, "public_select": False}]
+    [(sql, params)] = [(s, p) for s, p, _n in conn.calls if "pc.relrowsecurity" in s]
+    assert "has_table_privilege(%s, pc.oid, 'SELECT')" in sql
+    assert params[0] == "rag_reader" and params[-1] == ["docs"]
+    assert model["sections_readable"]["partitions"] is True
+
+
+def test_the_access_model_skips_partitions_when_no_table_relies_on_row_security():
+    conn = _access_conn(tables=[("docs", "app_owner", False, False, False)])
+    model = _make_connector(conn).access_model()
+    assert not any("pc.relrowsecurity" in s for s, _p, _n in conn.calls)
+    assert "partitions" not in model["sections_readable"]
+
+
 # ------------------------------------------------- vector type detection -- #
 
 def test_halfvec_sparsevec_and_bit_columns_are_detected_and_grouped():
