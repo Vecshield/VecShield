@@ -128,8 +128,8 @@ def _make_connector(conn: _FakeConn) -> PgVectorConnector:
 
 
 def _vec_row(table, column, typ="vector", dim=2, readable=True, bit_indexed=False,
-             row_filtered=False):
-    return (table, column, typ, dim, readable, bit_indexed, row_filtered)
+             row_filtered=False, row_admitted=False):
+    return (table, column, typ, dim, readable, bit_indexed, row_filtered, row_admitted)
 
 
 def _docs_conn(vector_rows=None, keys=(("id", "bigint"),), text=(("content", "text"),),
@@ -624,6 +624,49 @@ def test_a_filter_that_matches_nothing_does_not_scan_as_a_pass():
     assert outcome["outcome"] == "inconclusive"
     assert outcome["coverage"]["complete"] is False
     assert any(f.category == "coverage" for f in job.findings)
+
+
+# ------------------------------------------- row security admitting all rows -- #
+
+def test_a_table_whose_policies_admit_every_row_is_read_without_a_gap():
+    conn = _docs_conn([_vec_row("docs", "embedding", row_admitted=True)])
+    c = _make_connector(conn)
+    [col] = c.list_collections()
+    assert "row_security_filtered" not in col.metadata
+    assert "USING (true)" in col.metadata["row_security_admits_all"]
+    assert c.read_errors() == []
+
+
+def test_row_filtering_still_records_a_read_gap():
+    conn = _docs_conn([_vec_row("docs", "embedding", row_filtered=True)])
+    c = _make_connector(conn)
+    [col] = c.list_collections()
+    assert col.metadata["row_security_filtered"] is True
+    assert "row_security_admits_all" not in col.metadata
+    assert [e["operation"] for e in c.read_errors()] == ["row_security"]
+
+
+def test_the_catalog_query_asks_which_policies_reach_the_connecting_role():
+    conn = _docs_conn()
+    _make_connector(conn).list_collections()
+    [sql] = [s for s, _p, _n in conn.calls if "row_security_active" in s]
+    # Permissive USING (true) admits; any other restrictive policy narrows.
+    assert "p.polpermissive AND" in sql and "NOT p.polpermissive AND" in sql
+    assert "pg_get_expr(p.polqual, p.polrelid) = 'true'" in sql
+    assert "IS DISTINCT FROM 'true'" in sql
+    assert "0 = ANY(p.polroles)" in sql and "pg_has_role(current_user" in sql
+    assert "p.polcmd IN ('r', '*')" in sql
+
+
+def test_admitted_needs_every_vector_column_row_to_agree():
+    from vecshield_platform.connectors.pgvector import group_vector_columns
+
+    out = group_vector_columns([
+        ("docs", "a", "vector", 2, True, False, False, True),
+        ("docs", "b", "vector", 2, True, False, False, False),
+        ("old", "a", "vector", 2, True, False, False),   # a 7-field row: not admitted
+    ])
+    assert out["docs"]["row_admitted"] is False and out["old"]["row_admitted"] is False
 
 
 # ------------------------------------------------------------- deletes -- #

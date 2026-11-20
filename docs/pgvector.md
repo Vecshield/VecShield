@@ -141,6 +141,20 @@ policies allow. You have two options:
 - give the auditor a policy that admits it;
 - audit as a BYPASSRLS role.
 
+To admit the auditor, give each RLS vector table a policy like this one:
+
+```sql
+CREATE POLICY vecshield_audit ON public.docs FOR SELECT TO vecshield_auditor
+  USING (true);
+```
+
+VecShield checks `pg_policy` for this pattern: a permissive `USING (true)`
+policy reaches the role (directly, through a role it is a member of, or
+PUBLIC), and no restrictive policy narrows it. Then it reads the table in
+full, and the collection records `row_security_admits_all`. Any other policy
+may hide rows. VecShield cannot tell which rows, so it reads what the policy
+shows and reports the table as a read gap.
+
 If you audit as a BYPASSRLS role or a superuser, VecShield reports a LOW
 `privileged_auditor` finding. Isolation results from that run show every row,
 not what an application role sees.
