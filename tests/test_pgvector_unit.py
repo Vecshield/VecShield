@@ -476,19 +476,75 @@ def test_single_key_keyset_continues_after_the_last_key():
     assert second == [5, 2]
 
 
-def test_table_without_a_primary_key_reads_through_a_server_side_cursor():
+def test_table_without_any_key_is_read_by_ctid_through_a_server_side_cursor():
+    # No primary key and no unique index: the first column ("id" here) is not
+    # known to be unique, so it must not be the chunk id.
     conn = _docs_conn(keys=[])
-    conn.static.append(("ORDER BY a.attnum LIMIT 1", [("id", "integer")]))
-    conn.static.append(('SELECT "id", "content", "tenant", "embedding" FROM',
-                        [(i, f"t{i}", "x", "[0,1]") for i in range(5)]))
+    conn.static.append(('SELECT "ctid", "content", "id", "tenant", "embedding" FROM',
+                        [(f"(0,{i})", "x", 7, f"t{i}", "[0,1]") for i in range(5)]))
     c = _make_connector(conn)
     chunks = list(c.iter_chunks("docs", batch_size=2))
-    assert [ch.id for ch in chunks] == ["0", "1", "2", "3", "4"]
-    reads = [(s, n) for s, _p, n in conn.calls if s.startswith('SELECT "id"')]
+    assert [ch.id for ch in chunks] == [f"(0,{i})" for i in range(5)]
+    assert chunks[0].metadata == {"id": 7, "tenant": "t0"}
+    reads = [(s, n) for s, _p, n in conn.calls if s.startswith('SELECT "ctid"')]
     assert len(reads) == 1 and reads[0][1].startswith("vecshield_")
     assert "LIMIT" not in reads[0][0] and "OFFSET" not in reads[0][0]
     assert conn.tx == ["begin", "commit"]
-    assert c.list_collections()[0].metadata["id_source"] == "first_column"
+    meta = c.list_collections()[0].metadata
+    assert meta["id_source"] == "ctid" and meta["key_columns"] == ["ctid"]
+
+
+def test_a_ctid_table_refuses_deletes():
+    conn = _docs_conn(keys=[])
+    c = _make_connector(conn)
+    with pytest.raises(UnsupportedCapability, match="primary key"):
+        c.delete_chunks("docs", ["(0,1)"])
+    assert not any(s.startswith("DELETE") for s, _p, _n in conn.calls)
+
+
+def test_a_not_null_unique_index_keys_a_table_without_a_primary_key():
+    conn = _docs_conn(keys=[])
+    conn.static.append(("indisunique", [("docs_doc_key", "doc", "text"),
+                                        ("docs_doc_key", "chunk", "integer")]))
+    conn.seq.append(("LIMIT %s", [[("a", 1, "x", 9, "t", "[0,1]")]]))
+    conn.static.append(("DELETE FROM", 1))
+    c = _make_connector(conn)
+    meta = c.list_collections()[0].metadata
+    assert meta["id_source"] == "unique_index" and meta["key_columns"] == ["doc", "chunk"]
+    [chunk] = list(c.iter_chunks("docs"))
+    assert json.loads(chunk.id) == ["a", "1"]
+    pages = [s for s, _p, _n in conn.calls if "LIMIT %s" in s]
+    assert 'ORDER BY "doc", "chunk" LIMIT %s' in pages[0]
+    assert c.delete_chunks("docs", [chunk.id]) == 1
+    [sql] = [s for s, _p, _n in conn.calls if s.startswith("DELETE")]
+    assert '("doc", "chunk") IN ((%s::text, %s::integer))' in sql
+
+
+def test_unique_index_query_requires_not_null_plain_columns():
+    conn = _docs_conn(keys=[])
+    c = _make_connector(conn)
+    c.list_collections()
+    [sql] = [s for s, _p, _n in conn.calls if "indisunique" in s]
+    assert "indpred IS NULL" in sql and "attnotnull" in sql and "attnum = 0" in sql
+
+
+def test_text_column_prefers_the_longest_values_when_none_is_conventional():
+    conn = _docs_conn(keys=[], text=[("tenant", "text"), ("question", "text"),
+                                     ("answer", "text")])
+    conn.static.append(("avg(length(", [(7.5, 28.0, 81.2)]))
+    c = _make_connector(conn)
+    assert c.list_collections()[0].metadata["text_column"] == "answer"
+    [sample] = [s for s, _p, _n in conn.calls if "avg(length(" in s]
+    assert "LIMIT 200" in sample
+
+
+def test_text_column_skips_key_columns_and_falls_back_to_column_order():
+    conn = _docs_conn(keys=[("slug", "text")], text=[("slug", "text"), ("summary", "text"),
+                                                     ("notes", "text")])
+    conn.static.append(("avg(length(", InsufficientPrivilege("denied")))
+    c = _make_connector(conn)
+    # The sample failed: the first non-key text column, never the key.
+    assert c.list_collections()[0].metadata["text_column"] == "summary"
 
 
 def test_transient_page_errors_are_retried(monkeypatch):

@@ -241,3 +241,37 @@ def test_query_uses_the_vector_index(seeded_db):
             ("[1,0,0,0]",)).fetchall()
     text = "\n".join(row[0] for row in plan)
     assert "rag_docs_hnsw" in text, text
+
+
+@pytest.fixture
+def keyless_db():
+    with psycopg_connect() as raw:
+        raw.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        raw.execute("DROP TABLE IF EXISTS faq_cache")
+        raw.execute("CREATE TABLE faq_cache (tenant text, question text, answer text, "
+                    "embedding vector(2))")
+        for i in range(6):
+            raw.execute("INSERT INTO faq_cache VALUES (%s, %s, %s, '[0.1,0.2]')",
+                        ("acme" if i % 2 else "globex", f"Question {i}?",
+                         f"A much longer answer to question {i}, as prose would be."))
+    yield
+    with psycopg_connect() as raw:
+        raw.execute("DROP TABLE IF EXISTS faq_cache")
+
+
+def test_a_table_without_keys_gets_distinct_ids_and_refuses_deletes(keyless_db):
+    """Without a key the first column ("tenant") repeats; ids must not."""
+    from vecshield_platform.connectors.base import UnsupportedCapability
+    from vecshield_platform.connectors.pgvector import PgVectorConnector
+
+    with PgVectorConnector(dsn=DSN, tables=["faq_cache"]) as conn:
+        [col] = conn.list_collections()
+        assert col.metadata["id_source"] == "ctid"
+        assert col.metadata["text_column"] == "answer"
+        chunks = list(conn.iter_chunks("faq_cache"))
+        assert len({c.id for c in chunks}) == 6
+        assert {c.metadata["tenant"] for c in chunks} == {"acme", "globex"}
+        with pytest.raises(UnsupportedCapability):
+            conn.delete_chunks("faq_cache", [chunks[0].id])
+    with psycopg_connect() as raw:
+        assert raw.execute("SELECT count(*) FROM faq_cache").fetchone()[0] == 6

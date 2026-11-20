@@ -8,9 +8,12 @@ introspects the catalog to find, per table:
     source without scanning rows. ``bit`` is a core Postgres type also used for
     flags, so a ``bit`` column counts only when a pgvector ``bit_*_ops`` index
     covers it or the table already has another pgvector column
-  * a text column (text/varchar), preferring common chunk column names
-  * the key columns (every primary-key column, in key order; else the table's
-    first column, which is not guaranteed to be unique)
+  * a text column (text/varchar), preferring common chunk column names, else
+    the non-key text column with the longest values over a sample
+  * the key columns: every primary-key column, in key order; else the columns
+    of a unique index that identifies every row (no expression, no predicate,
+    all NOT NULL); else the physical row position ``ctid``, which identifies a
+    row only while it is unchanged, so such a table refuses ``delete_chunks``
 
 Collection model: each table with at least one vector column is one
 Collection, however many vector columns it has. The first dense column
@@ -25,9 +28,9 @@ A chunk id is the key value as text. With a composite primary key it is a
 JSON array of the key values as text, in key order, so every id names exactly
 one row; ``delete_chunks`` takes the same form back.
 
-Reads page by keyset over every primary-key column, so rows are neither
-skipped nor repeated as the table changes; a table without a primary key is
-read through one server-side cursor in a single statement. The connection is
+Reads page by keyset over every key column, so rows are neither skipped nor
+repeated as the table changes; a table read by ``ctid`` is read through one
+server-side cursor in a single statement. The connection is
 in autocommit mode and writes run in explicit transactions, so a failed
 catalog probe never poisons the next statement. Tables the connecting role
 cannot SELECT are listed with an unknown count and a read error naming the
@@ -179,6 +182,15 @@ _TABLE_PRIVILEGES = ("SELECT", "INSERT", "UPDATE", "DELETE", "TRUNCATE")
 
 #: Rows per DELETE statement for composite keys (all in one transaction).
 _DELETE_BATCH = 500
+
+#: Rows sampled to choose a text column when no column has a conventional name.
+_TEXT_SAMPLE_ROWS = 200
+
+#: Why a table read by physical row position (``ctid``) refuses deletes.
+_CTID_DELETE_REASON = (
+    "the table has no primary key or unique index, so its chunk ids are physical row "
+    "positions (ctid) that change when a row is updated or the table is rewritten; "
+    "deleting by them could remove the wrong rows. Add a primary key to erase from it.")
 
 _UNREADABLE_REASON = ("the connecting role has no SELECT privilege on this table, "
                       "so its rows and row count were not read")
@@ -381,7 +393,7 @@ class PgVectorConnector(Connector):
             self._note_row_filtered(collection)
         meta_cols = self._metadata_columns(collection, lay)
         select = ", ".join(_quote_ident(c) for c in self._select_columns(lay, meta_cols))
-        if lay["id_source"] == "primary_key":
+        if lay["id_source"] in ("primary_key", "unique_index"):
             yield from self._iter_keyset(collection, lay, meta_cols, select, batch_size)
         else:
             yield from self._iter_cursor(collection, lay, meta_cols, select, batch_size)
@@ -670,6 +682,8 @@ class PgVectorConnector(Connector):
         if not ids:
             return 0
         lay = self._layout_for(collection)
+        if lay["id_source"] == "ctid":
+            raise UnsupportedCapability(f"{self.kind}: {collection!r}: {_CTID_DELETE_REASON}")
         keys, types = lay["key_cols"], lay["key_types"]
         qtable = self._qtable(collection)
         casts = [_safe_type(t) for t in types]
@@ -790,15 +804,20 @@ class PgVectorConnector(Connector):
         }
         if not info["readable"]:
             return lay
-        lay["text"] = self._text_column(table)
         keys = self._primary_key(table)
         if keys:
             lay["id_source"] = "primary_key"
         else:
-            keys = self._first_column(table)
-            lay["id_source"] = "first_column"
+            keys = self._unique_key(table)
+            lay["id_source"] = "unique_index"
+        if not keys:
+            # No column set identifies a row. The physical row position does,
+            # within one read; it is never used to delete (_CTID_DELETE_REASON).
+            keys = [("ctid", "tid")]
+            lay["id_source"] = "ctid"
         lay["key_cols"] = [k for k, _t in keys]
         lay["key_types"] = [t for _k, t in keys]
+        lay["text"] = self._text_column(table, exclude=set(lay["key_cols"]))
         return lay
 
     def _select_columns(self, lay: dict[str, Any], meta_cols: list[str],
@@ -1308,20 +1327,44 @@ class PgVectorConnector(Connector):
         rows = self._read(_VECTOR_COLUMNS_SQL, (self._schema,))
         return group_vector_columns(rows)
 
-    def _text_column(self, table: str) -> Optional[str]:
+    def _text_column(self, table: str, exclude: Optional[set[str]] = None) -> Optional[str]:
+        """The column read as chunk text.
+
+        A conventionally named column wins (``_TEXT_NAME_PREFERENCE``). Otherwise
+        the text column, other than the row's key, whose values are longest on
+        average over a sample: prose is longer than the labels, slugs and tenant
+        ids that also live in text columns. Ties, and an unreadable sample, fall
+        back to column order, so the choice is the same on every run.
+        """
         sql = """
             SELECT column_name, data_type
             FROM information_schema.columns
             WHERE table_schema = %s AND table_name = %s
               AND data_type IN ('text', 'character varying', 'character', 'varchar')
+            ORDER BY ordinal_position
         """
-        cols = {r[0]: r[1] for r in self._read(sql, (self._schema, table))}
+        cols = [r[0] for r in self._read(sql, (self._schema, table))]
         if not cols:
             return None
         for pref in _TEXT_NAME_PREFERENCE:
             if pref in cols:
                 return pref
-        return next(iter(cols))  # any text column
+        candidates = [c for c in cols if c not in (exclude or set())] or cols
+        if len(candidates) == 1:
+            return candidates[0]
+        lengths = ", ".join(f"avg(length({_quote_ident(c)}))" for c in candidates)
+        sample = ", ".join(_quote_ident(c) for c in candidates)
+        try:
+            row = self._read(f"SELECT {lengths} FROM (SELECT {sample} FROM "
+                             f"{self._qtable(table)} LIMIT {_TEXT_SAMPLE_ROWS}) AS s",
+                             one=True)
+        except Exception:  # noqa: BLE001 - fall back to column order
+            return candidates[0]
+        averages = [float(v) if v is not None else -1.0 for v in (row or [])]
+        if len(averages) != len(candidates):
+            return candidates[0]
+        best = max(range(len(candidates)), key=lambda i: (averages[i], -i))
+        return candidates[best]
 
     def _primary_key(self, table: str) -> list[tuple[str, str]]:
         """Every primary-key column with its type, in key order."""
@@ -1337,17 +1380,36 @@ class PgVectorConnector(Connector):
         """
         return [(str(r[0]), str(r[1])) for r in self._read(sql, (table, self._schema))]
 
-    def _first_column(self, table: str) -> list[tuple[str, str]]:
-        sql = """
-            SELECT a.attname, format_type(a.atttypid, a.atttypmod)
-            FROM pg_attribute a
-            JOIN pg_class c     ON c.oid = a.attrelid
-            JOIN pg_namespace n ON n.oid = c.relnamespace
-            WHERE c.relname = %s AND n.nspname = %s
-              AND a.attnum > 0 AND NOT a.attisdropped
-            ORDER BY a.attnum LIMIT 1
+    def _unique_key(self, table: str) -> list[tuple[str, str]]:
+        """The columns of the narrowest usable unique index, for a table with no PK.
+
+        Usable means it identifies every row: a plain-column (no expression),
+        non-partial, valid unique index whose columns are all NOT NULL, since a
+        nullable unique column admits any number of NULL rows. Fewest columns
+        first, then index name, so the choice is stable.
         """
-        return [(str(r[0]), str(r[1])) for r in self._read(sql, (table, self._schema))]
+        sql = """
+            SELECT i.indexrelid::regclass::text, a.attname,
+                   format_type(a.atttypid, a.atttypmod)
+            FROM pg_index i
+            CROSS JOIN LATERAL unnest(i.indkey::int2[]) WITH ORDINALITY AS k(attnum, ord)
+            JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = k.attnum
+            JOIN pg_class c     ON c.oid = i.indrelid
+            JOIN pg_namespace n ON n.oid = c.relnamespace
+            WHERE i.indisunique AND i.indisvalid AND i.indpred IS NULL
+              AND c.relname = %s AND n.nspname = %s
+              AND NOT EXISTS (SELECT 1 FROM unnest(i.indkey::int2[]) AS e(attnum)
+                              WHERE e.attnum = 0)
+              AND NOT EXISTS (SELECT 1 FROM unnest(i.indkey::int2[]) AS e(attnum)
+                              JOIN pg_attribute na ON na.attrelid = i.indrelid
+                                                  AND na.attnum = e.attnum
+                              WHERE NOT na.attnotnull)
+            ORDER BY i.indnatts, 1, k.ord
+        """
+        indexes: dict[str, list[tuple[str, str]]] = {}
+        for name, col, typ in self._read(sql, (table, self._schema)):
+            indexes.setdefault(str(name), []).append((str(col), str(typ)))
+        return next(iter(indexes.values()), [])
 
     def _all_columns(self, table: str) -> list[str]:
         sql = """
