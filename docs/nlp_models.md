@@ -102,13 +102,13 @@ verify [MODELS...] [--extras]`.
 ### pip installs
 
 A model wheel cannot be a pip dependency (the wheels live on GitHub releases,
-and PyPI refuses direct-URL dependencies), so `pip install vecshield-platform`
+and PyPI refuses direct-URL dependencies), so `pip install vecshield`
 never turns NER on by itself. The extras install the runtime:
 
 ```sh
-pip install "vecshield-platform[nlp-trf]"   # the default model's runtime (PyTorch)
-pip install "vecshield-platform[nlp-lg]"    # en_core_web_lg's runtime, no PyTorch
-vecshield-platform nlp install --default    # then the model itself
+pip install "vecshield[nlp-trf]"          # the default model's runtime (PyTorch)
+pip install "vecshield[nlp-lg]"           # en_core_web_lg's runtime, no PyTorch
+vecshield-platform nlp install --default  # then the model itself
 ```
 
 `nlp-transformer` is kept as a deprecated alias of `nlp-trf`. Without a model,

@@ -11,6 +11,11 @@ Changes to the detection engine specifically are also tracked in
 
 ### Added
 
+- A release workflow (`.github/workflows/release.yml`). A `v*` tag builds the
+  sdist and wheel, installs `vecshield`, `vecshield[chroma]` and
+  `vecshield[chroma,nlp]` from them in clean environments and runs each, then
+  uploads to PyPI by Trusted Publishing. Running it by hand uploads to
+  TestPyPI instead. The tag must match the version in `pyproject.toml`.
 - Prompt-injection detection moved into the detection library
   (`vecshield.injection`) and rebuilt as a rule pack run over canonical views
   of the text. New: `vecshield.check_injection()`, `vecshield injection-check`,
@@ -96,6 +101,12 @@ Changes to the detection engine specifically are also tracked in
 
 ### Fixed
 
+- The README now works as the PyPI project page: the logo and links are
+  absolute URLs, which PyPI needs. It also says that `vecshield[nlp]` needs a
+  spaCy model installed separately. Without one, `check_text()` and
+  `vecshield detect` fail with `Can't find model 'en_core_web_lg'`.
+- `docs/nlp_models.md` gave the package as `vecshield-platform`, which is not
+  on PyPI. It is `vecshield`.
 - pgvector: a tenant kept in a json/jsonb metadata column (LangChain's
   `cmetadata`, LlamaIndex's `metadata_`) is now found and probed. Before, such
   a table was reported as single-tenant ("isolation is not applicable") while
