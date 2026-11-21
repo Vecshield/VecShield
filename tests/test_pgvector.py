@@ -7,6 +7,7 @@ unreachable, so the suite stays green without Docker.
 
 from __future__ import annotations
 
+import json
 import os
 
 import pytest
@@ -179,6 +180,41 @@ def test_query_honors_where_and_powers_isolation_probe(tenant_db):
                for f in job.findings)
     assert not any("NOT enforced" in f.title for f in job.findings)
 
+
+
+@pytest.fixture
+def langchain_db():
+    """The LangChain PGVector layout: the tenant lives only in cmetadata."""
+    with psycopg_connect() as raw:
+        raw.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        raw.execute("DROP TABLE IF EXISTS lc_embedding")
+        raw.execute("CREATE TABLE lc_embedding (id varchar PRIMARY KEY, embedding vector, "
+                    "document varchar, cmetadata jsonb)")
+        raw.execute("CREATE INDEX ON lc_embedding USING gin (cmetadata jsonb_path_ops)")
+        for i in range(8):
+            raw.execute("INSERT INTO lc_embedding VALUES (%s, '[0.1,0.2,0.3]', %s, %s)",
+                        (f"doc-{i}", f"note {i}",
+                         json.dumps({"tenant_id": "acme" if i % 2 else "globex",
+                                     "source": f"ticket/{i}"})))
+    yield
+    with psycopg_connect() as raw:
+        raw.execute("DROP TABLE IF EXISTS lc_embedding")
+
+
+def test_tenant_in_jsonb_metadata_is_filtered_and_probed(langchain_db):
+    from vecshield_platform.access import probe_isolation
+    from vecshield_platform.connectors.pgvector import PgVectorConnector
+
+    with PgVectorConnector(dsn=DSN, tables=["lc_embedding"]) as conn:
+        chunk = next(iter(conn.iter_chunks("lc_embedding")))
+        assert chunk.metadata["tenant_id"] in {"acme", "globex"}
+        hits = conn.query("lc_embedding", [0.1, 0.2, 0.3], top_k=10,
+                          where={"tenant_id": "acme"})
+        assert len(hits) == 4 and {h.metadata["tenant_id"] for h in hits} == {"acme"}
+        job = probe_isolation(conn, "lc_embedding", tenant_field="tenant_id")
+
+    assert job.stats["tenant_count"] == 2
+    assert not any("NOT enforced" in f.title for f in job.findings)
 
 
 def test_zero_vector_scores_are_not_nan(seeded_db):

@@ -346,18 +346,94 @@ def test_query_scores_are_never_nan():
     assert abs(hits[1].score - (1.0 / 1.5)) < 1e-9
 
 
-def test_query_where_filters_known_columns_only():
+def test_query_where_filters_on_columns():
     conn = _docs_conn()
     conn.static.append(("<=>", [(1, "hello", "t1", 0.0)]))
     c = _make_connector(conn)
 
-    c.query("docs", [0.1, 0.2], top_k=3, where={"tenant": "t1", "bogus": "x"})
+    c.query("docs", [0.1, 0.2], top_k=3, where={"tenant": "t1"})
 
     knn_sql, params, _ = next(call for call in conn.calls if "<=>" in call[0])
     assert '"tenant" = %s' in knn_sql
-    assert "bogus" not in knn_sql            # unknown column ignored, not injected
     # params: [vector, tenant_value, top_k]
     assert params == ["[0.1,0.2]", "t1", 3]
+
+
+def test_query_refuses_a_filter_key_it_cannot_apply():
+    # Dropping the key would run the query unfiltered: a tenant query that
+    # silently returns every tenant's rows.
+    conn = _docs_conn()
+    c = _make_connector(conn)
+    with pytest.raises(UnsupportedCapability, match="bogus"):
+        c.query("docs", [0.1, 0.2], top_k=3, where={"tenant": "t1", "bogus": "x"})
+    assert not any("<=>" in s for s, _p, _n in conn.calls)
+
+
+def _json_conn(json_type="jsonb", has_key=True):
+    conn = _docs_conn(keys=[("id", "text")], text=[("document", "character varying")],
+                      columns=[("id",), ("collection_id",), ("embedding",), ("document",),
+                               ("cmetadata",)])
+    conn.static.append(("ORDER BY 3", [("cmetadata", json_type, 5)]))
+    conn.static.append(("jsonb_typeof", [(has_key,)]))
+    return conn
+
+
+def test_json_metadata_objects_are_flattened_into_metadata():
+    conn = _json_conn()
+    conn.seq.append(("LIMIT %s", [[
+        ("a", "hello", "c1", {"tenant_id": "t1", "source": "s.pdf", "collection_id": "x"},
+         "[0,1]")]]))
+    c = _make_connector(conn)
+    assert c.list_collections()[0].metadata["json_metadata_columns"] == ["cmetadata"]
+    [chunk] = list(c.iter_chunks("docs"))
+    # A key that collides with a column keeps the column's name as a prefix.
+    assert chunk.metadata == {"collection_id": "c1", "tenant_id": "t1", "source": "s.pdf",
+                              "cmetadata.collection_id": "x"}
+
+
+def test_json_metadata_that_is_not_an_object_stays_under_its_column():
+    conn = _json_conn()
+    conn.seq.append(("LIMIT %s", [[("a", "hello", "c1", ["x", "y"], "[0,1]")]]))
+    c = _make_connector(conn)
+    [chunk] = list(c.iter_chunks("docs"))
+    assert chunk.metadata == {"collection_id": "c1", "cmetadata": ["x", "y"]}
+
+
+def test_query_filters_a_key_inside_a_jsonb_column():
+    conn = _json_conn()
+    conn.static.append(("<=>", []))
+    c = _make_connector(conn)
+    c.query("docs", [0.1, 0.2], top_k=3, where={"tenant_id": "t1"})
+    knn_sql, params, _ = next(call for call in conn.calls if "<=>" in call[0])
+    assert '("cmetadata" @> %s::jsonb AND ("cmetadata" -> %s) = %s::jsonb)' in knn_sql
+    assert params == ["[0.1,0.2]", '{"tenant_id": "t1"}', "tenant_id", '"t1"', 3]
+    [probe] = [(s, p) for s, p, _n in conn.calls if "jsonb_typeof" in s]
+    assert probe[1] == ["tenant_id"] and "tenant_id" not in probe[0]
+
+
+def test_query_casts_a_json_column_and_accepts_a_prefixed_key():
+    conn = _json_conn(json_type="json")
+    conn.static.append(("<=>", []))
+    c = _make_connector(conn)
+    c.query("docs", [0.1, 0.2], top_k=3, where={"cmetadata.collection_id": 7})
+    knn_sql, params, _ = next(call for call in conn.calls if "<=>" in call[0])
+    assert '("cmetadata"::jsonb @> %s::jsonb' in knn_sql
+    assert params[1:4] == ['{"collection_id": 7}', "collection_id", "7"]
+    assert not any("jsonb_typeof" in s for s, _p, _n in conn.calls)
+
+
+def test_query_refuses_a_json_key_no_row_has():
+    conn = _json_conn(has_key=False)
+    c = _make_connector(conn)
+    with pytest.raises(UnsupportedCapability, match="tenant_id"):
+        c.query("docs", [0.1, 0.2], top_k=3, where={"tenant_id": "t1"})
+
+
+def test_query_refuses_a_value_json_cannot_hold():
+    conn = _json_conn()
+    c = _make_connector(conn)
+    with pytest.raises(UnsupportedCapability, match="json column"):
+        c.query("docs", [0.1, 0.2], top_k=3, where={"tenant_id": object()})
 
 
 def test_iter_chunks_surfaces_metadata_columns():
