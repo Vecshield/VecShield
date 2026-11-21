@@ -112,6 +112,52 @@ def test_scan_flags_pgvector_secret(seeded_db):
     assert rag.evidence["sensitivity"]["raw_text_stored"] is True
 
 
+@pytest.fixture
+def rls_db():
+    with psycopg_connect() as raw:
+        raw.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        for t in ("rls_open", "rls_narrowed", "rls_tenant"):
+            raw.execute(f"DROP TABLE IF EXISTS {t}")
+        raw.execute("DROP ROLE IF EXISTS vs_rls_auditor")
+        raw.execute("CREATE ROLE vs_rls_auditor")
+        for t in ("rls_open", "rls_narrowed", "rls_tenant"):
+            raw.execute(f"CREATE TABLE {t} (id int PRIMARY KEY, tenant text, content text, "
+                        "embedding vector(2))")
+            raw.execute(f"INSERT INTO {t} VALUES (1, 'a', 'x', '[0,1]'), (2, 'b', 'y', '[1,0]')")
+            raw.execute(f"ALTER TABLE {t} ENABLE ROW LEVEL SECURITY")
+            raw.execute(f"GRANT SELECT ON {t} TO vs_rls_auditor")
+        # Admitted: the docs/pgvector.md auditor policy.
+        raw.execute("CREATE POLICY aud ON rls_open FOR SELECT TO vs_rls_auditor USING (true)")
+        # Admitted, then narrowed by a restrictive policy.
+        raw.execute("CREATE POLICY aud ON rls_narrowed FOR SELECT TO vs_rls_auditor "
+                    "USING (true)")
+        raw.execute("CREATE POLICY only_a ON rls_narrowed AS RESTRICTIVE FOR SELECT "
+                    "USING (tenant = 'a')")
+        # Only a tenant policy: filtered.
+        raw.execute("CREATE POLICY t ON rls_tenant USING (tenant = 'a')")
+    yield
+    with psycopg_connect() as raw:
+        for t in ("rls_open", "rls_narrowed", "rls_tenant"):
+            raw.execute(f"DROP TABLE IF EXISTS {t}")
+        raw.execute("DROP ROLE IF EXISTS vs_rls_auditor")
+
+
+def test_row_security_that_admits_the_auditor_is_not_a_read_gap(rls_db):
+    from vecshield_platform.connectors.pgvector import PgVectorConnector
+
+    sep = "&" if "?" in DSN else "?"
+    as_auditor = f"{DSN}{sep}options=-c%20role%3Dvs_rls_auditor"
+    with PgVectorConnector(dsn=as_auditor,
+                           tables=["rls_open", "rls_narrowed", "rls_tenant"]) as conn:
+        cols = {c.name: c for c in conn.list_collections()}
+        gaps = sorted(e["collection"] for e in conn.read_errors())
+    assert cols["rls_open"].count == 2 and cols["rls_open"].metadata["row_security_admits_all"]
+    assert cols["rls_narrowed"].count == 1
+    assert cols["rls_narrowed"].metadata["row_security_filtered"] is True
+    assert cols["rls_tenant"].count == 1
+    assert gaps == ["rls_narrowed", "rls_tenant"]
+
+
 def test_dsn_credentials_redacted(seeded_db):
     from vecshield_platform.connectors.pgvector import PgVectorConnector
 

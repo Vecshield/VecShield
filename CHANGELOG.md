@@ -87,6 +87,12 @@ Changes to the detection engine specifically are also tracked in
 - `GET /admin/jobs` accepts `limit` from 1 to 500 and `GET /runtime/alerts`
   from 1 to 1000; `offset` must not be negative. Out-of-range values are a
   `422` instead of an unbounded read.
+- pgvector: a row-security table whose policies admit the auditing role with
+  `USING (true)`, as `docs/pgvector.md` recommends, is no longer reported as a
+  read gap. Before, every such table was marked partly unread, which left about
+  a dozen checks on it inconclusive. The table is now read in full and records
+  `row_security_admits_all`. A restrictive policy, or any other permissive
+  policy, still makes the table a read gap.
 
 ### Fixed
 

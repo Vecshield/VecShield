@@ -48,7 +48,11 @@ cannot SELECT are listed with an unknown count and a read error naming the
 table, never as empty. Tables whose row-level security policies apply to the
 connecting role (``row_security_active``) are read, but only the rows those
 policies show it are counted and read, so each carries a read error too: a
-count that matches a filtered read proves nothing about the table.
+count that matches a filtered read proves nothing about the table. The
+exception is a table whose policies provably show the role every row: a
+permissive ``USING (true)`` policy reaches it and no restrictive policy
+narrows it, the way docs/pgvector.md admits the auditor. Such a table is read
+in full and says so in ``metadata["row_security_admits_all"]``.
 
 psycopg is imported lazily so the rest of VecShield works without it.
 
@@ -141,11 +145,30 @@ VECTOR_TABLE_PREDICATE = (
     f" OR (t.typname = 'bit' AND {BIT_INDEXED_SQL}))"
 )
 
+#: A row-security policy on table ``c`` that reaches the connecting role:
+#: granted to PUBLIC (role 0) or to a role it is a member of, for SELECT or ALL.
+_POLICY_FOR_ME = ("p.polrelid = c.oid AND p.polcmd IN ('r', '*') AND "
+                  "(0 = ANY(p.polroles) OR EXISTS (SELECT 1 FROM unnest(p.polroles) AS pr(r) "
+                  "WHERE pr.r <> 0 AND pg_has_role(current_user, pr.r, 'MEMBER')))")
+
+#: True when row security on ``c`` hides no row from the connecting role: a
+#: permissive ``USING (true)`` policy reaches it and no restrictive policy that
+#: reaches it is anything but ``true``. Permissive policies are OR-ed and
+#: restrictive ones AND-ed, so that is every row. This is how docs/pgvector.md
+#: says to admit the auditor.
+ROW_SECURITY_ADMITS_ALL_SQL = (
+    "(EXISTS (SELECT 1 FROM pg_policy p WHERE p.polpermissive AND "
+    f"{_POLICY_FOR_ME} AND pg_get_expr(p.polqual, p.polrelid) = 'true') "
+    "AND NOT EXISTS (SELECT 1 FROM pg_policy p WHERE NOT p.polpermissive AND "
+    f"{_POLICY_FOR_ME} AND pg_get_expr(p.polqual, p.polrelid) IS DISTINCT FROM 'true'))"
+)
+
 _VECTOR_COLUMNS_SQL = f"""
     SELECT c.relname, a.attname, t.typname, a.atttypmod,
            has_table_privilege(c.oid, 'SELECT') AS readable,
            {BIT_INDEXED_SQL} AS bit_indexed,
-           row_security_active(c.oid) AS row_filtered
+           row_security_active(c.oid) AND NOT {ROW_SECURITY_ADMITS_ALL_SQL} AS row_filtered,
+           row_security_active(c.oid) AND {ROW_SECURITY_ADMITS_ALL_SQL} AS row_admitted
     FROM pg_attribute a
     JOIN pg_type t      ON a.atttypid = t.oid
     JOIN pg_class c     ON a.attrelid = c.oid
@@ -212,15 +235,22 @@ _ROW_FILTERED_REASON = ("row-level security policies apply to the connecting rol
                         "read; rows they hide were not scanned")
 
 
+_ROW_ADMITTED_NOTE = ("row-level security applies to the connecting role on this table, "
+                      "but a permissive USING (true) policy admits it and no restrictive "
+                      "policy narrows it, so every row was counted and read")
+
+
 def group_vector_columns(rows: list) -> dict[str, dict[str, Any]]:
-    """Catalog rows -> ``{table: {"readable", "row_filtered", "columns"}}``.
+    """Catalog rows -> ``{table: {"readable", "row_filtered", "row_admitted", "columns"}}``.
 
     ``rows`` are ``(table, column, type, atttypmod, readable, bit_indexed,
-    row_filtered)`` in table and column order. A ``bit`` column is kept only
-    when a pgvector bit operator class indexes it or the table has another
-    pgvector column: ``bit`` alone is an ordinary Postgres type.
-    ``row_filtered`` is ``row_security_active``: row-level security policies
-    apply to the connecting role on that table.
+    row_filtered, row_admitted)`` in table and column order. A ``bit`` column
+    is kept only when a pgvector bit operator class indexes it or the table
+    has another pgvector column: ``bit`` alone is an ordinary Postgres type.
+    ``row_filtered``: row-level security policies apply to the connecting
+    role on that table and may hide rows from it. ``row_admitted``: they
+    apply, but a ``USING (true)`` policy admits every row
+    (``ROW_SECURITY_ADMITS_ALL_SQL``).
     """
     tables: dict[str, dict[str, Any]] = {}
     for row in rows:
@@ -228,11 +258,14 @@ def group_vector_columns(rows: list) -> dict[str, dict[str, Any]]:
         readable = bool(row[4]) if len(row) > 4 and row[4] is not None else True
         bit_indexed = bool(row[5]) if len(row) > 5 else False
         row_filtered = bool(row[6]) if len(row) > 6 else False
+        row_admitted = bool(row[7]) if len(row) > 7 else False
         entry = tables.setdefault(str(table), {"readable": readable,
                                                "row_filtered": row_filtered,
+                                               "row_admitted": row_admitted,
                                                "columns": []})
         entry["readable"] = entry["readable"] and readable
         entry["row_filtered"] = entry["row_filtered"] or row_filtered
+        entry["row_admitted"] = entry["row_admitted"] and row_admitted
         entry["columns"].append({
             "column": str(column), "type": typ,
             "dimension": typmod if isinstance(typmod, int) and typmod > 0 else None,
@@ -246,7 +279,8 @@ def group_vector_columns(rows: list) -> dict[str, dict[str, Any]]:
             c.pop("_bit_indexed", None)
         if cols:
             out[table] = {"readable": entry["readable"],
-                          "row_filtered": entry["row_filtered"], "columns": cols}
+                          "row_filtered": entry["row_filtered"],
+                          "row_admitted": entry["row_admitted"], "columns": cols}
     return out
 
 
@@ -386,6 +420,8 @@ class PgVectorConnector(Connector):
                 self._note_row_filtered(table)
                 metadata.update(row_security_filtered=True,
                                 row_security_reason=_ROW_FILTERED_REASON)
+            elif lay["row_admitted"]:
+                metadata["row_security_admits_all"] = _ROW_ADMITTED_NOTE
             count: int = 0
             try:
                 count = int(self._read(
@@ -827,6 +863,7 @@ class PgVectorConnector(Connector):
             "vec_dense": primary["dense"], "dim": primary["dimension"],
             "vector_columns": columns, "readable": info["readable"],
             "row_filtered": bool(info.get("row_filtered")),
+            "row_admitted": bool(info.get("row_admitted")),
             "text": None, "key_cols": [], "key_types": [], "id_source": None,
             "table": table,
         }
