@@ -50,6 +50,26 @@ application connects as.
 - SECURITY DEFINER functions the retrieval role can execute, with their owners;
 - the number of LEAKPROOF pgvector functions (pgvector marks none LEAKPROOF).
 
+## How rows are identified and read
+
+Every vector table is one collection. VecShield needs two things from it:
+
+- **A chunk id that names exactly one row.** It takes the primary key. Without
+  one, it uses a unique index whose columns are all `NOT NULL` and that has no
+  expression or `WHERE` clause. Without either, it uses the row's physical
+  position (`ctid`). A `ctid` names a row only until the row is updated or the
+  table is rewritten. VecShield reads such a table in one statement, so its ids
+  are consistent within a scan, but **erasure refuses to delete from it**. Add
+  a primary key to erase from it.
+- **The chunk text.** It takes a column named `content`, `text`, `document`,
+  `chunk`, `body`, `passage` or `page_content`. Otherwise it takes the text
+  column, other than the key, with the longest values over a 200-row sample. In
+  a table with `tenant`, `question` and `answer` columns, that is `answer`, and
+  `tenant` stays visible to the tenant-isolation check.
+
+The collection's `key_columns`, `id_source` (`primary_key`, `unique_index` or
+`ctid`) and `text_column` record the choice.
+
 ## Approximate indexes, filters and short results
 
 pgvector applies a `WHERE` filter, and row-level security, to the rows an HNSW

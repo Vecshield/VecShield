@@ -91,6 +91,14 @@ Changes to the detection engine specifically are also tracked in
   accept it. `dashboard.js` and `dashboard.css` drop from about 1.07 MB to
   about 290 KB on a first load. Only the `/static` mount is compressed: API
   responses, Range requests, fonts and images are served as before.
+- pgvector: a table without a primary key is no longer identified by its
+  first column, which need not be unique. Erasing one chunk could delete every
+  row sharing that value. Such a table is now keyed by a NOT NULL unique index
+  when it has one. Otherwise it is keyed by row position (`ctid`), and erasure
+  refuses to delete from it. When no column has a conventional name, the chunk
+  text is the column with the longest values, not an arbitrary one, so a
+  `tenant` column is no longer read as text and hidden from the isolation
+  check.
 
 ## [0.1.0]
 
