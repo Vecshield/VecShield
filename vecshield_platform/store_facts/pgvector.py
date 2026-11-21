@@ -216,7 +216,8 @@ def distance_metric_details(conn: Any) -> dict[str, dict[str, Any]]:
         JOIN pg_type t      ON a.atttypid = t.oid
         JOIN pg_class c     ON a.attrelid = c.oid
         JOIN pg_namespace n ON c.relnamespace = n.oid
-        WHERE {VECTOR_TABLE_PREDICATE} AND c.relkind = 'r' AND n.nspname = %s
+        WHERE {VECTOR_TABLE_PREDICATE} AND c.relkind IN ('r', 'p')
+          AND NOT c.relispartition AND n.nspname = %s
           AND a.attnum > 0 AND NOT a.attisdropped""", (schema,))
     if err is not None:
         raise err

@@ -16,7 +16,10 @@ introspects the catalog to find, per table:
     row only while it is unchanged, so such a table refuses ``delete_chunks``
 
 Collection model: each table with at least one vector column is one
-Collection, however many vector columns it has. The first dense column
+Collection, however many vector columns it has. A partitioned table is one
+Collection read through its parent, as the application queries it; its
+partitions are not listed separately, and are named in
+``metadata["partitions"]``. The first dense column
 (``vector`` or ``halfvec``) supplies ``Chunk.embedding``; every vector column,
 with its type, dimension and whether it is dense, is listed in
 ``Collection.metadata["vector_columns"]``, and the ones not surfaced as the
@@ -148,7 +151,8 @@ _VECTOR_COLUMNS_SQL = f"""
     JOIN pg_class c     ON a.attrelid = c.oid
     JOIN pg_namespace n ON c.relnamespace = n.oid
     WHERE t.typname IN ('vector', 'halfvec', 'sparsevec', 'bit')
-      AND c.relkind = 'r'
+      AND c.relkind IN ('r', 'p')
+      AND NOT c.relispartition
       AND n.nspname = %s
       AND a.attnum > 0
       AND NOT a.attisdropped
@@ -388,6 +392,9 @@ class PgVectorConnector(Connector):
                     f"SELECT COUNT(*) FROM {self._qtable(table)}", one=True)[0])
             except Exception as exc:  # noqa: BLE001 - an unknown count, not zero
                 metadata.update(count_known=False, count_error=type(exc).__name__)
+            partitions = self._partitions(table)
+            if partitions:
+                metadata["partitions"] = partitions
             out.append(Collection(name=table, count=count, dimension=lay["dim"],
                                   metadata=metadata))
         return out
@@ -809,8 +816,8 @@ class PgVectorConnector(Connector):
             None, table=table, operation="inventory", error_type="TableNotFound",
             reason=(f"the configured table {table!r} is not a pgvector table in schema "
                     f"{self._schema!r}: it does not exist, is in another schema, has no "
-                    "vector column, or is a partitioned parent (whose partitions are "
-                    "listed by their own names), so it was not scanned"))
+                    "vector column, or is a partition (scanned through its partitioned "
+                    "table, under that table's name), so it was not scanned"))
 
     def _build_layout(self, table: str, info: dict[str, Any]) -> dict[str, Any]:
         columns = info["columns"]
@@ -1078,6 +1085,32 @@ class PgVectorConnector(Connector):
                 if str(name) in by_table:
                     by_table[str(name)]["retrieval_privileges"] = [
                         p for p, ok in zip(_TABLE_PRIVILEGES, flags) if ok]
+        # A partition is a table of its own: the parent's policies do not
+        # apply when it is queried by name, so a partition without row
+        # security that a role can SELECT bypasses the parent's policies.
+        rls_parents = [t for t, e in by_table.items() if e["rls"]]
+        if rls_parents:
+            who = "has_table_privilege(%s, pc.oid, 'SELECT')" if role_name else \
+                "has_table_privilege(pc.oid, 'SELECT')"
+            prows, perror = self._catalog(
+                "SELECT c.relname, pt.relid::regclass::text, pc.relrowsecurity, "
+                f"{who}, has_table_privilege('public', pc.oid, 'SELECT') "
+                "FROM pg_class c JOIN pg_namespace n ON n.oid = c.relnamespace "
+                "CROSS JOIN LATERAL pg_partition_tree(c.oid) AS pt "
+                "JOIN pg_class pc ON pc.oid = pt.relid "
+                "WHERE n.nspname = %s AND c.relname = ANY(%s) AND c.relkind = 'p' "
+                "AND pt.relid <> c.oid AND pc.relkind IN ('r', 'p', 'f') "
+                "ORDER BY 1, pt.level, 2",
+                (*([role_name] if role_name else []), self._schema, rls_parents))
+            readable["partitions"] = perror is None
+            if perror:
+                reasons["partitions"] = f"the tables' partitions could not be read ({perror})"
+            for name, part, rls, role_select, public_select in prows:
+                if str(name) in by_table:
+                    by_table[str(name)].setdefault("partitions", []).append(
+                        {"partition": str(part), "rls": bool(rls),
+                         "retrieval_select": bool(role_select),
+                         "public_select": bool(public_select)})
         # Row security filters the rows an approximate index returns, so an
         # RLS table on HNSW/IVFFlat can come back short (never leaky).
         session, role_settings = self._ann_settings() if by_table else ({}, {})
@@ -1531,6 +1564,24 @@ class PgVectorConnector(Connector):
                 c for c in self._all_columns(table) if c not in exclude
             ]
         return self._meta_cols[table]
+
+    def _partitions(self, table: str) -> list[str]:
+        """Every partition below a partitioned table, at any depth; [] otherwise.
+
+        Descriptive only: pg_partition_tree() needs PostgreSQL 12, and a server
+        without it lists the table without its partitions.
+        """
+        try:
+            rows = self._read(
+                "SELECT pt.relid::regclass::text FROM pg_class c "
+                "JOIN pg_namespace n ON n.oid = c.relnamespace "
+                "CROSS JOIN LATERAL pg_partition_tree(c.oid) AS pt "
+                "WHERE n.nspname = %s AND c.relname = %s AND c.relkind = 'p' "
+                "AND pt.relid <> c.oid ORDER BY pt.level, 1",
+                (self._schema, table))
+        except Exception:  # noqa: BLE001 - a missing description, not a read gap
+            return []
+        return [str(r[0]) for r in rows]
 
 
 

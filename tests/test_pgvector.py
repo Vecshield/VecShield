@@ -248,6 +248,44 @@ def test_zero_vector_scores_are_not_nan(seeded_db):
         conn.close()
 
 
+@pytest.fixture
+def partitioned_db():
+    with psycopg_connect() as raw:
+        raw.execute("CREATE EXTENSION IF NOT EXISTS vector")
+        raw.execute("DROP TABLE IF EXISTS part_notes CASCADE")
+        raw.execute("DROP ROLE IF EXISTS vs_part_reader")
+        raw.execute("CREATE ROLE vs_part_reader")
+        raw.execute("CREATE TABLE part_notes (id bigint, tenant text, content text, "
+                    "embedding vector(2), PRIMARY KEY (tenant, id)) PARTITION BY LIST (tenant)")
+        raw.execute("CREATE TABLE part_notes_a PARTITION OF part_notes FOR VALUES IN ('a')")
+        raw.execute("CREATE TABLE part_notes_b PARTITION OF part_notes FOR VALUES IN ('b')")
+        raw.execute("INSERT INTO part_notes VALUES (1, 'a', 'x', '[0,1]'), (2, 'b', 'y', '[1,0]')")
+        raw.execute("ALTER TABLE part_notes ENABLE ROW LEVEL SECURITY")
+        raw.execute("CREATE POLICY t ON part_notes USING (tenant = current_setting('app.t', true))")
+        raw.execute("GRANT SELECT ON part_notes, part_notes_a TO vs_part_reader")
+    yield
+    with psycopg_connect() as raw:
+        raw.execute("DROP TABLE IF EXISTS part_notes CASCADE")
+        raw.execute("DROP ROLE IF EXISTS vs_part_reader")
+
+
+def test_a_partitioned_table_is_one_collection_and_its_open_partition_is_found(
+        partitioned_db):
+    from vecshield_platform.access.grants import assess_access_grants
+    from vecshield_platform.connectors.pgvector import PgVectorConnector
+
+    with PgVectorConnector(dsn=DSN, retrieval_role="vs_part_reader") as conn:
+        cols = {c.name: c for c in conn.list_collections()}
+        assert "part_notes" in cols
+        assert not {"part_notes_a", "part_notes_b"} & set(cols)
+        assert cols["part_notes"].metadata["partitions"] == ["part_notes_a", "part_notes_b"]
+        assert len(list(conn.iter_chunks("part_notes"))) == 2
+        store = conn.describe()
+        findings, _ = assess_access_grants(conn.access_model(), store)
+    hits = [f for f in findings if f.evidence.get("rule") == "partition_bypasses_row_security"]
+    assert [f.evidence["partition"] for f in hits] == ["part_notes_a"]
+
+
 def psycopg_connect():
     import psycopg
 

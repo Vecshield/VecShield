@@ -165,6 +165,16 @@
       "remediation": "REVOKE SELECT ON <table> FROM PUBLIC, and GRANT SELECT to the roles that retrieve."
     },
     {
+      "id": "partition_bypasses_row_security",
+      "severity": "high",
+      "title": "A partition of a row-security table can be read without its policies",
+      "threshold": "a partition without row security, of a vector table with row security, that the retrieval role or PUBLIC can SELECT",
+      "inputs": ["pg_partition_tree", "pg_class", "has_table_privilege"],
+      "source_url": "https://www.postgresql.org/docs/current/ddl-inherit.html",
+      "quote": "A child table's policies, if any, are applied only when it is the table explicitly named in the query; and in that case, any policies attached to its parent(s) are ignored.",
+      "remediation": "REVOKE SELECT ON <partition> FROM <role> (grant SELECT on the partitioned table only), or ENABLE ROW LEVEL SECURITY on the partition with the same policies."
+    },
+    {
       "id": "public_create_on_schema",
       "severity": "medium",
       "title": "Any role can create objects in a schema the vector extension or the search path uses",
