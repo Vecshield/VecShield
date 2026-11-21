@@ -1,0 +1,176 @@
+name: Release
+
+# Builds the sdist and wheel once, proves the published install commands work
+# from those exact files, then uploads them to PyPI with Trusted Publishing
+# (OIDC): no API token is stored in this repository.
+#
+#   git tag v0.2.0 && git push origin v0.2.0   -> PyPI     (environment `pypi`)
+#   Actions -> Release -> Run workflow          -> TestPyPI (environment `testpypi`)
+#
+# Each index needs a (pending) trusted publisher for this repository, workflow
+# `release.yml` and the environment named above. A version can never be
+# uploaded twice, so the tag must match `version` in pyproject.toml.
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: build sdist + wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Tag matches pyproject version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version=$(python -c 'import tomllib; print(tomllib.load(open("pyproject.toml", "rb"))["project"]["version"])')
+          if [ "${GITHUB_REF_NAME#v}" != "$version" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match pyproject version ${version}"
+            exit 1
+          fi
+
+      - name: Build
+        run: |
+          python -m pip install --upgrade pip build twine
+          python -m build
+          twine check --strict dist/*
+
+      - name: The sdist builds a wheel on its own
+        run: pip wheel --no-deps --wheel-dir "$RUNNER_TEMP/from-sdist" dist/*.tar.gz
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          if-no-files-found: error
+
+  smoke:
+    # The three install lines from the README, from the built wheel, in a clean
+    # environment, run outside the checkout so the source tree is never
+    # imported by accident.
+    name: install vecshield${{ matrix.extras && format('[{0}]', matrix.extras) || '' }} (py${{ matrix.python-version }})
+    needs: build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { python-version: "3.10", extras: "" }
+          - { python-version: "3.12", extras: "" }
+          - { python-version: "3.12", extras: "chroma" }
+          - { python-version: "3.12", extras: "chroma,nlp" }
+    steps:
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: ${{ runner.temp }}/dist
+
+      - name: Install
+        working-directory: ${{ runner.temp }}
+        env:
+          EXTRAS: ${{ matrix.extras }}
+        run: |
+          python -m venv venv
+          wheel=$(ls dist/*.whl)
+          venv/bin/python -m pip install --disable-pip-version-check "${wheel}${EXTRAS:+[$EXTRAS]}"
+
+      - name: Install the NLP model
+        if: contains(matrix.extras, 'nlp')
+        working-directory: ${{ runner.temp }}
+        run: venv/bin/vecshield-platform nlp install en_core_web_lg
+
+      - name: Library, CLIs and server import
+        working-directory: ${{ runner.temp }}
+        env:
+          EXPECT_NLP: ${{ contains(matrix.extras, 'nlp') }}
+        run: |
+          venv/bin/vecshield --help > /dev/null
+          venv/bin/vecshield-platform --help > /dev/null
+          venv/bin/python -I - <<'EOF'
+          import os
+          from vecshield import check_text
+          from vecshield.classify import default_classifier
+          import vecshield_platform.api.app  # noqa: F401  the server imports
+
+          r = check_text("Contact Jane at jane.doe@example.org, SSN 219-09-9999")
+          detectors = {s["detector"] for s in r.spans}
+          assert r.has_pii and "us_ssn" in detectors, detectors
+
+          name = type(default_classifier()).__name__
+          if os.environ["EXPECT_NLP"] == "true":
+              assert name == "EnsembleClassifier", name
+              r = check_text("Send the file to Maria Gonzalez in Springfield.")
+              assert any(d.startswith("presidio:") for d in (s["detector"] for s in r.spans)), r.spans
+          else:
+              assert name == "RegexClassifier", name
+          print("ok:", name, sorted(detectors))
+          EOF
+
+      - name: Audit a Chroma store
+        if: contains(matrix.extras, 'chroma')
+        working-directory: ${{ runner.temp }}
+        run: |
+          venv/bin/python -I - <<'EOF'
+          import chromadb
+          col = chromadb.PersistentClient(path="chroma_data").get_or_create_collection(
+              "docs", embedding_function=None)
+          docs = ["Patient SSN 219-09-9999.", "Quarterly roadmap: ship in March."]
+          col.add(ids=["a", "b"], documents=docs, embeddings=[[0.1] * 8, [0.2] * 8])
+          EOF
+          # 2 = a high or critical finding (the SSN); anything else is a failure.
+          set +e
+          venv/bin/vecshield-platform audit --connector chroma --path ./chroma_data --report out.html
+          code=$?
+          set -e
+          test "$code" -eq 2 || { echo "::error::audit exited $code, expected 2"; exit 1; }
+          test -s out.html
+
+  publish-testpypi:
+    name: publish to TestPyPI
+    if: github.event_name == 'workflow_dispatch'
+    needs: [build, smoke]
+    runs-on: ubuntu-latest
+    environment:
+      name: testpypi
+      url: https://test.pypi.org/p/vecshield
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
+
+  publish-pypi:
+    name: publish to PyPI
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, smoke]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/vecshield
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1
