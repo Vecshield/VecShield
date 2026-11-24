@@ -221,15 +221,23 @@ def distance_metric_details(conn: Any) -> dict[str, dict[str, Any]]:
           AND a.attnum > 0 AND NOT a.attisdropped""", (schema,))
     if err is not None:
         raise err
+    # An index key is a column, or an expression over one (attnum 0): pgvector
+    # documents half-precision (embedding::halfvec(n)) and binary-quantized
+    # (binary_quantize(embedding)::bit(n)) indexes, which are keyed by the
+    # expression's text here.
     rows, err = _query(conn, """
-        SELECT c.relname, a.attname, opc.opcname, am.amname, ic.relname
+        SELECT c.relname,
+               COALESCE(a.attname, pg_get_indexdef(i.indexrelid, k.ord::int, true)),
+               opc.opcname, am.amname, ic.relname
         FROM pg_index i
         JOIN pg_class c      ON c.oid = i.indrelid
         JOIN pg_namespace n  ON n.oid = c.relnamespace
         JOIN pg_class ic     ON ic.oid = i.indexrelid
         JOIN pg_am am        ON am.oid = ic.relam
-        CROSS JOIN LATERAL unnest(i.indkey::int2[], i.indclass::oid[]) AS k(attnum, opcoid)
-        JOIN pg_attribute a  ON a.attrelid = c.oid AND a.attnum = k.attnum
+        CROSS JOIN LATERAL unnest(i.indkey::int2[], i.indclass::oid[])
+            WITH ORDINALITY AS k(attnum, opcoid, ord)
+        LEFT JOIN pg_attribute a ON a.attrelid = c.oid AND a.attnum = k.attnum
+                                AND k.attnum > 0
         JOIN pg_opclass opc  ON opc.oid = k.opcoid
         WHERE n.nspname = %s""", (schema,))
     by_table: dict[str, dict[str, Any]] = {}

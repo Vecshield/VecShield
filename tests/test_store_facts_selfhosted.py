@@ -703,6 +703,31 @@ def test_pg_distance_metrics_from_operator_classes():
     assert "no pgvector index" in details["notes"]["note"]
 
 
+def test_pg_expression_indexes_count_as_pgvector_indexes():
+    # pgvector's half-precision and binary-quantization patterns index an
+    # expression over the column; pg_get_indexdef() names it.
+    conn = _PgConn({
+        "DISTINCT c.relname": [("half",), ("bq",)],
+        "FROM pg_index i": [
+            ("half", "(embedding::halfvec(384))", "halfvec_cosine_ops", "hnsw", "h_idx"),
+            ("bq", "(binary_quantize(embedding)::bit(384))", "bit_hamming_ops", "hnsw",
+             "bq_idx"),
+            ("bq", "lower(title)", "text_ops", "btree", "bq_title"),
+        ]})
+    assert sf.distance_metrics(_pg(conn)) == {"half": "cosine", "bq": None}
+    details = sf.distance_metric_details(_pg(conn))
+    assert details["half"]["vector_metrics"] == {
+        "(embedding::halfvec(384)) (h_idx, hnsw)": "cosine"}
+    # Hamming is outside Collection.distance_metric, but the index is reported,
+    # not mistaken for "no pgvector index".
+    assert details["bq"]["vector_metrics"] == {
+        "(binary_quantize(embedding)::bit(384)) (bq_idx, hnsw)": "bit_hamming_ops"}
+    assert "note" not in details["bq"]
+    sql = next(s for s in conn.statements if "FROM pg_index i" in s)
+    assert "pg_get_indexdef(i.indexrelid, k.ord::int, true)" in sql
+    assert "LEFT JOIN pg_attribute" in sql
+
+
 def test_pg_pgai_vectorizers_without_secrets():
     config = {"embedding": {"implementation": "openai", "model": "text-embedding-3-small",
                             "dimensions": 768, "api_key_name": "OPENAI_API_KEY_PROD"}}
